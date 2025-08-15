@@ -17,7 +17,7 @@ export default function Menu() {
       }}
     >
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-        Bienvenido al Panel
+        Bienvenido a Paquetes opcion dos
       </Typography>
       <Typography sx={{ fontSize: 16, maxWidth: 600 }}>
         Aquí puedes colocar tu contenido profesional, productos, estadísticas, o lo que necesites.

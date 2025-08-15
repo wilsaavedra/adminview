@@ -33,19 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkToken = async () => {
     const token = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-
-    if (token && storedUser) {
-      // Restaurar directamente desde localStorage
-      dispatch({
-        type: 'signUp',
-        payload: {
-          token,
-          user: JSON.parse(storedUser)
-        }
-      });
-      return;
-    }
 
     if (!token) return dispatch({ type: 'notAuthenticated' });
 
@@ -56,8 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       localStorage.setItem('token', resp.data.token);
-      localStorage.setItem('user', JSON.stringify(resp.data.usuario));
-
       dispatch({
         type: 'signUp',
         payload: {
@@ -81,9 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user: data.usuario
         }
       });
-
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.usuario));
 
     } catch (error: any) {
       dispatch({
@@ -104,9 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user: data.usuario
         }
       });
-
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.usuario));
 
     } catch (error: any) {
       dispatch({
@@ -118,7 +99,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logOut = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     dispatch({ type: 'logout' });
   };
 
