@@ -67,6 +67,7 @@ import LoginScreen from './pages/LoginScreen';
 import Menu from './pages/Menu';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import { Box } from '@mui/material';
+import Paquetes from './pages/Paquetes';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useContext(AuthContext);
@@ -105,6 +106,11 @@ function AppContent() {
           path: '/Menu',
           element: React.createElement(PrivateRoute, null, React.createElement(Menu)),
         }),
+        // Aquí añadimos la nueva ruta:
+  React.createElement(Route, {
+    path: '/Paquetes',
+    element: React.createElement(PrivateRoute, null, React.createElement(Paquetes)),
+  }),
         React.createElement(Route, {
           path: '*',
           element: React.createElement(Navigate, { to: '/LoginScreen', replace: true }),

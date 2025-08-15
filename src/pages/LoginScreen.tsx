@@ -307,7 +307,7 @@ export default function LoginScreen() {
           <Button
             variant="contained"
             fullWidth
-            disabled={!email || !password || loading}
+           // disabled={!email || !password || loading}
             onClick={handleLogin}
             sx={{
               py: 1.4,

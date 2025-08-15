@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-export default function Menu() {
+export default function Paquetes() {
   return (
     <Box
       sx={{
