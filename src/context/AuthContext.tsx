@@ -33,20 +33,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkToken = async () => {
     const token = localStorage.getItem('token');
-
-    if (!token) return dispatch({ type: 'notAuthenticated' });
-
+  
+    if (!token) {
+      return dispatch({ type: 'notAuthenticated' });
+    }
+  
     try {
       const resp = await cafeApi.get('/auth', {
         headers: { 'x-token': token }
       });
+  
       if (resp.status !== 200) {
         return dispatch({ type: 'notAuthenticated' });
       }
-
+  
       localStorage.setItem('token', resp.data.token);
       dispatch({
-        type: 'signUp',
+        type: 'signUp', // esto pasa automáticamente a 'authenticated'
         payload: {
           token: resp.data.token,
           user: resp.data.usuario

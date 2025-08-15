@@ -227,7 +227,7 @@ export default function LoginScreen() {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center', // Centrado vertical
