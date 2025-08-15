@@ -62,12 +62,12 @@ export default App;*/
 
 import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
 import Sidebar from './components/Sidebar';
 import LoginScreen from './pages/LoginScreen';
 import Menu from './pages/Menu';
-import { AuthProvider, AuthContext } from './context/AuthContext';
-import { Box } from '@mui/material';
 import Paquetes from './pages/Paquetes';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useContext(AuthContext);
@@ -76,45 +76,63 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const location = useLocation();
+  const { status } = useContext(AuthContext);
   const showSidebar = location.pathname !== '/LoginScreen';
+  const isLogin = location.pathname === '/LoginScreen';
 
-  return React.createElement(
-    Box,
-    { sx: { display: 'flex', minHeight: '100vh' } },
-    showSidebar && React.createElement(Sidebar),
+  // Spinner mientras valida token
+  if (status === 'checking') {
+    return (
+      React.createElement(
+        Box,
+        {
+          sx: {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            width: '100%',
+            bgcolor: '#f7f7f8',
+            flexDirection: 'column',
+          },
+        },
+        React.createElement(CircularProgress, { size: 60, thickness: 4 }),
+        React.createElement('p', { style: { marginTop: 16, fontSize: 16, color: '#555' } }, 'Cargando...')
+      )
+    );
+  }
+
+  // Contenedor centrado para login y páginas
+  const contentBoxProps = {
+    sx: {
+      flexGrow: 1,
+      ml: showSidebar ? { sm: '260px' } : 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      p: isLogin ? 0 : 3,
+      width: '100%',
+      minHeight: '100vh',
+      flexDirection: 'column',
+    },
+  };
+
+  return (
     React.createElement(
       Box,
-      {
-        sx: {
-          flexGrow: 1,
-          ml: showSidebar ? { sm: '260px' } : 0, // Mantiene espacio para Sidebar
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          p: 3,
-          width: '100%',
-          maxWidth: '1200px',  // Máximo ancho tipo ChatGPT
-          margin: '0 auto',    // Centrado horizontal
-        },
-      },
+      { sx: { display: 'flex', minHeight: '100vh' } },
+      showSidebar && React.createElement(Sidebar),
       React.createElement(
-        Routes,
-        null,
-        React.createElement(Route, { path: '/LoginScreen', element: React.createElement(LoginScreen) }),
-        React.createElement(Route, {
-          path: '/Menu',
-          element: React.createElement(PrivateRoute, null, React.createElement(Menu)),
-        }),
-        // Aquí añadimos la nueva ruta:
-  React.createElement(Route, {
-    path: '/Paquetes',
-    element: React.createElement(PrivateRoute, null, React.createElement(Paquetes)),
-  }),
-        React.createElement(Route, {
-          path: '*',
-          element: React.createElement(Navigate, { to: '/LoginScreen', replace: true }),
-        })
+        Box,
+        contentBoxProps,
+        React.createElement(
+          Routes,
+          null,
+          React.createElement(Route, { path: '/LoginScreen', element: React.createElement(LoginScreen) }),
+          React.createElement(Route, { path: '/Menu', element: React.createElement(PrivateRoute, null, React.createElement(Menu)) }),
+          React.createElement(Route, { path: '/Paquetes', element: React.createElement(PrivateRoute, null, React.createElement(Paquetes)) }),
+          React.createElement(Route, { path: '*', element: React.createElement(Navigate, { to: '/LoginScreen', replace: true }) })
+        )
       )
     )
   );
