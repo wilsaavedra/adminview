@@ -76,10 +76,11 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 function AppContent() {
   const location = useLocation();
   const { status } = useContext(AuthContext);
+
   const showSidebar = location.pathname !== '/LoginScreen';
   const isLogin = location.pathname === '/LoginScreen';
 
-  // 🔹 Mientras está validando sesión, no renderizamos rutas
+  // Mientras se valida la sesión, solo mostramos el spinner (no rutas).
   if (status === 'checking') {
     return (
       <Box
@@ -87,7 +88,7 @@ function AppContent() {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          minHeight: '100vh',
+          minHeight: { xs: '100svh', md: '100vh' },
           width: '100%',
           bgcolor: '#f7f7f8',
           flexDirection: 'column',
@@ -100,24 +101,42 @@ function AppContent() {
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: { xs: '100svh', md: '100vh' } }}>
       {showSidebar && <Sidebar />}
+
       <Fade in timeout={400}>
         <Box
           sx={{
             flexGrow: 1,
-            ml: showSidebar ? { sm: '260px' } : 0,
+            ml: showSidebar ? { sm: '260px' } : 0, // deja espacio para el Sidebar en escritorio
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             p: isLogin ? 0 : 3,
             width: '100%',
-            minHeight: '100vh',
+            minHeight: 'inherit', // hereda 100svh/100vh para centrar vertical
             flexDirection: 'column',
           }}
         >
           <Routes>
-            <Route path="/LoginScreen" element={<LoginScreen />} />
+            {/* Si ya estás autenticado, evita que /LoginScreen se muestre */}
+            <Route
+              path="/LoginScreen"
+              element={
+                status === 'authenticated' ? <Navigate to="/Menu" replace /> : <LoginScreen />
+              }
+            />
+
+            {/* Home vacío redirige según estado */}
+            <Route
+              path="/"
+              element={
+                status === 'authenticated'
+                  ? <Navigate to="/Menu" replace />
+                  : <Navigate to="/LoginScreen" replace />
+              }
+            />
+
             <Route
               path="/Menu"
               element={
@@ -126,6 +145,7 @@ function AppContent() {
                 </PrivateRoute>
               }
             />
+
             <Route
               path="/Paquetes"
               element={
@@ -134,7 +154,16 @@ function AppContent() {
                 </PrivateRoute>
               }
             />
-            <Route path="*" element={<Navigate to="/LoginScreen" replace />} />
+
+            {/* Cualquier ruta desconocida redirige según estado */}
+            <Route
+              path="*"
+              element={
+                status === 'authenticated'
+                  ? <Navigate to="/Menu" replace />
+                  : <Navigate to="/LoginScreen" replace />
+              }
+            />
           </Routes>
         </Box>
       </Fade>
