@@ -149,16 +149,18 @@ const Reservar = () => {
     <Box
       sx={{
         width: '100%',
-    maxWidth: 420,
-    margin: '0 auto',
-    bgcolor: '#ffffff',
-    p: 2,
-    borderRadius: 2,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 2,
-    boxSizing: 'border-box',
-    overflowX: 'hidden', // evita scroll horizontal
+        maxWidth: 420,
+        minHeight: '100vh',       // ocupar todo el alto de la pantalla
+        margin: '0 auto',
+        bgcolor: '#ffffff',
+        p: 3,
+        borderRadius: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center', // centra verticalmente
+        alignItems: 'center',     // centra horizontalmente
+        gap: 2,
+        boxSizing: 'border-box',
       }}
     >
       <Typography
