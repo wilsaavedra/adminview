@@ -116,7 +116,7 @@ function AppContent() {
             flexGrow: 1,
             ml: showSidebar ? { sm: '260px' } : 0, // deja espacio para el Sidebar en escritorio
             display: 'flex',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',//'center',
             alignItems: 'center',
             p: isLogin ? 0 : 3,
             width: '100%',
