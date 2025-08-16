@@ -120,7 +120,7 @@ const Reservar = () => {
       setLoading(true);
       await cafeApi.post('/reservas', {
         nombre: reservaDatos.nombre,
-        telefono: reservaDatos.telefono,//`+591${reservaDatos.telefono}`,
+        telefono: `+591${reservaDatos.telefono}`,
         fecha: fechaHora.toISOString(),
         cantidad: reservaDatos.personas,
         comentarios: reservaDatos.comentarios
