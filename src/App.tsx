@@ -66,6 +66,12 @@ import Sidebar from './components/Sidebar';
 import LoginScreen from './pages/LoginScreen';
 import Menu from './pages/Menu';
 import Paquetes from './pages/Paquetes';
+import Reservar from './pages/Reservar';
+import Reservas from './pages/Reservas';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 import { AuthProvider, AuthContext } from './context/AuthContext';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -145,7 +151,22 @@ function AppContent() {
                 </PrivateRoute>
               }
             />
-
+            <Route
+              path="/Reservar"
+              element={
+                <PrivateRoute>
+                  <Reservar />
+                </PrivateRoute>
+              }
+            />
+             <Route
+              path="/Reservas"
+              element={
+                <PrivateRoute>
+                  <Reservas />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/Paquetes"
               element={
@@ -177,6 +198,18 @@ function App() {
       <BrowserRouter>
         <AppContent />
       </BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored" // o "light" si prefieres
+      />
     </AuthProvider>
   );
 }

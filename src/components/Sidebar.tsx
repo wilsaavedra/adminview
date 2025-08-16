@@ -16,9 +16,14 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/View3.png';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+
 
 const menuItems = [
   { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
+  { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
+  { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
   { text: 'Paquetes', icon: <LocalOfferOutlinedIcon fontSize="small" />, path: '/Paquetes' },
 ];
 
