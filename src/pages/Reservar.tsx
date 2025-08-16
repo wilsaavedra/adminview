@@ -150,15 +150,14 @@ const Reservar = () => {
       sx={{
         width: '100%',
     maxWidth: 420,
-    margin: '0 auto',
+    margin: '1rem auto',   // centrado horizontal y un pequeño margen arriba
     bgcolor: '#ffffff',
-    p: 2,
+    p: 3,
     borderRadius: 2,
     display: 'flex',
     flexDirection: 'column',
     gap: 2,
     boxSizing: 'border-box',
-    overflowX: 'hidden', // evita scroll horizontal
       }}
     >
       <Typography
