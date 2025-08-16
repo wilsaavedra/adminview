@@ -147,15 +147,16 @@ const Reservar = () => {
     <Box
       sx={{
         width: '100%',
-        maxWidth: 420,
-        margin: '0 auto',
-        bgcolor: '#ffffff',
-        p: 3,
-        borderRadius: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-        boxSizing: 'border-box',
+    maxWidth: 420,
+    margin: '0 auto',
+    bgcolor: '#ffffff',
+    p: 2,
+    borderRadius: 2,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    boxSizing: 'border-box',
+    overflowX: 'hidden', // evita scroll horizontal
       }}
     >
       <Typography
@@ -191,10 +192,12 @@ const Reservar = () => {
               title={field === 'telefono' ? 'El teléfono debe tener al menos 8 dígitos numéricos' : undefined}
               style={{
                 width: '100%',
-                padding: '0.5rem',
+                padding: '0.5rem 0.75rem', // padding más cómodo
+                fontSize: '1rem',          // asegurar legibilidad
                 borderRadius: '6px',
                 border: '1px solid #ccc',
                 boxSizing: 'border-box',
+                appearance: field === 'fecha' ? 'textfield' : undefined, // mantener icono calendario
               }}
             />
           </label>
@@ -208,11 +211,14 @@ const Reservar = () => {
             onChange={handleReservaChange}
             required
             style={{
-              width: '100%',
-              padding: '0.5rem',
-              borderRadius: '6px',
-              border: errorHora ? '2px solid red' : '1px solid #ccc',
-              boxSizing: 'border-box',
+                width: '100%',
+                padding: '0.5rem 0.75rem',
+                fontSize: '1rem',
+                borderRadius: '6px',
+                border: errorHora ? '2px solid red' : '1px solid #ccc',
+                boxSizing: 'border-box',
+                minHeight: '2.5rem', // asegura altura mínima en móvil
+                appearance: 'menulist', // mantiene estilo nativo
             }}
           >
             <option value="">Selecciona una hora</option>
@@ -233,11 +239,14 @@ const Reservar = () => {
             onChange={handleReservaChange}
             required
             style={{
-              width: '100%',
-              padding: '0.5rem',
-              borderRadius: '6px',
-              border: '1px solid #ccc',
-              boxSizing: 'border-box',
+                width: '100%',
+                padding: '0.5rem 0.75rem',
+                fontSize: '1rem',
+                borderRadius: '6px',
+                border: errorHora ? '2px solid red' : '1px solid #ccc',
+                boxSizing: 'border-box',
+                minHeight: '2.5rem', // asegura altura mínima en móvil
+                appearance: 'menulist', // mantiene estilo nativo
             }}
           >
             {[...Array(20)].map((_, i) => (
