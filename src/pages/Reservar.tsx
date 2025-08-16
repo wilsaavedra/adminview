@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import cafeApi from '../api/cafeApi';
 import { Box, Typography } from '@mui/material';
 
+
+
 interface ReservaDatos {
   nombre: string;
   telefono: string;
@@ -176,31 +178,38 @@ const Reservar = () => {
           gap: '1rem',
         }}
       >
-        {['nombre', 'telefono', 'fecha'].map((field) => (
-          <label key={field} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-            {field.charAt(0).toUpperCase() + field.slice(1)}:
-            <input
-              type={field === 'fecha' ? 'date' : field === 'telefono' ? 'tel' : 'text'}
-              name={field}
-              value={(reservaDatos as any)[field]}
-              onChange={handleReservaChange}
-              required
-              placeholder={field === 'nombre' ? 'Tu nombre' : field === 'telefono' ? 'Ej. 71234567' : undefined}
-              min={field === 'fecha' ? minFecha : undefined}
-              max={field === 'fecha' ? maxFecha : undefined}
-              pattern={field === 'telefono' ? '^\\+?\\d{8,15}$' : undefined}
-              title={field === 'telefono' ? 'El teléfono debe tener al menos 8 dígitos numéricos' : undefined}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem', // padding más cómodo
-                fontSize: '1rem',          // asegurar legibilidad
-                borderRadius: '6px',
-                border: '1px solid #ccc',
-                boxSizing: 'border-box'
-              }}
-            />
-          </label>
-        ))}
+      
+
+      {['nombre', 'telefono', 'fecha'].map((field) => (
+  <label key={field} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
+    {field.charAt(0).toUpperCase() + field.slice(1)}:
+    <input
+      type={field === 'fecha' ? 'date' : field === 'telefono' ? 'tel' : 'text'}
+      name={field}
+      value={(reservaDatos as any)[field]}
+      onChange={handleReservaChange}
+      required
+      placeholder={field === 'nombre' ? 'Tu nombre' : field === 'telefono' ? 'Ej. 71234567' : undefined}
+      min={field === 'fecha' ? minFecha : undefined}
+      max={field === 'fecha' ? maxFecha : undefined}
+      pattern={field === 'telefono' ? '^\\+?\\d{8,15}$' : undefined}
+      title={field === 'telefono' ? 'El teléfono debe tener al menos 8 dígitos numéricos' : undefined}
+      style={{
+        width: '100%',
+        padding: '0.5rem 0.75rem',
+        fontSize: '1rem',
+        borderRadius: '6px',
+        border: '1px solid #ccc',
+        boxSizing: 'border-box',
+        textAlign: field === 'fecha' ? 'left' : 'inherit', // alinea la fecha a la izquierda
+        WebkitAppearance: field === 'fecha' ? 'textfield' : undefined, // mantiene icono en iOS
+        MozAppearance: field === 'fecha' ? 'textfield' : undefined, // mantiene icono en Firefox
+        appearance: field === 'fecha' ? 'textfield' : undefined, // mantiene icono en otros navegadores
+      }}
+    />
+  </label>
+))}
+
 
         <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
           Hora:
