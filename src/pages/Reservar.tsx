@@ -196,8 +196,7 @@ const Reservar = () => {
                 fontSize: '1rem',          // asegurar legibilidad
                 borderRadius: '6px',
                 border: '1px solid #ccc',
-                boxSizing: 'border-box',
-                appearance: field === 'fecha' ? 'textfield' : undefined, // mantener icono calendario
+                boxSizing: 'border-box'
               }}
             />
           </label>
@@ -267,10 +266,13 @@ const Reservar = () => {
               placeholder={ undefined}
               style={{
                 width: '100%',
-                padding: '0.5rem',
+                padding: '0.5rem 0.75rem',
+                fontSize: '1rem',
                 borderRadius: '6px',
-                border: '1px solid #ccc',
+                border: errorHora ? '2px solid red' : '1px solid #ccc',
                 boxSizing: 'border-box',
+                minHeight: '2.5rem', // asegura altura mínima en móvil
+                appearance: 'menulist', // mantiene estilo nativo
               }}
             />
           </label>
