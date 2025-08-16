@@ -82,6 +82,8 @@ export interface Reservas {
     pago: number;
     tipo:string;
     usuario:  Categoria;
+    telefono: string;
+    nombre:string;
     comentarios:string;
 }
 
