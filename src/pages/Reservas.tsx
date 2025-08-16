@@ -327,7 +327,7 @@ export default function ReservasPage() {
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#fff", minHeight: "100vh" }}>
+    <Box sx={{ p: 3, bgcolor: "#fff" }}>
       
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Box>
@@ -380,7 +380,7 @@ export default function ReservasPage() {
         sx={{
           boxShadow: 3,
           width: "100%",
-          overflowX: "auto", // Scroll horizontal en pantallas pequeñas
+          //overflowX: "auto", // Scroll horizontal en pantallas pequeñas
           "@media (max-width: 900px)": {
             maxWidth: "100vw",
           },
