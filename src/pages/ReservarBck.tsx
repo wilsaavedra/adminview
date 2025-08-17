@@ -13,7 +13,7 @@ interface ReservaDatos {
   hora: string;
   personas: number;
   comentarios:string;
-  pago?:number;
+ // pago?:number;
 }
 
 const minFecha = new Date().toISOString().split('T')[0];
@@ -22,7 +22,6 @@ const maxFecha = (() => {
   d.setMonth(d.getMonth() + 2);
   return d.toISOString().split('T')[0];
 })();
-
 
 const generarOpcionesHora = (): string[] => {
   const opciones: string[] = [];
@@ -67,7 +66,6 @@ const Reservar = () => {
     hora: '',
     personas: 1,
     comentarios:'',
-    pago:0
   });
   const [loading, setLoading] = useState(false);
 
@@ -102,23 +100,14 @@ const Reservar = () => {
       return;
     }
 
-    const [hh, mm] = reservaDatos.hora.split(':').map(Number);  
-    const [year, month, day] = reservaDatos.fecha.split('-').map(Number);
-    const fechaHora = new Date(year, month - 1, day, hh, mm, 0, 0);
-    //const fechaHora = new Date(reservaDatos.fecha);
+    const [hh, mm] = reservaDatos.hora.split(':').map(Number);
+    const fechaHora = new Date(reservaDatos.fecha);
     fechaHora.setHours(hh, mm, 0, 0);
 
-    /*const hoy = new Date();
+    const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const fechaMax = new Date(hoy);
-    fechaMax.setMonth(fechaMax.getMonth() + 2);*/
-    const hoy = new Date();
-hoy.setHours(0, 0, 0, 0);
-const fechaMax = new Date(hoy);
-fechaMax.setMonth(fechaMax.getMonth() + 2);
-const minFecha = hoy.toISOString().split('T')[0];
-const maxFecha = fechaMax.toISOString().split('T')[0];
-
+    fechaMax.setMonth(fechaMax.getMonth() + 2);
 
     if (fechaHora < hoy) {
       alert('La fecha y hora no pueden ser en el pasado');
@@ -137,8 +126,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
         telefono: `+591${reservaDatos.telefono}`,
         fecha: fechaHora.toISOString(),
         cantidad: reservaDatos.personas,
-        comentarios: reservaDatos.comentarios,
-        pago:reservaDatos.pago
+        comentarios: reservaDatos.comentarios
       });
 
       toast.success(`Reserva creada con éxito para ${reservaDatos.nombre}`);
@@ -149,8 +137,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
         fecha: '',
         hora: '',
         personas: 1,
-        comentarios:'',
-        pago:0
+        comentarios:''
       });
     } catch (error: any) {
       toast.error('Error al enviar la reserva');
@@ -299,27 +286,6 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
             />
           </label>
 
-          <label key={'pago'} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-            {'pago'.charAt(0).toUpperCase() + 'pago'.slice(1)}:
-            <input
-              type={ 'number'}
-              name={'pago'}
-              value={(reservaDatos as any)['pago']}
-              onChange={handleReservaChange}
-              placeholder={ undefined}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                fontSize: '1rem',
-                borderRadius: '6px',
-                border: errorHora ? '2px solid red' : '1px solid #ccc',
-                boxSizing: 'border-box',
-                minHeight: '2.5rem', // asegura altura mínima en móvil
-                appearance: 'menulist', // mantiene estilo nativo
-              }}
-            />
-          </label>
-
         <button
           type="submit"
           disabled={!!errorHora || loading}
@@ -344,5 +310,4 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
 };
 
 export default Reservar;
-
 

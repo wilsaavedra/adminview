@@ -220,6 +220,7 @@ setReservas(reservasFiltradas);
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Teléfono</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
+              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Adelanto</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Estado</TableCell>
             </TableRow>
           </TableHead>
@@ -247,6 +248,15 @@ setReservas(reservasFiltradas);
                   }}
                 >
                   {reserva.comentarios}
+                </TableCell>
+                <TableCell
+                  sx={{
+                    maxWidth: { xs: 120, sm: 200, md: "auto" }, // controla ancho en móvil
+                    whiteSpace: "normal", // permite salto de línea
+                    wordWrap: "break-word",
+                  }}
+                >
+                 {reserva.pago !== 0 ? reserva.pago : ""}
                 </TableCell>
                 <TableCell>
                   <Select
