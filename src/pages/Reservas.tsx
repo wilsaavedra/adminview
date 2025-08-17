@@ -21,6 +21,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { es } from "date-fns/locale";
 import { parseISO, isSameDay, format, compareAsc } from "date-fns";
+import { TextField } from "@mui/material";
 
 interface CreadoPor {
   _id: string;
@@ -43,6 +44,7 @@ interface Reservas {
   confirmacion: boolean;
   comentarios: string;
   resest: string;
+  mesa?:string;
 }
 
 const API = axios.create({
@@ -221,6 +223,7 @@ setReservas(reservasFiltradas);
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Adelanto</TableCell>
+              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Mesa</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Estado</TableCell>
             </TableRow>
           </TableHead>
@@ -258,6 +261,48 @@ setReservas(reservasFiltradas);
                 >
                  {reserva.pago !== 0 ? reserva.pago : ""}
                 </TableCell>
+                <TableCell
+  sx={{
+    maxWidth: { xs: 50, sm: 60, md: 80 }, // ancho responsivo
+    whiteSpace: "nowrap",
+    padding: "0.25rem",
+    "& .MuiInputBase-root": {
+      bgcolor: "white", // evita heredar el color de la fila
+    },
+  }}
+>
+  <TextField
+    value={reserva.mesa || ""}
+    size="small"
+    variant="outlined"
+   // placeholder="M"
+    inputProps={{
+      maxLength: 2,
+      style: { textAlign: "center" },
+    }}
+    onChange={(e) => {
+      const nuevaMesa = e.target.value;
+      setReservas((prev) =>
+        prev.map((r) =>
+          r._id === reserva._id ? { ...r, mesa: nuevaMesa } : r
+        )
+      );
+    }}
+    onBlur={async (e) => {
+      try {
+        await API.put(`/reservas/${reserva._id}`, {
+          mesa: e.target.value || "",
+        });
+      } catch (err) {
+        console.error("Error al actualizar mesa:", err);
+      }
+    }}
+    sx={{
+      width: "100%",
+      "& input": { p: 0.5 },
+    }}
+  />
+</TableCell>
                 <TableCell>
                   <Select
                     value={reserva.resest || "Pendiente"}
