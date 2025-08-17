@@ -403,13 +403,16 @@ setReservas(reservasFiltradas);
           overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
           "@media (max-width: 900px)": {   
             maxWidth: "100vw",
-            overflowX: "auto", //se aumento
           },
         }}
       >
         <Table
           sx={{
             width: "100%",
+            "& th, & td": {
+        borderRight: "1px solid rgba(224, 224, 224, 1)", // mantener línea uniforme
+        "&:last-child": { borderRight: "none" }, // quita borde de la última columna
+      },
            // tableLayout: "fixed",   //se aumento
             //minWidth: 950, // Mantiene buen formato en escritorio
           }}
