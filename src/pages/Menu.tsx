@@ -46,7 +46,7 @@ export default function Menu() {
       {/* Texto secundario */}
       <Typography
         sx={{
-          fontSize: { xs: 8, sm: 10, md: 12 },
+          fontSize: { xs: 10, sm: 12, md: 14 },
           color: '#555',
           maxWidth: 400,
         }}
