@@ -409,9 +409,15 @@ setReservas(reservasFiltradas);
         <Table
           sx={{
             width: "100%",
-           "& th, & td": {
-        border: "none", // elimina todas las líneas verticales
-      },
+            borderCollapse: "separate", // importante: separa los bordes
+            borderSpacing: 0,           // elimina espacio extra
+            "& th, & td": {
+              borderRight: "none",      // elimina líneas verticales
+              borderLeft: "none",
+            },
+            "& th:last-child, & td:last-child": {
+              borderRight: "none",      // asegura que la última col no tenga línea
+            },
            // tableLayout: "fixed",   //se aumento
             //minWidth: 950, // Mantiene buen formato en escritorio
           }}
