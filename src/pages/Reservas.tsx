@@ -397,19 +397,25 @@ setReservas(reservasFiltradas);
         <TableContainer
         component={Paper}
         sx={{
-            display: "block", //se aumento
+           /* display: "block", //se aumento
           boxShadow: 3,
           width: "100%",
           overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
-          "@media (max-width: 1200px)": {   //900
-            maxWidth: "100vw",
+          "@media (max-width: 900px)": {   
+            maxWidth: "100vw",*/
+            boxShadow: 3,
+    width: "100%",
+    overflowX: "visible",
+    display: { xs: "table", sm: "block" }, // en móviles, el Paper se comporta como tabla
+    "@media (max-width: 900px)": {
+      maxWidth: "100vw",
           },
         }}
       >
         <Table
           sx={{
             width: "100%",
-            //tableLayout: "auto",   //se aumento
+            tableLayout: "fixed",   //se aumento
             //minWidth: 650, // Mantiene buen formato en escritorio
           }}
         >
