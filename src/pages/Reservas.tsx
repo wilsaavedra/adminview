@@ -270,6 +270,19 @@ const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080/api",
 });
 
+// Helper para comparar solo fecha UTC (año, mes, día en UTC)
+const isSameUtcDate = (d1: Date, d2: Date) => {
+    return (
+      d1.getUTCFullYear() === d2.getUTCFullYear() &&
+      d1.getUTCMonth() === d2.getUTCMonth() &&
+      d1.getUTCDate() === d2.getUTCDate()
+    );
+  };
+  
+  // Convierte la fecha seleccionada a medianoche UTC del día elegido
+  const toUtcMidnight = (local: Date) =>
+    new Date(Date.UTC(local.getFullYear(), local.getMonth(), local.getDate()));
+
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<Reservas[]>([]);
   const [loading, setLoading] = useState(false);
@@ -293,13 +306,19 @@ export default function ReservasPage() {
 
       // Filtrar por fecha y ordenar por hora ascendente
       const reservasFiltradas: Reservas[] = data
-        .filter((reserva) => isSameDay(parseISO(reserva.fecha), fechaSeleccionada))
-        .sort((a, b) =>
-          compareAsc(parseISO(a.fecha), parseISO(b.fecha))
-        )
-        .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
+  .filter((reserva) => {
+    const fechaReserva = new Date(reserva.fecha); // UTC
+    const seleccionadoUTC = toUtcMidnight(fechaSeleccionada);
+    return isSameUtcDate(fechaReserva, seleccionadoUTC);
+  })
+  .sort((a, b) => {
+    const horaA = new Date(a.fecha).getHours() * 60 + new Date(a.fecha).getMinutes();
+    const horaB = new Date(b.fecha).getHours() * 60 + new Date(b.fecha).getMinutes();
+    return horaA - horaB;
+  })
+  .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
 
-      setReservas(reservasFiltradas);
+setReservas(reservasFiltradas);
     } catch (err) {
       console.error("Error al cargar reservas", err);
       setError("No se pudo cargar las reservas.");
@@ -380,7 +399,7 @@ export default function ReservasPage() {
         sx={{
           boxShadow: 3,
           width: "100%",
-          //overflowX: "auto", // Scroll horizontal en pantallas pequeñas
+          overflowX: "visible", // Scroll horizontal en pantallas pequeñas
           "@media (max-width: 900px)": {
             maxWidth: "100vw",
           },
@@ -388,7 +407,8 @@ export default function ReservasPage() {
       >
         <Table
           sx={{
-            minWidth: 650, // Mantiene buen formato en escritorio
+            width: "100%",
+            tableLayout: { xs: "fixed", md: "auto" }, // evita overflow en móvil
           }}
         >
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
