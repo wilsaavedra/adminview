@@ -409,7 +409,7 @@ setReservas(reservasFiltradas);
         <Table
           sx={{
             width: "100%",
-            tableLayout: "auto",   //se aumento
+            //tableLayout: "auto",   //se aumento
             //minWidth: 650, // Mantiene buen formato en escritorio
           }}
         >
