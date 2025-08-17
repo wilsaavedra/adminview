@@ -67,8 +67,6 @@ export default function ReservasPage() {
   const [loading, setLoading] = useState(false);
   const [fecha, setFecha] = useState<Date | null>(new Date());
   const [error, setError] = useState<string | null>(null);
-  const totalPax = reservas.reduce((sum, r) => sum + (r.cantidad || 0), 0);
-
 
   const fetchReservas = async (
     fechaSeleccionada: Date,
@@ -144,15 +142,6 @@ setReservas(reservasFiltradas);
               }}
             />
           </LocalizationProvider>
-          {/* 👉 Aquí mostramos el total pax */}
-          {reservas.length > 0 && (
-            <Typography
-                variant="subtitle1"
-                sx={{ mt: 1, fontWeight: 500, color: "#444" }}
-            >
-                Cantidad Pax: {totalPax}
-            </Typography>
-            )}
         </Box>
 
         <Box>
@@ -216,7 +205,7 @@ setReservas(reservasFiltradas);
             <TableRow>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Hora</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Pax</TableCell>
+              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Cantidad</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Teléfono</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
@@ -249,29 +238,20 @@ setReservas(reservasFiltradas);
                     value={reserva.resest || "Pendiente"}
                     size="small"
                     onChange={async (e) => {
-                        const nuevoEstado = e.target.value;
-                      
-                        try {
-                          if (nuevoEstado === "Cancelo") {
-                            await API.put(`/reservas/${reserva._id}`, {
-                              resest: nuevoEstado,
-                              estado: false,   // 👈 importante
-                            });
-                            // quitar de la lista en el frontend
-                            setReservas((prev) => prev.filter((r) => r._id !== reserva._id));
-                          } else {
-                            await API.put(`/reservas/${reserva._id}`, { resest: nuevoEstado });
-                      
-                            setReservas((prev) =>
-                              prev.map((r) =>
-                                r._id === reserva._id ? { ...r, resest: nuevoEstado } : r
-                              )
-                            );
-                          }
-                        } catch (err) {
-                          console.error("Error al actualizar estado:", err);
-                        }
-                      }}
+                      const nuevoEstado = e.target.value;
+                      setReservas((prev) =>
+                        prev.map((r) =>
+                          r._id === reserva._id ? { ...r, resest: nuevoEstado } : r
+                        )
+                      );
+                      try {
+                        await API.put(`/reservas/${reserva._id}`, {
+                          resest: nuevoEstado,
+                        });
+                      } catch (err) {
+                        console.error("Error al actualizar estado:", err);
+                      }
+                    }}
                     sx={{
                       minWidth: { xs: 100, sm: 120, md: 140 }, // ajusta select según dispositivo
                     }}
