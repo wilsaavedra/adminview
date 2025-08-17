@@ -407,8 +407,8 @@ setReservas(reservasFiltradas);
       >
         <Table
           sx={{
-            width: "100%",
-            //minWidth: 650, // Mantiene buen formato en escritorio
+            //width: "100%",
+            minWidth: 900,//650, // Mantiene buen formato en escritorio
           }}
         >
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
