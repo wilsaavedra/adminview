@@ -407,8 +407,7 @@ setReservas(reservasFiltradas);
       >
         <Table
           sx={{
-            width: "100%",
-            tableLayout: { xs: "fixed", md: "auto" }, // evita overflow en móvil
+            minWidth: 650, // Mantiene buen formato en escritorio
           }}
         >
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
