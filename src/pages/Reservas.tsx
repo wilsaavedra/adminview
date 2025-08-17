@@ -400,7 +400,7 @@ setReservas(reservasFiltradas);
             display: "block", //se aumento
           boxShadow: 3,
           width: "100%",
-          overflowX: "auto", // Scroll horizontal en pantallas pequeñas  visible
+          overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
           "@media (max-width: 900px)": {
             maxWidth: "100vw",
           },
