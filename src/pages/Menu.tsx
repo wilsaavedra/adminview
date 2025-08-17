@@ -1,12 +1,11 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import frontis from '../assets/frontis.jpg'; // Ajusta la ruta según tu estructura
+import Frontis from '../assets/frontis.jpg'; // Asegúrate de la ruta correcta
 
 export default function Menu() {
   return (
     <Box
       sx={{
-        flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -17,23 +16,42 @@ export default function Menu() {
         textAlign: 'center',
       }}
     >
-      {/* Imagen centrada */}
+      {/* Imagen centrada y responsiva */}
       <Box
         component="img"
-        src={frontis}
+        src={Frontis}
         alt="Frontis"
         sx={{
-          width: '600px',  // ajusta tamaño
-          maxWidth: '80%', // para que no se corte en móviles
-          borderRadius: 2, // bordes redondeados opcional
-          mb: 3, // espacio debajo de la imagen
-          boxShadow: 3, // sombra ligera
+          width: { xs: '80%', sm: '60%', md: '40%' }, // cambia tamaño según pantalla
+          maxWidth: 800,
+          height: 'auto',
+          mb: 3,
+          borderRadius: 2,
+          boxShadow: 3,
         }}
       />
 
-      {/* Texto debajo */}
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
-        Sistema de Administración View
+      {/* Texto principal */}
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 500,
+          mb: 1,
+          fontSize: { xs: 14, sm: 16, md: 18 }, // responsivo
+        }}
+      >
+        Bienvenido al sistema de Administración View
+      </Typography>
+
+      {/* Texto secundario */}
+      <Typography
+        sx={{
+          fontSize: { xs: 8, sm: 10, md: 12 },
+          color: '#555',
+          maxWidth: 400,
+        }}
+      >
+        Aquí puedes gestionar productos, reservas y estadísticas.
       </Typography>
     </Box>
   );
