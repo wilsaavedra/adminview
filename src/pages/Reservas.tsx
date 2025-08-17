@@ -398,7 +398,7 @@ setReservas(reservasFiltradas);
         component={Paper}
         sx={{
             display: "block", //se aumento
-          boxShadow: 3,
+          //boxShadow: 3,
           width: "100%",
           overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
           "@media (max-width: 900px)": {   
@@ -409,10 +409,7 @@ setReservas(reservasFiltradas);
         <Table
           sx={{
             width: "100%",
-            "& th, & td": {
-        borderRight: "1px solid rgba(224, 224, 224, 1)", // mantener línea uniforme
-        "&:last-child": { borderRight: "none" }, // quita borde de la última columna
-      },
+           
            // tableLayout: "fixed",   //se aumento
             //minWidth: 950, // Mantiene buen formato en escritorio
           }}
