@@ -233,7 +233,11 @@ setReservas(reservasFiltradas);
                 <TableCell>{reserva.nombre}</TableCell>
                 <TableCell>{format(parseISO(reserva.fecha), "HH:mm")}</TableCell>
                 <TableCell>{reserva.cantidad}</TableCell>
-                <TableCell>{reserva.telefono}</TableCell>
+                <TableCell>
+                    {reserva.telefono.startsWith("+591")
+                        ? reserva.telefono.replace("+591", "")
+                        : reserva.telefono}
+                </TableCell>
                 <TableCell>{reserva.confirmacion ? "Confirmado" : ""}</TableCell>
                 <TableCell
                   sx={{
