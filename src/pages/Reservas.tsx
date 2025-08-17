@@ -397,9 +397,10 @@ setReservas(reservasFiltradas);
         <TableContainer
         component={Paper}
         sx={{
+            display: "block", //se aumento
           boxShadow: 3,
           width: "100%",
-          overflowX: "visible", // Scroll horizontal en pantallas pequeñas
+          overflowX: "auto", // Scroll horizontal en pantallas pequeñas  visible
           "@media (max-width: 900px)": {
             maxWidth: "100vw",
           },
@@ -407,8 +408,9 @@ setReservas(reservasFiltradas);
       >
         <Table
           sx={{
-            //width: "100%",
-            minWidth: 900,//650, // Mantiene buen formato en escritorio
+            width: "100%",
+            tableLayout: "auto",   //se aumento
+            //minWidth: 650, // Mantiene buen formato en escritorio
           }}
         >
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
