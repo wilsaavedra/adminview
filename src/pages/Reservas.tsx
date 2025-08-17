@@ -402,16 +402,16 @@ setReservas(reservasFiltradas);
           width: "100%",
           overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
           "@media (max-width: 900px)": {   
-            maxWidth: "100vw",
+            maxWidth: "200vw",
            
           },
         }}
       >
         <Table
           sx={{
-            //width: "100%",
+            width: "100%",
            // tableLayout: "fixed",   //se aumento
-            minWidth: 950, // Mantiene buen formato en escritorio
+            //minWidth: 950, // Mantiene buen formato en escritorio
           }}
         >
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
