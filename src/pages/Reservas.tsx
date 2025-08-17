@@ -409,7 +409,9 @@ setReservas(reservasFiltradas);
         <Table
           sx={{
             width: "100%",
-           
+           "& th, & td": {
+        border: "none", // elimina todas las líneas verticales
+      },
            // tableLayout: "fixed",   //se aumento
             //minWidth: 950, // Mantiene buen formato en escritorio
           }}
