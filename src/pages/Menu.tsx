@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import frontis from '../assets/frontis.jpg'; // Ajusta la ruta según tu estructura
 
 export default function Menu() {
   return (
@@ -12,15 +13,27 @@ export default function Menu() {
         justifyContent: 'center',
         minHeight: '100vh',
         px: 2,
-        backgroundColor: '#ffffff', // Mantiene fondo blanco para el contenido
+        backgroundColor: '#ffffff',
         textAlign: 'center',
       }}
     >
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-        Bienvenido al Panel
-      </Typography>
-      <Typography sx={{ fontSize: 16, maxWidth: 600 }}>
-        Aquí puedes colocar tu contenido profesional, productos, estadísticas, o lo que necesites.
+      {/* Imagen centrada */}
+      <Box
+        component="img"
+        src={frontis}
+        alt="Frontis"
+        sx={{
+          width: '600px',  // ajusta tamaño
+          maxWidth: '80%', // para que no se corte en móviles
+          borderRadius: 2, // bordes redondeados opcional
+          mb: 3, // espacio debajo de la imagen
+          boxShadow: 3, // sombra ligera
+        }}
+      />
+
+      {/* Texto debajo */}
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 500, mb: 1 }}>
+        Sistema de Administración View
       </Typography>
     </Box>
   );
