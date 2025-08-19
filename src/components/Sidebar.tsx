@@ -19,7 +19,6 @@ import Logo from '../assets/View3.png';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 
-
 const menuItems = [
   { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
   { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
@@ -62,7 +61,7 @@ export default function Sidebar() {
               selected={location.pathname === item.path}
               onClick={() => {
                 navigate(item.path);
-                setMobileOpen(false);
+                setMobileOpen(false); // cerrar en móvil
               }}
               sx={{
                 borderRadius: 1,
@@ -96,6 +95,7 @@ export default function Sidebar() {
             onClick={() => {
               logOut();
               navigate('/LoginScreen');
+              setMobileOpen(false);
             }}
             sx={{
               borderRadius: 1,
@@ -119,44 +119,50 @@ export default function Sidebar() {
 
   return (
     <Box>
-      {/* Botón hamburguesa */}
-<IconButton
-  sx={{ ml: 1, mt: 1, display: { md: 'none' } }} // antes era sm
->
-  <MenuIcon fontSize="small" />
-</IconButton>
+      {/* Botón hamburguesa (móvil/tablet) */}
+      <IconButton
+        color="inherit"
+        aria-label="open drawer"
+        edge="start"
+        onClick={handleDrawerToggle}
+        sx={{ ml: 1, mt: 1, display: { md: 'none' } }} // cambia sm -> md
+      >
+        <MenuIcon fontSize="small" />
+      </IconButton>
 
-{/* Drawer en móvil */}
-<Drawer
-  variant="temporary"
-  open={mobileOpen}
-  onClose={handleDrawerToggle}
-  ModalProps={{ keepMounted: true }}
-  sx={{
-    display: { xs: 'block', md: 'none' }, // antes xs:block, sm:none
-    '& .MuiDrawer-paper': {
-      width: 260,
-      bgcolor: '#f7f7f8',
-    },
-  }}
->
-  {drawerContent}
-</Drawer>
+      {/* Drawer en móvil/tablet */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' }, // cambia sm -> md
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 260,
+            bgcolor: '#f7f7f8',
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
 
-{/* Drawer en escritorio */}
-<Drawer
-  variant="permanent"
-  sx={{
-    display: { xs: 'none', md: 'block' }, // antes xs:none, sm:block
-    '& .MuiDrawer-paper': {
-      width: 260,
-      bgcolor: '#f7f7f8',
-    },
-  }}
-  open
->
-  {drawerContent}
-</Drawer>
+      {/* Drawer en escritorio */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' }, // cambia sm -> md
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 260,
+            bgcolor: '#f7f7f8',
+          },
+        }}
+        open
+      >
+        {drawerContent}
+      </Drawer>
     </Box>
   );
 }
