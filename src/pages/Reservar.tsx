@@ -195,7 +195,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
 
       {['nombre', 'telefono', 'fecha'].map((field) => (
   <label key={field} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-    {field.charAt(0).toUpperCase() + field.slice(1)}:
+    {field.charAt(0).toUpperCase() + field.slice(1)}
     <input
       type={field === 'fecha' ? 'date' : field === 'telefono' ? 'tel' : 'text'}
       name={field}
@@ -225,7 +225,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
 
 
         <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-          Hora:
+          Hora
           <select
             name="hora"
             value={reservaDatos.hora}
@@ -253,7 +253,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
         {errorHora && <p style={{ color: 'red', fontSize: '0.85rem', margin: 0 }}>{errorHora}</p>}
 
         <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-          Personas:
+          Personas
           <select
             name="personas"
             value={reservaDatos.personas}
@@ -279,7 +279,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
         </label>
 
         <label key={'comentarios'} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-            {'comentarios'.charAt(0).toUpperCase() + 'comentarios'.slice(1)}:
+            {'comentarios'.charAt(0).toUpperCase() + 'comentarios'.slice(1)}
             <input
               type={ 'text'}
               name={'comentarios'}
@@ -300,7 +300,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
           </label>
 
           <label key={'pago'} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-            {'pago'.charAt(0).toUpperCase() + 'pago'.slice(1)}:
+            {'pago'.charAt(0).toUpperCase() + 'pago'.slice(1)}
             <input
               type={ 'number'}
               name={'pago'}

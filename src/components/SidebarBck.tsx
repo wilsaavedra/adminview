@@ -1,3 +1,4 @@
+// src/components/Sidebar.tsx
 import React, { useState, useContext } from 'react';
 import {
   Box,
@@ -15,9 +16,14 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/View3.png';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+
 
 const menuItems = [
   { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
+  { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
+  { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
   { text: 'Paquetes', icon: <LocalOfferOutlinedIcon fontSize="small" />, path: '/Paquetes' },
 ];
 
@@ -34,22 +40,22 @@ export default function Sidebar() {
       sx={{
         width: 260,
         height: '100%',
-        bgcolor: '#f5f5f5', // Gris claro uniforme
+        bgcolor: '#f7f7f8',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         fontFamily: 'Inter, sans-serif',
+        pt: 1,
       }}
     >
-      {/* Contenido principal */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 3 }}>
+      <Box>
         {/* Logo */}
-        <Box sx={{ mb: 4 }}>
-          <img src={Logo} alt="Logo" style={{ width: 100, height: 'auto', display: 'block' }} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+          <img src={Logo} alt="Logo" style={{ width: 100, height: 'auto' }} />
         </Box>
 
-        {/* Menú */}
-        <List sx={{ width: '100%' }}>
+        {/* Menú principal */}
+        <List sx={{ p: 0 }}>
           {menuItems.map((item) => (
             <ListItemButton
               key={item.text}
@@ -61,23 +67,21 @@ export default function Sidebar() {
               sx={{
                 borderRadius: 1,
                 px: 2,
-                py: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-start',
+                py: 0.8,
                 '&.Mui-selected': {
-                  bgcolor: 'rgba(0,0,0,0.05)',
+                  bgcolor: 'rgba(0,0,0,0.04)',
                 },
                 '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
               }}
             >
-              <ListItemIcon sx={{ color: '#000', minWidth: 32 }}>{item.icon}</ListItemIcon>
+              <ListItemIcon sx={{ color: '#000', minWidth: 32 }}>
+                {item.icon}
+              </ListItemIcon>
               <ListItemText
                 primary={item.text}
                 primaryTypographyProps={{
                   fontWeight: 500,
                   fontSize: 14,
-                  textAlign: 'left',
                 }}
               />
             </ListItemButton>
@@ -86,7 +90,7 @@ export default function Sidebar() {
       </Box>
 
       {/* Logout */}
-      <Box sx={{ mb: 3, width: '100%' }}>
+      <Box sx={{ mb: 1 }}>
         <List sx={{ p: 0 }}>
           <ListItemButton
             onClick={() => {
@@ -96,10 +100,7 @@ export default function Sidebar() {
             sx={{
               borderRadius: 1,
               px: 2,
-              py: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
+              py: 0.8,
               '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
             }}
           >
@@ -108,7 +109,7 @@ export default function Sidebar() {
             </ListItemIcon>
             <ListItemText
               primary="Cerrar Sesión"
-              primaryTypographyProps={{ fontWeight: 500, fontSize: 14, textAlign: 'left' }}
+              primaryTypographyProps={{ fontWeight: 500, fontSize: 14 }}
             />
           </ListItemButton>
         </List>
@@ -118,7 +119,7 @@ export default function Sidebar() {
 
   return (
     <Box>
-      {/* Botón hamburguesa para móvil */}
+      {/* Botón hamburguesa (móvil) */}
       <IconButton
         color="inherit"
         aria-label="open drawer"
@@ -129,7 +130,7 @@ export default function Sidebar() {
         <MenuIcon fontSize="small" />
       </IconButton>
 
-      {/* Drawer temporal para móviles */}
+      {/* Drawer en móvil */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -140,14 +141,14 @@ export default function Sidebar() {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: 260,
-            bgcolor: '#f5f5f5',
+            bgcolor: '#f7f7f8',
           },
         }}
       >
         {drawerContent}
       </Drawer>
 
-      {/* Drawer permanente para escritorio */}
+      {/* Drawer en escritorio */}
       <Drawer
         variant="permanent"
         sx={{
@@ -155,7 +156,7 @@ export default function Sidebar() {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: 260,
-            bgcolor: '#f5f5f5',
+            bgcolor: '#f7f7f8',
           },
         }}
         open
