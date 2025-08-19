@@ -119,50 +119,44 @@ export default function Sidebar() {
 
   return (
     <Box>
-      {/* Botón hamburguesa (móvil) */}
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="start"
-        onClick={handleDrawerToggle}
-        sx={{ ml: 1, mt: 1, display: { sm: 'none' } }}
-      >
-        <MenuIcon fontSize="small" />
-      </IconButton>
+      {/* Botón hamburguesa */}
+<IconButton
+  sx={{ ml: 1, mt: 1, display: { md: 'none' } }} // antes era sm
+>
+  <MenuIcon fontSize="small" />
+</IconButton>
 
-      {/* Drawer en móvil */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: 'block', sm: 'none' },
-          '& .MuiDrawer-paper': {
-            boxSizing: 'border-box',
-            width: 260,
-            bgcolor: '#f7f7f8',
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
+{/* Drawer en móvil */}
+<Drawer
+  variant="temporary"
+  open={mobileOpen}
+  onClose={handleDrawerToggle}
+  ModalProps={{ keepMounted: true }}
+  sx={{
+    display: { xs: 'block', md: 'none' }, // antes xs:block, sm:none
+    '& .MuiDrawer-paper': {
+      width: 260,
+      bgcolor: '#f7f7f8',
+    },
+  }}
+>
+  {drawerContent}
+</Drawer>
 
-      {/* Drawer en escritorio */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          display: { xs: 'none', sm: 'block' },
-          '& .MuiDrawer-paper': {
-            boxSizing: 'border-box',
-            width: 260,
-            bgcolor: '#f7f7f8',
-          },
-        }}
-        open
-      >
-        {drawerContent}
-      </Drawer>
+{/* Drawer en escritorio */}
+<Drawer
+  variant="permanent"
+  sx={{
+    display: { xs: 'none', md: 'block' }, // antes xs:none, sm:block
+    '& .MuiDrawer-paper': {
+      width: 260,
+      bgcolor: '#f7f7f8',
+    },
+  }}
+  open
+>
+  {drawerContent}
+</Drawer>
     </Box>
   );
 }
