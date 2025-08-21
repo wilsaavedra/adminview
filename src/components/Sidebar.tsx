@@ -41,7 +41,6 @@ export default function Sidebar({ children }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-
   const drawerWidth = collapsed ? 70 : 260;
 
   const drawerContent = (
@@ -171,22 +170,18 @@ export default function Sidebar({ children }: SidebarProps) {
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* Botón hamburguesa (móvil/tablet) */}
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        onClick={handleDrawerToggle}
-        sx={{
-          position: 'fixed',
-          top: 8,
-          left: 8,
-          zIndex: 1300,
-          display: { md: 'none' },
-        }}
-      >
-        <MenuIcon fontSize="small" />
-      </IconButton>
+      <Box sx={{ position: 'fixed', top: 8, left: 8, zIndex: 1300, display: { md: 'none' } }}>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          onClick={handleDrawerToggle}
+          size="small"
+        >
+          <MenuIcon fontSize="small" />
+        </IconButton>
+      </Box>
 
       {/* Drawer en móvil/tablet */}
       <Drawer
@@ -225,7 +220,15 @@ export default function Sidebar({ children }: SidebarProps) {
       </Drawer>
 
       {/* CONTENIDO PRINCIPAL */}
-      <Box component="main" sx={{ flexGrow: 1, p: 2, transition: 'margin-left 0.3s ease', ml: { md: `${drawerWidth}px` } }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 2,
+          transition: 'width 0.3s ease',
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+        }}
+      >
         {children}
       </Box>
     </Box>
