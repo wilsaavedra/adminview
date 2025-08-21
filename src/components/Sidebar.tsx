@@ -176,9 +176,14 @@ export default function Sidebar({ children }: SidebarProps) {
       <IconButton
         color="inherit"
         aria-label="open drawer"
-        edge="start"
         onClick={handleDrawerToggle}
-        sx={{ ml: 1, mt: 1, display: { md: 'none' } }}
+        sx={{
+          position: 'fixed',
+          top: 8,
+          left: 8,
+          zIndex: 1300,
+          display: { md: 'none' },
+        }}
       >
         <MenuIcon fontSize="small" />
       </IconButton>
@@ -219,8 +224,8 @@ export default function Sidebar({ children }: SidebarProps) {
         {drawerContent}
       </Drawer>
 
-      {/* CONTENIDO PRINCIPAL (ya no tiene margin-left manual) */}
-      <Box component="main" sx={{ flexGrow: 1, p: 2 }}>
+      {/* CONTENIDO PRINCIPAL */}
+      <Box component="main" sx={{ flexGrow: 1, p: 2, transition: 'margin-left 0.3s ease', ml: { md: `${drawerWidth}px` } }}>
         {children}
       </Box>
     </Box>
