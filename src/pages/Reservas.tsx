@@ -146,7 +146,7 @@ setReservas(reservasFiltradas);
               }}
             />
           </LocalizationProvider>
-          {/* 👉 Aquí mostramos el total pax */}
+         
           {reservas.length > 0 && (
             <Typography
                 variant="subtitle1"
@@ -162,12 +162,14 @@ setReservas(reservasFiltradas);
             variant="h6"
             sx={{ fontWeight: 600, color: "#333", textAlign: "right" }}
           >
-            {fecha?.toLocaleDateString("es-ES", {
-              weekday: "long",
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
+           {fecha &&
+            new Intl.DateTimeFormat("es-ES", {
+                weekday: "long",
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                timeZone: "America/La_Paz",   // 👈 aquí fuerza Bolivia
+            }).format(fecha)}
           </Typography>
         </Box>
       </Grid>
@@ -235,7 +237,14 @@ setReservas(reservasFiltradas);
                 sx={{ bgcolor: getRowColor(reserva.resest) }}
               >
                 <TableCell>{reserva.nombre}</TableCell>
-                <TableCell>{format(parseISO(reserva.fecha), "HH:mm")}</TableCell>
+                <TableCell>
+                    {new Intl.DateTimeFormat("es-BO", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                        timeZone: "America/La_Paz",   // 👈 aquí fuerza Bolivia
+                    }).format(new Date(reserva.fecha))}
+                    </TableCell>
                 <TableCell>{reserva.cantidad}</TableCell>
                 <TableCell>
                     {reserva.telefono.startsWith("+591")
@@ -352,3 +361,4 @@ setReservas(reservasFiltradas);
     </Box>
   );
 }
+
