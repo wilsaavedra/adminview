@@ -202,7 +202,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
       value={(reservaDatos as any)[field]}
       onChange={handleReservaChange}
       required
-      placeholder={field === 'nombre' ? 'Tu nombre' : field === 'telefono' ? 'Ej. 71234567' : undefined}
+      placeholder={field === 'nombre' ? 'Nombre Completo' : field === 'telefono' ? 'Ej. 71234567' : undefined}
       min={field === 'fecha' ? minFecha : undefined}
       max={field === 'fecha' ? maxFecha : undefined}
       pattern={field === 'telefono' ? '^\\+?\\d{8,15}$' : undefined}

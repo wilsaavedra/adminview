@@ -256,7 +256,7 @@ export default function LoginScreen() {
       {/* Inputs y botón */}
       <Box sx={{ width: 360, maxWidth: '90%' }}>
         <TextField
-          label="Email"
+          label="Telefono"
           fullWidth
           margin="normal"
           value={email}
