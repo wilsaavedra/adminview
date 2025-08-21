@@ -64,6 +64,16 @@ const isSameUtcDate = (d1: Date, d2: Date) => {
   const toUtcMidnight = (local: Date) =>
     new Date(Date.UTC(local.getFullYear(), local.getMonth(), local.getDate()));
 
+// Devuelve la fecha "YYYY-MM-DD" en zona America/La_Paz
+const ymdLaPaz = (d: Date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/La_Paz",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+
+
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<Reservas[]>([]);
   const [loading, setLoading] = useState(false);
@@ -88,11 +98,13 @@ export default function ReservasPage() {
         : [];
 
       // Filtrar por fecha y ordenar por hora ascendente
-      const reservasFiltradas: Reservas[] = data
+   // Filtrar por fecha (día local Bolivia) y ordenar por hora ascendente
+const selectedKey = ymdLaPaz(fechaSeleccionada);
+
+const reservasFiltradas: Reservas[] = data
   .filter((reserva) => {
-    const fechaReserva = new Date(reserva.fecha); // UTC
-    const seleccionadoUTC = toUtcMidnight(fechaSeleccionada);
-    return isSameUtcDate(fechaReserva, seleccionadoUTC);
+    const keyReserva = ymdLaPaz(new Date(reserva.fecha)); // fecha de la reserva en La Paz
+    return keyReserva === selectedKey;                     // compara día local Bolivia
   })
   .sort((a, b) => {
     const horaA = new Date(a.fecha).getHours() * 60 + new Date(a.fecha).getMinutes();
