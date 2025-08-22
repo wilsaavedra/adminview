@@ -16,7 +16,11 @@ interface ReservaDatos {
   pago?:number;
 }
 
-const minFecha = new Date().toISOString().split('T')[0];
+//const minFecha = new Date().toISOString().split('T')[0];
+const hoy = new Date();           // fecha y hora local actual
+hoy.setHours(0, 0, 0, 0);        // lleva la hora a medianoche local
+const minFecha = hoy.toISOString().split('T')[0]; // sigue usando el mismo minFecha
+
 const maxFecha = (() => {
   const d = new Date();
   d.setMonth(d.getMonth() + 2);
