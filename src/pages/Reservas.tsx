@@ -14,6 +14,7 @@ import {
   Grid,
   Select,
   MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -22,6 +23,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { es } from "date-fns/locale";
 import { parseISO, isSameDay, format, compareAsc } from "date-fns";
 import { TextField } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 interface CreadoPor {
   _id: string;
@@ -81,7 +83,10 @@ export default function ReservasPage() {
   const [error, setError] = useState<string | null>(null);
   const totalPax = reservas.reduce((sum, r) => sum + (r.cantidad || 0), 0);
 
+  const [open, setOpen] = useState(false);
+const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
 
+  
   const fetchReservas = async (
     fechaSeleccionada: Date,
     setReservas: (r: Reservas[]) => void,
@@ -333,12 +338,27 @@ setReservas(reservasFiltradas);
                       
                         try {
                           if (nuevoEstado === "Cancelo") {
-                            await API.put(`/reservas/${reserva._id}`, {
+                            setReservaSeleccionada(reserva); // guardamos la reserva que se quiere cancelar
+                            setOpen(true); // abrimos el diálogo
+
+                           /* const confirmar = window.confirm("¿Estás seguro de cancelar esta reserva?. Se borrara la reserva.");
+
+                            if (confirmar) {
+                              await API.put(`/reservas/${reserva._id}`, {
+                                resest: nuevoEstado,
+                                estado: false,   // 👈 importante
+                              });
+                          
+                              // quitar de la lista en el frontend
+                              setReservas((prev) => prev.filter((r) => r._id !== reserva._id));
+                            }*/
+                           /* await API.put(`/reservas/${reserva._id}`, {
                               resest: nuevoEstado,
                               estado: false,   // 👈 importante
                             });
                             // quitar de la lista en el frontend
-                            setReservas((prev) => prev.filter((r) => r._id !== reserva._id));
+                            setReservas((prev) => prev.filter((r) => r._id !== reserva._id));*/
+
                           } else {
                             await API.put(`/reservas/${reserva._id}`, { resest: nuevoEstado });
                       
@@ -370,7 +390,45 @@ setReservas(reservasFiltradas);
       </TableContainer>
       
       )}
+
+{/* Dialog de confirmación */}
+<Dialog open={open} onClose={() => setOpen(false)}>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <WarningAmberIcon color="warning" />
+        Confirmar cancelación
+      </DialogTitle>
+      <DialogContent>
+        <Typography>
+          Estás seguro de cancelar esta reserva? <br />
+          Se eliminará la reserva definitivamente.
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpen(false)} variant="outlined">
+          NO
+        </Button>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={async () => {
+            if (reservaSeleccionada) {
+              await API.put(`/reservas/${reservaSeleccionada._id}`, {
+                resest: "Cancelo",
+                estado: false,
+              });
+              setReservas((prev) =>
+                prev.filter((r) => r._id !== reservaSeleccionada._id)
+              );
+            }
+            setOpen(false);
+          }}
+        >
+          SI
+        </Button>
+      </DialogActions>
+    </Dialog>
     </Box>
   );
+ 
 }
 
