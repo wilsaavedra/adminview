@@ -160,18 +160,16 @@ const filtradas = dataLimpia.filter((mr: MenuReserva) => {
 <TableContainer
   component={Paper}
   sx={{
-    display: "block",
     width: "100%",
-    overflowX: "auto",      // SOLO este scroll debe existir
-    maxWidth: "100vw",
-    boxShadow: 2,
+    overflowX: "auto",         // solo un scroll externo
+    WebkitOverflowScrolling: "touch",
   }}
 >
   <Table
     sx={{
-      minWidth: 950,         // asegura que las columnas completas aparezcan
-      borderCollapse: "separate",
-      borderSpacing: 0,
+      width: "max-content",     // 🔥 Fuerza a la tabla a expandirse
+      minWidth: 950,            // 🔥 Evita que se corte en móviles
+      tableLayout: "auto",
     }}
   >
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
