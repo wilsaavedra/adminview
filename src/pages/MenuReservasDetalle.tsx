@@ -112,17 +112,15 @@ export default function MenuReservasDetalle() {
   }, {});
 
   return (
-   <Box
-      sx={{
-        p: { xs: 2, sm: 3, md: 4 },
-        width: "100%",
-        maxWidth: 1100,
-        mx: "auto",
-        mb: { xs: 6, md: 10 },
-        animation: "fadeIn 0.4s ease",
-        overflowX: "hidden",
-      }}
-    >
+  <Box
+  sx={{
+    p: { xs: 1, sm: 2, md: 4 },   // 👈 mucho menor padding en móvil
+    width: "100%",
+    maxWidth: 1100,
+    mx: "auto",
+    overflowX: "hidden",         // 👈 elimina scroll lateral innecesario
+  }}
+>
       {/* ---------------- HEADER MINIMALISTA ---------------- */}
       <Box sx={{ display: "flex", alignItems: "center", mb: 4, gap: 1.2 }}>
         <IconButton

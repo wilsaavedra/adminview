@@ -157,34 +157,29 @@ const filtradas = dataLimpia.filter((mr: MenuReserva) => {
           No hay reservas en menú para esta fecha.
         </Typography>
       ) : (
-        <TableContainer
-          component={Paper}
-          sx={{
-            display: "block",
-            width: "100%",
-            borderRadius: 2,
-            boxShadow: 2,
-            overflowX: "visible",
-            "@media (max-width: 900px)": {
-              maxWidth: "100vw",
-            },
-          }}
-        >
-          <Table
-            sx={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-              "& th, & td": {
-                borderRight: "none",
-                borderLeft: "none",
-              },
-              "& th:last-child, & td:last-child": {
-                borderRight: "none",
-              },
-              minWidth: 950,
-            }}
-          >
+     <TableContainer
+  component={Paper}
+  sx={{
+    display: "block",
+    width: "100%",
+    overflowX: "auto",     // 👈 scroll correcto
+    maxWidth: "100vw",     // 👈 permite arrastrar afuera
+  }}
+>
+  <Table
+    sx={{
+      minWidth: 950,        // 👈 clave para que NO corte columnas
+      borderCollapse: "separate",
+      borderSpacing: 0,
+      "& th, & td": {
+        borderRight: "none",
+        borderLeft: "none",
+      },
+      "& th:last-child, & td:last-child": {
+        borderRight: "none",
+      },
+    }}
+  >
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>
                 <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
