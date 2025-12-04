@@ -14,7 +14,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
-import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
+import PlaylistAddCheckIcon from '@mui/icons-material/PlaylistAddCheck'; // NUEVO ICONO
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -22,11 +22,38 @@ import Logo from '../assets/View3.png';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 
-const menuItems = [
-  { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
-  { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
-  { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
-  { text: 'Paquetes', icon: <LocalOfferOutlinedIcon fontSize="small" />, path: '/Paquetes' },
+type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINERO_ROLE';
+
+interface MenuItem {
+  text: string;
+  icon: React.ReactNode;
+  path: string;
+  roles?: Role[];
+}
+
+// 🔐 CONFIG MENÚ — ADMIN VE TODO AUTOMÁTICAMENTE
+const menuItems: MenuItem[] = [
+  {
+    text: 'Inicio',
+    icon: <HomeOutlinedIcon fontSize="small" />,
+    path: '/Menu',
+  },
+  {
+    text: 'Reservar',
+    icon: <EventAvailableIcon fontSize="small" />,
+    path: '/Reservar',
+  },
+  {
+    text: 'Mis Reservas',
+    icon: <ListAltIcon fontSize="small" />,
+    path: '/Reservas',
+  },
+  {
+    text: 'Menú Reservas',
+    icon: <PlaylistAddCheckIcon fontSize="small" />, // ÍCONO NUEVO
+    path: '/MenuReservas',
+    roles: ['ADMIN_ROLE'], // solo admin pero admin entra a todo igualmente
+  },
 ];
 
 interface SidebarProps {
@@ -34,7 +61,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ children }: SidebarProps) {
-  const { logOut } = useContext(AuthContext);
+  const { logOut, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -42,6 +69,14 @@ export default function Sidebar({ children }: SidebarProps) {
 
   const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
   const drawerWidth = collapsed ? 70 : 260;
+
+  const userRole: Role = (user?.rol as Role) || 'USER_ROLE';
+
+  // 🔥 ADMIN_ROLE entra a TODO incluso si no está declarado en roles
+  const visibleMenuItems = menuItems.filter(
+    (item) =>
+      !item.roles || item.roles.includes(userRole) || userRole === 'ADMIN_ROLE'
+  );
 
   const drawerContent = (
     <Box
@@ -57,7 +92,6 @@ export default function Sidebar({ children }: SidebarProps) {
       }}
     >
       <Box sx={{ flex: 1 }}>
-        {/* Logo */}
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
           <img
             src={Logo}
@@ -72,9 +106,8 @@ export default function Sidebar({ children }: SidebarProps) {
           />
         </Box>
 
-        {/* Menú principal */}
         <List sx={{ p: 0 }}>
-          {menuItems.map((item) => (
+          {visibleMenuItems.map((item) => (
             <Tooltip
               key={item.text}
               title={collapsed ? item.text : ''}
@@ -107,6 +140,7 @@ export default function Sidebar({ children }: SidebarProps) {
                 >
                   {item.icon}
                 </ListItemIcon>
+
                 {!collapsed && (
                   <ListItemText
                     primary={item.text}
@@ -122,7 +156,6 @@ export default function Sidebar({ children }: SidebarProps) {
         </List>
       </Box>
 
-      {/* Logout + botón colapso */}
       <Box>
         <List sx={{ p: 0 }}>
           <Tooltip title={collapsed ? 'Cerrar Sesión' : ''} placement="right" arrow>
@@ -149,6 +182,7 @@ export default function Sidebar({ children }: SidebarProps) {
               >
                 <LogoutOutlinedIcon fontSize="small" />
               </ListItemIcon>
+
               {!collapsed && (
                 <ListItemText
                   primary="Cerrar Sesión"
@@ -159,7 +193,6 @@ export default function Sidebar({ children }: SidebarProps) {
           </Tooltip>
         </List>
 
-        {/* Botón colapsar/expandir */}
         <Box sx={{ textAlign: 'center', pb: 1, display: { xs: 'none', md: 'block' } }}>
           <IconButton onClick={() => setCollapsed(!collapsed)} size="small">
             {collapsed ? <KeyboardDoubleArrowRightIcon /> : <KeyboardDoubleArrowLeftIcon />}
@@ -171,7 +204,6 @@ export default function Sidebar({ children }: SidebarProps) {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Botón hamburguesa (móvil/tablet) */}
       <Box sx={{ position: 'fixed', top: 8, left: 8, zIndex: 1300, display: { md: 'none' } }}>
         <IconButton
           color="inherit"
@@ -183,7 +215,6 @@ export default function Sidebar({ children }: SidebarProps) {
         </IconButton>
       </Box>
 
-      {/* Drawer en móvil/tablet */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -201,14 +232,13 @@ export default function Sidebar({ children }: SidebarProps) {
         {drawerContent}
       </Drawer>
 
-      {/* Drawer en escritorio */}
       <Drawer
         variant="permanent"
         sx={{
           display: { xs: 'none', md: 'block' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
-            width: drawerWidth,
+            width: 260,
             bgcolor: '#f7f7f8',
             transition: 'width 0.3s ease',
             overflowX: 'hidden',
@@ -219,14 +249,13 @@ export default function Sidebar({ children }: SidebarProps) {
         {drawerContent}
       </Drawer>
 
-      {/* CONTENIDO PRINCIPAL */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 2,
           transition: 'width 0.3s ease',
-          width: { md: `calc(100% - ${drawerWidth}px)` },
+          width: { md: `calc(100% - 260px)` },
         }}
       >
         {children}

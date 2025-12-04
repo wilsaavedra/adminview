@@ -85,6 +85,7 @@ export interface Reservas {
     telefono: string;
     nombre:string;
     comentarios:string;
+     resest: "Pendiente" | "Pagado" | "Cancelo" | "No vino";
 }
 
 export interface ReservasResponse {
