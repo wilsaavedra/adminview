@@ -157,10 +157,17 @@ const filtradas = dataLimpia.filter((mr: MenuReserva) => {
           No hay reservas en menú para esta fecha.
         </Typography>
       ) : (
-        <TableContainer
-          component={Paper}
-          sx={{ width: "100%", overflowX: "auto", borderRadius: 2, boxShadow: 2 }}
-        >
+       <TableContainer
+  component={Paper}
+  sx={{
+    display: "block",         // 👈 necesario para scroll real
+    width: "100%",
+    overflowX: "auto",        // 👈 scroll afuera OK
+    WebkitOverflowScrolling: "touch", // 👈 iPhone scroll suave
+    borderRadius: 2,
+    boxShadow: 2,
+  }}
+>
           <Table sx={{ minWidth: 950 }}>
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>

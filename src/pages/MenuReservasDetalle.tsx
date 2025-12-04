@@ -184,42 +184,54 @@ export default function MenuReservasDetalle() {
           </Typography>
 
           {items.map((item: any, i: number) => (
-            <Box
-              key={i}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                py: 2.4,
-                px: 2,
-                borderRadius: 2,
-                transition: "0.2s ease",
-                mb: 1.2,
-                "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
-              }}
-            >
+          <Box
+  key={i}
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",   // 👈 evita desborde del precio
+    py: 2,
+    px: 2,
+    borderRadius: 2,
+    transition: "0.2s ease",
+    mb: 1.2,
+    "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
+
+    "@media (max-width: 600px)": {
+      px: 1,
+      py: 1.4,
+    },
+  }}
+>
               {/* IMAGEN */}
-              <img
-                src={
-                  item.producto.img
-                    ? item.producto.img.includes("cloudinary")
-                      ? item.producto.img.replace(
-                          "/upload/",
-                          "/upload/f_auto,q_auto,c_fill,w_140,h_140/"
-                        )
-                      : item.producto.img
-                    : ""
-                }
-                alt=""
-                style={{
-                  width: 85,
-                  height: 85,
-                  borderRadius: 14,
-                  objectFit: "cover",
-                  marginRight: 18,
-                  backgroundColor: "#f7f7f7",
-                  boxShadow: "0px 2px 6px rgba(0,0,0,0.08)",
-                }}
-              />
+            <img
+  src={
+    item.producto.img
+      ? item.producto.img.includes("cloudinary")
+        ? item.producto.img.replace(
+            "/upload/",
+            "/upload/f_auto,q_auto,c_fill,w_140,h_140/"
+          )
+        : item.producto.img
+      : ""
+  }
+  alt=""
+  style={{
+    width: 85,
+    height: 85,
+    borderRadius: 14,
+    objectFit: "cover",
+    marginRight: 18,
+    backgroundColor: "#f7f7f7",
+    boxShadow: "0px 2px 6px rgba(0,0,0,0.08)",
+
+    /* --- AJUSTE RESPONSIVO PARA MÓVIL --- */
+    maxWidth: "22vw",
+    maxHeight: "22vw",
+
+    /* Tamaños reducidos en pantallas pequeñas */
+  }}
+/>
 
               {/* INFORMACIÓN */}
               <Box sx={{ flex: 1 }}>
@@ -233,7 +245,18 @@ export default function MenuReservasDetalle() {
               </Box>
 
               {/* PRECIO CON PADDING DERECHA */}
-              <Box sx={{ width: 160, textAlign: "right", pr: 3 }}>
+             <Box
+                sx={{
+                    minWidth: 80,
+                    textAlign: "right",
+                    pr: 3,
+
+                    "@media (max-width: 600px)": {
+                    minWidth: 60,
+                    pr: 1,
+                    },
+                }}
+                >
                 <Typography
                   sx={{
                     fontWeight: 700,
