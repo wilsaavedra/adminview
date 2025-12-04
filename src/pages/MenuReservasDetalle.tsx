@@ -112,14 +112,15 @@ export default function MenuReservasDetalle() {
   }, {});
 
   return (
-    <Box
+   <Box
       sx={{
-        p: 4,
+        p: { xs: 2, sm: 3, md: 4 },
         width: "100%",
         maxWidth: 1100,
         mx: "auto",
-        mb: 10,
+        mb: { xs: 6, md: 10 },
         animation: "fadeIn 0.4s ease",
+        overflowX: "hidden",
       }}
     >
       {/* ---------------- HEADER MINIMALISTA ---------------- */}
@@ -183,58 +184,46 @@ export default function MenuReservasDetalle() {
             {categoria}
           </Typography>
 
-          {items.map((item: any, i: number) => (
-          <Box
-  key={i}
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",   // 👈 evita desborde del precio
-    py: 2,
-    px: 2,
-    borderRadius: 2,
-    transition: "0.2s ease",
-    mb: 1.2,
-    "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
-
-    "@media (max-width: 600px)": {
-      px: 1,
-      py: 1.4,
-    },
-  }}
->
+                    {items.map((item: any, i: number) => (
+            <Box
+              key={i}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                py: { xs: 1.8, sm: 2.4 },
+                px: { xs: 1, sm: 2 },
+                borderRadius: 2,
+                transition: "0.2s ease",
+                mb: 1.2,
+                "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
+              }}
+            >
               {/* IMAGEN */}
-            <img
-  src={
-    item.producto.img
-      ? item.producto.img.includes("cloudinary")
-        ? item.producto.img.replace(
-            "/upload/",
-            "/upload/f_auto,q_auto,c_fill,w_140,h_140/"
-          )
-        : item.producto.img
-      : ""
-  }
-  alt=""
-  style={{
-    width: 85,
-    height: 85,
-    borderRadius: 14,
-    objectFit: "cover",
-    marginRight: 18,
-    backgroundColor: "#f7f7f7",
-    boxShadow: "0px 2px 6px rgba(0,0,0,0.08)",
-
-    /* --- AJUSTE RESPONSIVO PARA MÓVIL --- */
-    maxWidth: "22vw",
-    maxHeight: "22vw",
-
-    /* Tamaños reducidos en pantallas pequeñas */
-  }}
-/>
+              <img
+                src={
+                  item.producto.img
+                    ? item.producto.img.includes("cloudinary")
+                      ? item.producto.img.replace(
+                          "/upload/",
+                          "/upload/f_auto,q_auto,c_fill,w_140,h_140/"
+                        )
+                      : item.producto.img
+                    : ""
+                }
+                alt=""
+                style={{
+                  width: 85,
+                  height: 85,
+                  borderRadius: 14,
+                  objectFit: "cover",
+                  marginRight: 18,
+                  backgroundColor: "#f7f7f7",
+                  boxShadow: "0px 2px 6px rgba(0,0,0,0.08)",
+                }}
+              />
 
               {/* INFORMACIÓN */}
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography sx={{ fontSize: 17.5, fontWeight: 600 }}>
                   {item.producto.nombre}
                 </Typography>
@@ -244,19 +233,15 @@ export default function MenuReservasDetalle() {
                 </Typography>
               </Box>
 
-              {/* PRECIO CON PADDING DERECHA */}
-             <Box
+              {/* PRECIO RESPONSIVO */}
+              <Box
                 sx={{
-                    minWidth: 80,
-                    textAlign: "right",
-                    pr: 3,
-
-                    "@media (max-width: 600px)": {
-                    minWidth: 60,
-                    pr: 1,
-                    },
+                  width: { xs: 110, sm: 140, md: 160 },
+                  textAlign: "right",
+                  pr: { xs: 1.5, sm: 3 },
+                  flexShrink: 0,
                 }}
-                >
+              >
                 <Typography
                   sx={{
                     fontWeight: 700,
