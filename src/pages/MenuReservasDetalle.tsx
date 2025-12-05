@@ -235,11 +235,12 @@ export default function MenuReservasDetalle() {
           }}
         />
 
-       <Box
+  <Box
   sx={{
     flex: 1,
     minWidth: 0,
-    flexBasis: "0px",      // ⭐ SAFARI FIX
+    flexBasis: "0px",
+    maxWidth: "58%",   // ⭐ LIMITE REAL PARA QUE EL PRECIO SIEMPRE ENTRE
     overflow: "hidden",
     pr: 0.5,
   }}
