@@ -69,19 +69,25 @@ function AppContent() {
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
-        <Box
-          sx={{
-            flexGrow: 1,
-            ml: showSidebar ? { md: '260px' } : 0,
-            display: 'flex',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            p: isLogin ? 0 : 3,
-            width: '100%',
-            minHeight: 'inherit',
-            flexDirection: 'column',
-          }}
-        >
+    <Box
+  sx={{
+    flexGrow: 1,
+    ml: showSidebar ? { md: '260px' } : 0,
+
+    // 🔥 No centrar contenido, permitir ancho completo
+    display: 'block',
+
+    // 🔥 Eliminamos centrado que rompe tablas y móvil
+    alignItems: 'stretch',
+    justifyContent: 'flex-start',
+
+    // 🔥 En móvil cero padding lateral
+    p: { xs: 0, sm: 1, md: 3 },
+
+    width: '100%',
+    minHeight: 'inherit',
+  }}
+>
           <Routes>
             <Route
               path="/LoginScreen"
