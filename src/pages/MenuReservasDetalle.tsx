@@ -260,25 +260,27 @@ export default function MenuReservasDetalle() {
       </Box>
 
       {/* DERECHA: PRECIO FIJO PEGADO AL BORDE */}
-      <Box
-        sx={{
-          flexShrink: 0,                     // ⭐ no se encoge
-          minWidth: { xs: 80, sm: 110 },     // ancho fijo similar al total
-          textAlign: "right",
-          ml: 1,
-          pr: { xs: 1, sm: 2 },
-        }}
-      >
-        <Typography
-          sx={{
-            fontWeight: 700,
-            fontSize: { xs: 15, sm: 18 },
-            whiteSpace: "nowrap",
-          }}
-        >
-          Bs. {item.producto.precio * item.cantidad}
-        </Typography>
-      </Box>
+      {/* PRECIO EXACTAMENTE ALINEADO CON EL TOTAL */}
+            <Box
+            sx={{
+                flexShrink: 0,
+                width: { xs: 110, sm: 140 },     // ⭐ MISMO ANCHO VISUAL DEL TOTAL
+                textAlign: "right",
+                pr: { xs: 2.2, sm: 3 },          // ⭐ MISMO PADDING QUE EL TOTAL
+                display: "flex",
+                justifyContent: "flex-end",
+            }}
+            >
+            <Typography
+                sx={{
+                fontWeight: 700,
+                fontSize: { xs: 15, sm: 18 },
+                whiteSpace: "nowrap",
+                }}
+            >
+                Bs. {item.producto.precio * item.cantidad}
+            </Typography>
+            </Box>
     </Box>
   </Box>
 ))}
