@@ -197,13 +197,15 @@ export default function MenuReservasDetalle() {
     }}
   >
     {/* CONTENEDOR INTERNO: IZQUIERDA (img+texto) + DERECHA (precio) */}
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        width: "100%",
-      }}
-    >
+   <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: "1fr auto",   // ⭐ Izquierda flexible / derecha fija
+    alignItems: "center",
+    width: "100%",
+    columnGap: 1,                       // espacio elegante entre columnas
+  }}
+>
       {/* IZQUIERDA: IMAGEN + NOMBRE + CANTIDAD */}
       <Box
         sx={{
