@@ -220,168 +220,158 @@ setReservas(reservasFiltradas);
  <Table
   sx={{
     width: "100%",
-    borderCollapse: "collapse",   // ⭐ FIX iPhone
+    tableLayout: "fixed",      // 👉 columnas fijas: no se pisan entre sí
+    borderCollapse: "collapse",
     "& th, & td": {
-      border: "none",             // sin bordes
-      padding: "12px 8px",
-      whiteSpace: "nowrap",
+      border: "none",
+      padding: "10px 6px",
     },
   }}
 >
-          <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
-            <TableRow>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Hora</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Pax</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Teléfono</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Adelanto</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Mesa</TableCell>
-              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Estado</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {reservas.map((reserva) => (
-              <TableRow
-                key={reserva._id}
-                hover
-                sx={{ bgcolor: getRowColor(reserva.resest) }}
-              >
-                <TableCell>{reserva.nombre}</TableCell>
-                <TableCell>
-                    {new Intl.DateTimeFormat("es-BO", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                        timeZone: "America/La_Paz",   // 👈 aquí fuerza Bolivia
-                    }).format(new Date(reserva.fecha))}
-                    </TableCell>
-                <TableCell>{reserva.cantidad}</TableCell>
-                <TableCell>
-                    {reserva.telefono.startsWith("+591")
-                        ? reserva.telefono.replace("+591", "")
-                        : reserva.telefono}
-                </TableCell>
-                <TableCell>{reserva.confirmacion ? "Confirmado" : ""}</TableCell>
-                <TableCell
-                  sx={{
-                    maxWidth: { xs: 120, sm: 200, md: "auto" }, // controla ancho en móvil
-                    whiteSpace: "normal", // permite salto de línea
-                    wordWrap: "break-word",
-                  }}
-                >
-                  {reserva.comentarios}
-                </TableCell>
-                <TableCell
-                  sx={{
-                    maxWidth: { xs: 120, sm: 200, md: "auto" }, // controla ancho en móvil
-                    whiteSpace: "normal", // permite salto de línea
-                    wordWrap: "break-word",
-                  }}
-                >
-                 {reserva.pago !== 0 ? reserva.pago : ""}
-                </TableCell>
-                <TableCell
-  sx={{
-    maxWidth: { xs: 50, sm: 60, md: 80 }, // ancho responsivo
-    whiteSpace: "nowrap",
-    padding: "0.25rem",
-    "& .MuiInputBase-root": {
-      bgcolor: "white", // evita heredar el color de la fila
-    },
-  }}
->
-  <TextField
-    value={reserva.mesa || ""}
-    size="small"
-    variant="outlined"
-   // placeholder="M"
-    inputProps={{
-      maxLength: 2,
-      style: { textAlign: "center" },
-    }}
-    onChange={(e) => {
-      const nuevaMesa = e.target.value;
-      setReservas((prev) =>
-        prev.map((r) =>
-          r._id === reserva._id ? { ...r, mesa: nuevaMesa } : r
-        )
-      );
-    }}
-    onBlur={async (e) => {
-      try {
-        await API.put(`/reservas/${reserva._id}`, {
-          mesa: e.target.value || "",
-        });
-      } catch (err) {
-        console.error("Error al actualizar mesa:", err);
-      }
-    }}
-    sx={{
-      width: "100%",
-      "& input": { p: 0.5 },
-    }}
-  />
-</TableCell>
-                <TableCell>
-                  <Select
-                    value={reserva.resest || "Pendiente"}
-                    size="small"
-                    onChange={async (e) => {
-                        const nuevoEstado = e.target.value;
-                      
-                        try {
-                          if (nuevoEstado === "Cancelo") {
-                            setReservaSeleccionada(reserva); // guardamos la reserva que se quiere cancelar
-                            setOpen(true); // abrimos el diálogo
+  <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
+    <TableRow>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Hora</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Pax</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Teléfono</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Adelanto</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Mesa</TableCell>
+      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Estado</TableCell>
+    </TableRow>
+  </TableHead>
 
-                           /* const confirmar = window.confirm("¿Estás seguro de cancelar esta reserva?. Se borrara la reserva.");
+  <TableBody>
+    {reservas.map((reserva) => (
+      <TableRow
+        key={reserva._id}
+        hover
+        sx={{ bgcolor: getRowColor(reserva.resest) }}
+      >
+        <TableCell>{reserva.nombre}</TableCell>
 
-                            if (confirmar) {
-                              await API.put(`/reservas/${reserva._id}`, {
-                                resest: nuevoEstado,
-                                estado: false,   // 👈 importante
-                              });
-                          
-                              // quitar de la lista en el frontend
-                              setReservas((prev) => prev.filter((r) => r._id !== reserva._id));
-                            }*/
-                           /* await API.put(`/reservas/${reserva._id}`, {
-                              resest: nuevoEstado,
-                              estado: false,   // 👈 importante
-                            });
-                            // quitar de la lista en el frontend
-                            setReservas((prev) => prev.filter((r) => r._id !== reserva._id));*/
+        <TableCell>
+          {new Intl.DateTimeFormat("es-BO", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "America/La_Paz",
+          }).format(new Date(reserva.fecha))}
+        </TableCell>
 
-                          } else {
-                            await API.put(`/reservas/${reserva._id}`, { resest: nuevoEstado });
-                      
-                            setReservas((prev) =>
-                              prev.map((r) =>
-                                r._id === reserva._id ? { ...r, resest: nuevoEstado } : r
-                              )
-                            );
-                          }
-                        } catch (err) {
-                          console.error("Error al actualizar estado:", err);
-                        }
-                      }}
-                    sx={{
-                      minWidth: { xs: 100, sm: 120, md: 140 }, // ajusta select según dispositivo
-                    }}
-                  >
-                    {["Pendiente", "Llego", "Cancelo", "No vino"].map((estado) => (
-                      <MenuItem key={estado} value={estado}>
-                        {estado}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </TableCell>
-              </TableRow>
+        <TableCell>{reserva.cantidad}</TableCell>
+
+        <TableCell>
+          {reserva.telefono.startsWith("+591")
+            ? reserva.telefono.replace("+591", "")
+            : reserva.telefono}
+        </TableCell>
+
+        <TableCell>{reserva.confirmacion ? "Confirmado" : ""}</TableCell>
+
+        <TableCell
+          sx={{
+            maxWidth: { xs: 120, sm: 200, md: "auto" },
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+          }}
+        >
+          {reserva.comentarios}
+        </TableCell>
+
+        <TableCell
+          sx={{
+            maxWidth: { xs: 120, sm: 200, md: "auto" },
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+          }}
+        >
+          {reserva.pago !== 0 ? reserva.pago : ""}
+        </TableCell>
+
+        <TableCell
+          sx={{
+            maxWidth: { xs: 50, sm: 60, md: 80 },
+            whiteSpace: "nowrap",
+            padding: "0.25rem",
+            "& .MuiInputBase-root": {
+              bgcolor: "white",
+            },
+          }}
+        >
+          <TextField
+            value={reserva.mesa || ""}
+            size="small"
+            variant="outlined"
+            inputProps={{
+              maxLength: 2,
+              style: { textAlign: "center" },
+            }}
+            onChange={(e) => {
+              const nuevaMesa = e.target.value;
+              setReservas((prev) =>
+                prev.map((r) =>
+                  r._id === reserva._id ? { ...r, mesa: nuevaMesa } : r
+                )
+              );
+            }}
+            onBlur={async (e) => {
+              try {
+                await API.put(`/reservas/${reserva._id}`, {
+                  mesa: e.target.value || "",
+                });
+              } catch (err) {
+                console.error("Error al actualizar mesa:", err);
+              }
+            }}
+            sx={{
+              width: "100%",
+              "& input": { p: 0.5 },
+            }}
+          />
+        </TableCell>
+
+        <TableCell>
+          <Select
+            value={reserva.resest || "Pendiente"}
+            size="small"
+            onChange={async (e) => {
+              const nuevoEstado = e.target.value;
+              try {
+                if (nuevoEstado === "Cancelo") {
+                  setReservaSeleccionada(reserva);
+                  setOpen(true);
+                } else {
+                  await API.put(`/reservas/${reserva._id}`, {
+                    resest: nuevoEstado,
+                  });
+
+                  setReservas((prev) =>
+                    prev.map((r) =>
+                      r._id === reserva._id ? { ...r, resest: nuevoEstado } : r
+                    )
+                  );
+                }
+              } catch (err) {
+                console.error("Error al actualizar estado:", err);
+              }
+            }}
+            sx={{
+              minWidth: { xs: 100, sm: 120, md: 140 },
+            }}
+          >
+            {["Pendiente", "Llego", "Cancelo", "No vino"].map((estado) => (
+              <MenuItem key={estado} value={estado}>
+                {estado}
+              </MenuItem>
             ))}
-          </TableBody>
-        </Table>
+          </Select>
+        </TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
       </TableContainer>
       
       )}

@@ -184,76 +184,76 @@ export default function MenuReservasDetalle() {
             {categoria}
           </Typography>
 
-                    {items.map((item: any, i: number) => (
- <Box
-  key={i}
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    py: { xs: 1.2, sm: 2 },
-    px: { xs: 1, sm: 2 },
-    borderRadius: 2,
-    mb: 1.5,
-    gap: { xs: 1, sm: 2 },
-    "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
-    flexWrap: { xs: "wrap", sm: "nowrap" }, // ⭐ permite dos líneas solo en móvil
-    width: "100%",
-  }}
->
-  {/* IMAGEN RESPONSIVA */}
-  <img
-    src={
-      item.producto.img
-        ? item.producto.img.includes("cloudinary")
-          ? item.producto.img.replace(
-              "/upload/",
-              "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
-            )
-          : item.producto.img
-        : ""
-    }
-    alt=""
-    style={{
-      width: "65px",
-      height: "65px",
-      borderRadius: 12,
-      objectFit: "cover",
-      flexShrink: 0,
-    }}
-  />
-
-  {/* NOMBRE + CANTIDAD */}
-  <Box sx={{ flex: 1, minWidth: "55%" }}>
-    <Typography sx={{ fontSize: { xs: 14, sm: 17 }, fontWeight: 600 }}>
-      {item.producto.nombre}
-    </Typography>
-
-    <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#6e6e6e" }}>
-      Cantidad: {item.cantidad}
-    </Typography>
-  </Box>
-
-  {/* PRECIO QUE SIEMPRE ENTRA EN PANTALLA */}
+ {items.map((item: any, i: number) => (
   <Box
-  sx={{
-    width: { xs: 90, sm: 130 }, // ⭐ Igual ancho que el total → alineación perfecta
-    textAlign: "right",
-    pr: { xs: 1, sm: 2 },
-    flexShrink: 1,              // ⭐ Permite que el contenido se ajuste
-  }}
->
-  <Typography
+    key={i}
     sx={{
-      fontWeight: 700,
-      fontSize: { xs: 15, sm: 18 },
-      whiteSpace: "nowrap",     // ⭐ Evita que baje de línea
+      display: "grid",
+      gridTemplateColumns: "auto 1fr auto",   // 👉 imagen | texto | precio
+      alignItems: "center",
+      py: { xs: 1.2, sm: 2 },
+      px: { xs: 1, sm: 2 },
+      borderRadius: 2,
+      mb: 1.5,
+      columnGap: { xs: 1, sm: 2 },
+      "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
+      width: "100%",
     }}
   >
-    Bs. {item.producto.precio * item.cantidad}
-  </Typography>
-</Box>
-</Box>
-          ))}
+    {/* IMAGEN */}
+    <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <img
+        src={
+          item.producto.img
+            ? item.producto.img.includes("cloudinary")
+              ? item.producto.img.replace(
+                  "/upload/",
+                  "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
+                )
+              : item.producto.img
+            : ""
+        }
+        alt=""
+        style={{
+          width: "65px",
+          height: "65px",
+          borderRadius: 12,
+          objectFit: "cover",
+        }}
+      />
+    </Box>
+
+    {/* NOMBRE + CANTIDAD */}
+    <Box sx={{ minWidth: 0 }}>
+      <Typography sx={{ fontSize: { xs: 14, sm: 17 }, fontWeight: 600 }}>
+        {item.producto.nombre}
+      </Typography>
+
+      <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#6e6e6e" }}>
+        Cantidad: {item.cantidad}
+      </Typography>
+    </Box>
+
+    {/* PRECIO → ALINEADO CON Bs. 508 */}
+    <Box
+      sx={{
+        textAlign: "right",
+        minWidth: { xs: 90, sm: 130 },     // mismo “ancho de columna” que el total
+        pr: { xs: 1.5, sm: 3 },            // mismo padding derecha que el total
+      }}
+    >
+      <Typography
+        sx={{
+          fontWeight: 700,
+          fontSize: { xs: 15, sm: 18 },
+          whiteSpace: "nowrap",
+        }}
+      >
+        Bs. {item.producto.precio * item.cantidad}
+      </Typography>
+    </Box>
+  </Box>
+))}
         </Box>
       ))}
 
