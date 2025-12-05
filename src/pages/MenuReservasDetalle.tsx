@@ -188,91 +188,98 @@ export default function MenuReservasDetalle() {
   <Box
     key={i}
     sx={{
-      display: "grid",
-      gridTemplateColumns: "auto 1fr auto",   // 👉 imagen | texto | precio
-      alignItems: "center",
       py: { xs: 1.2, sm: 2 },
       px: { xs: 1, sm: 2 },
       borderRadius: 2,
       mb: 1.5,
-      columnGap: { xs: 1, sm: 2 },
       "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
       width: "100%",
     }}
   >
-    {/* IMAGEN */}
-    <Box sx={{ display: "flex", justifyContent: "center" }}>
-      <img
-        src={
-          item.producto.img
-            ? item.producto.img.includes("cloudinary")
-              ? item.producto.img.replace(
-                  "/upload/",
-                  "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
-                )
-              : item.producto.img
-            : ""
-        }
-        alt=""
-        style={{
-          width: "65px",
-          height: "65px",
-          borderRadius: 12,
-          objectFit: "cover",
+    {/* CONTENEDOR INTERNO: IZQUIERDA (img+texto) + DERECHA (precio) */}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      {/* IZQUIERDA: IMAGEN + NOMBRE + CANTIDAD */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          flex: 1,
+          minWidth: 0,                // ⭐ deja que el texto se adapte
+          gap: { xs: 1, sm: 2 },
         }}
-      />
+      >
+        <img
+          src={
+            item.producto.img
+              ? item.producto.img.includes("cloudinary")
+                ? item.producto.img.replace(
+                    "/upload/",
+                    "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
+                  )
+                : item.producto.img
+              : ""
+          }
+          alt=""
+          style={{
+            width: 65,
+            height: 65,
+            borderRadius: 12,
+            objectFit: "cover",
+            flexShrink: 0,
+          }}
+        />
+
+        <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden", pr: 0.5 }}>
+          <Typography
+            sx={{
+              fontSize: { xs: 14, sm: 17 },
+              fontWeight: 600,
+              lineHeight: 1.2,
+              wordBreak: "break-word", // ⭐ nombre largo no empuja al precio
+            }}
+          >
+            {item.producto.nombre}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: { xs: 12, sm: 14 },
+              color: "#6e6e6e",
+              mt: 0.3,
+            }}
+          >
+            Cantidad: {item.cantidad}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* DERECHA: PRECIO FIJO PEGADO AL BORDE */}
+      <Box
+        sx={{
+          flexShrink: 0,                     // ⭐ no se encoge
+          minWidth: { xs: 80, sm: 110 },     // ancho fijo similar al total
+          textAlign: "right",
+          ml: 1,
+          pr: { xs: 1, sm: 2 },
+        }}
+      >
+        <Typography
+          sx={{
+            fontWeight: 700,
+            fontSize: { xs: 15, sm: 18 },
+            whiteSpace: "nowrap",
+          }}
+        >
+          Bs. {item.producto.precio * item.cantidad}
+        </Typography>
+      </Box>
     </Box>
-
-    {/* NOMBRE + CANTIDAD */}
-   <Box
-  sx={{
-    flex: 1,
-    minWidth: 0,               // ⭐ evita empujar al precio
-    overflow: "hidden",
-    pr: 1,                     // espacio para que no choque con el precio
-  }}
->
-  <Typography
-    sx={{
-      fontSize: { xs: 14, sm: 17 },
-      fontWeight: 600,
-      lineHeight: 1.2,
-      wordBreak: "break-word", // ⭐ permite dividir palabras largas
-    }}
-  >
-    {item.producto.nombre}
-  </Typography>
-
-  <Typography
-    sx={{
-      fontSize: { xs: 12, sm: 14 },
-      color: "#6e6e6e",
-      mt: 0.3,
-    }}
-  >
-    Cantidad: {item.cantidad}
-  </Typography>
-</Box>
-
-    {/* PRECIO → ALINEADO CON Bs. 508 */}
-  <Box
-  sx={{
-    width: { xs: 110, sm: 135 },   // ⭐ igual ancho que TOTAL → alineación perfecta
-    textAlign: "right",
-    pr: 1,
-    flexShrink: 0,                 // ⭐ nunca desaparece
-  }}
->
-  <Typography
-    sx={{
-      fontWeight: 700,
-      fontSize: { xs: 15, sm: 18 },
-      whiteSpace: "nowrap",
-    }}
-  >
-    Bs. {item.producto.precio * item.cantidad}
-  </Typography>
-</Box>
   </Box>
 ))}
         </Box>
