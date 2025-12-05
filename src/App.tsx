@@ -74,20 +74,15 @@ function AppContent() {
     flexGrow: 1,
     ml: showSidebar ? { md: '260px' } : 0,
 
-    // 🔥 Permite que el contenido crezca horizontalmente sin corte
-    overflowX: "auto",
+    display: 'flex',              // ✔ permite expansión horizontal
+    flexDirection: 'column',
 
-    // 🔥 No limitar ancho para tablas
-    width: "100%",
+    overflowX: 'visible',         // ✔ deja que los hijos puedan scrollear
+    overflowY: 'auto',
 
-    // 🔥 Sin centrado vertical forzado
-    display: "block",
-
-    // 🔥 IMPORTANTE: en móvil cero padding para no recortar scroll
-    p: { xs: 0, sm: 0, md: 2 },
-
-    // 🔥 Garantiza que el scroll sea del contenedor padre, no del hijo
-    position: "relative",
+    p: { xs: 0, sm: 1, md: 3 },
+    width: '100%',
+    minHeight: 'inherit',
   }}
 >
           <Routes>
