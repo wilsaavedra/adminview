@@ -235,22 +235,23 @@ export default function MenuReservasDetalle() {
 
   {/* PRECIO QUE SIEMPRE ENTRA EN PANTALLA */}
   <Box
+  sx={{
+    width: { xs: 90, sm: 130 }, // ⭐ Igual ancho que el total → alineación perfecta
+    textAlign: "right",
+    pr: { xs: 1, sm: 2 },
+    flexShrink: 1,              // ⭐ Permite que el contenido se ajuste
+  }}
+>
+  <Typography
     sx={{
-      minWidth: { xs: 70, sm: 120 }, // ⭐ más pequeño en móvil
-      textAlign: "right",
-      pr: { xs: 1, sm: 2 },
-      flexShrink: 1, // ⭐ permite reducir para no salirse
+      fontWeight: 700,
+      fontSize: { xs: 15, sm: 18 },
+      whiteSpace: "nowrap",     // ⭐ Evita que baje de línea
     }}
   >
-    <Typography
-      sx={{
-        fontWeight: 700,
-        fontSize: { xs: 14.5, sm: 18 },
-      }}
-    >
-      Bs. {item.producto.precio * item.cantidad}
-    </Typography>
-  </Box>
+    Bs. {item.producto.precio * item.cantidad}
+  </Typography>
+</Box>
 </Box>
           ))}
         </Box>

@@ -219,20 +219,12 @@ setReservas(reservasFiltradas);
       >
  <Table
   sx={{
-    minWidth: "max-content",   // ← fuerza a que NO colapsen columnas
     width: "100%",
-    tableLayout: "auto",
-    borderCollapse: "separate",
-    borderSpacing: 0,
-
+    borderCollapse: "collapse",   // ⭐ FIX iPhone
     "& th, & td": {
-      borderRight: "none",
-      borderLeft: "none",
-      whiteSpace: "nowrap",        // evita saltos extraños en móvil
-    },
-
-    "& th:last-child, & td:last-child": {
-      borderRight: "none",
+      border: "none",             // sin bordes
+      padding: "12px 8px",
+      whiteSpace: "nowrap",
     },
   }}
 >
