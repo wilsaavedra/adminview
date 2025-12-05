@@ -238,14 +238,14 @@ export default function MenuReservasDetalle() {
           }}
         />
 
-  <Box
+ <Box
   sx={{
-    flex: 1,
+    flexGrow: 1,
     minWidth: 0,
-    flexBasis: "0px",
-    maxWidth: "58%",   // ⭐ LIMITE REAL PARA QUE EL PRECIO SIEMPRE ENTRE
+    width: "100%",
+    maxWidth: "65vw",      // ⭐ LÍMITE DURO basados en viewport (Safari sí respeta)
     overflow: "hidden",
-    pr: 0.5,
+    pr: 1,
   }}
 >
           <Typography
@@ -272,14 +272,14 @@ export default function MenuReservasDetalle() {
       </Box>
 
       {/* DERECHA: PRECIO FIJO PEGADO AL BORDE */}
-      <Box
+<Box
   sx={{
-      flexShrink: 0,
-      width: { xs: 130, sm: 150 },   // ⭐ AHORA EL PRECIO ENTRA COMPLETO
-      textAlign: "right",
-      pr: { xs: 1, sm: 3 },          // ⭐ NO EMPUJA DEMASIADO A LA DERECHA
-      display: "flex",
-      justifyContent: "flex-end",
+    flexShrink: 0,
+    width: "90px",      // ⭐ valor fijo estable para iPhone
+    textAlign: "right",
+    display: "flex",
+    justifyContent: "flex-end",
+    ml: 1,              // ⭐ distancia clara entre columnas
   }}
 >
   <Typography
