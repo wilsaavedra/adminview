@@ -235,7 +235,15 @@ export default function MenuReservasDetalle() {
           }}
         />
 
-        <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden", pr: 0.5 }}>
+       <Box
+  sx={{
+    flex: 1,
+    minWidth: 0,
+    flexBasis: "0px",      // ⭐ SAFARI FIX
+    overflow: "hidden",
+    pr: 0.5,
+  }}
+>
           <Typography
             sx={{
               fontSize: { xs: 14, sm: 17 },
