@@ -112,14 +112,15 @@ export default function MenuReservasDetalle() {
   }, {});
 
   return (
- <Box
+<Box
   sx={{
-    px: { xs: 1.5, sm: 2, md: 4 },   // móvil sin empujar
+    px: { xs: 1.2, sm: 2 },
     py: 3,
     width: "100%",
-    maxWidth: 1100,
     mx: "auto",
     mb: 10,
+    boxSizing: "border-box",
+    overflowX: "hidden",   
     animation: "fadeIn 0.4s ease",
   }}
 >
