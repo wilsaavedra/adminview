@@ -205,29 +205,32 @@ setReservas(reservasFiltradas);
           No hay reservas para esta fecha.
         </Typography>
       ) : (
-        <TableContainer
-        component={Paper}
-        sx={{
-            display: "block", //se aumento
-          //boxShadow: 3,
-          width: "100%",
-          overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
-          "@media (max-width: 900px)": {   
-            maxWidth: "100vw",
-          },
-        }}
-      >
- <Table
+<TableContainer
+  component={Paper}
   sx={{
     width: "100%",
-    tableLayout: "fixed",      // 👉 columnas fijas: no se pisan entre sí
-    borderCollapse: "collapse",
-    "& th, & td": {
-      border: "none",
-      padding: "10px 6px",
-    },
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch",
   }}
 >
+  <Table
+    sx={{
+      width: "100%",
+      borderCollapse: "separate",
+      borderSpacing: 0,
+      "& th": {
+        border: "none",
+        padding: "12px 8px",
+        whiteSpace: "normal",
+      },
+      "& td": {
+        border: "none",
+        padding: "10px 8px",
+        whiteSpace: "normal",      // ⭐ permite que todo haga wrap
+        verticalAlign: "top",
+      },
+    }}
+  >
   <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
     <TableRow>
       <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>

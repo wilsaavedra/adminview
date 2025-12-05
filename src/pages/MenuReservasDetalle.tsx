@@ -235,23 +235,24 @@ export default function MenuReservasDetalle() {
     </Box>
 
     {/* PRECIO → ALINEADO CON Bs. 508 */}
-    <Box
-      sx={{
-        textAlign: "right",
-        minWidth: { xs: 90, sm: 130 },     // mismo “ancho de columna” que el total
-        pr: { xs: 1.5, sm: 3 },            // mismo padding derecha que el total
-      }}
-    >
-      <Typography
-        sx={{
-          fontWeight: 700,
-          fontSize: { xs: 15, sm: 18 },
-          whiteSpace: "nowrap",
-        }}
-      >
-        Bs. {item.producto.precio * item.cantidad}
-      </Typography>
-    </Box>
+  <Box
+  sx={{
+    width: { xs: 110, sm: 135 },   // ⭐ igual ancho que TOTAL → alineación perfecta
+    textAlign: "right",
+    pr: 1,
+    flexShrink: 0,                 // ⭐ nunca desaparece
+  }}
+>
+  <Typography
+    sx={{
+      fontWeight: 700,
+      fontSize: { xs: 15, sm: 18 },
+      whiteSpace: "nowrap",
+    }}
+  >
+    Bs. {item.producto.precio * item.cantidad}
+  </Typography>
+</Box>
   </Box>
 ))}
         </Box>
