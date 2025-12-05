@@ -30,7 +30,6 @@ function PrivateRoute({
 
   const userRole = user.rol as Role;
 
-  // 🔐 ADMIN_ROLE entra a todo (aunque no esté declarado)
   if (roles && !roles.includes(userRole) && userRole !== 'ADMIN_ROLE') {
     return <Navigate to="/Menu" replace />;
   }
@@ -69,101 +68,93 @@ function AppContent() {
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
- <Box
-  sx={{
-    flexGrow: 1,
-    ml: showSidebar ? { md: '260px' } : 0,
+        <Box
+          sx={{
+            flexGrow: 1,
+            ml: showSidebar ? { md: '260px' } : 0,
+            width: '100%',
+            minHeight: 'inherit',
+            overflowX: 'auto',
+            overflowY: 'auto',
+            display: 'block',
+            p: { xs: 0, sm: 1, md: 3 },
+          }}
+        >
+          <Box sx={{ minWidth: 'max-content', width: '100%' }}>
+            <Routes>
+              <Route
+                path="/LoginScreen"
+                element={
+                  status === 'authenticated'
+                    ? <Navigate to="/Menu" replace />
+                    : <LoginScreen />
+                }
+              />
 
-    display: 'flex',              // ✔ permite expansión horizontal
-    flexDirection: 'column',
+              <Route
+                path="/"
+                element={
+                  status === 'authenticated'
+                    ? <Navigate to="/Menu" replace />
+                    : <Navigate to="/LoginScreen" replace />
+                }
+              />
 
-    overflowX: 'visible',         // ✔ deja que los hijos puedan scrollear
-    overflowY: 'auto',
+              <Route
+                path="/Menu"
+                element={
+                  <PrivateRoute>
+                    <Menu />
+                  </PrivateRoute>
+                }
+              />
 
-    p: { xs: 0, sm: 1, md: 3 },
-    width: '100%',
-    minHeight: 'inherit',
-  }}
->
-          <Routes>
-            <Route
-              path="/LoginScreen"
-              element={
-                status === 'authenticated' ? (
-                  <Navigate to="/Menu" replace />
-                ) : (
-                  <LoginScreen />
-                )
-              }
-            />
+              <Route
+                path="/Reservar"
+                element={
+                  <PrivateRoute>
+                    <Reservar />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/"
-              element={
-                status === 'authenticated' ? (
-                  <Navigate to="/Menu" replace />
-                ) : (
-                  <Navigate to="/LoginScreen" replace />
-                )
-              }
-            />
+              <Route
+                path="/Reservas"
+                element={
+                  <PrivateRoute>
+                    <Reservas />
+                  </PrivateRoute>
+                }
+              />
 
-            {/* ACCESO GENERAL */}
-            <Route
-              path="/Menu"
-              element={
-                <PrivateRoute>
-                  <Menu />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/MenuReservas"
+                element={
+                  <PrivateRoute roles={['ADMIN_ROLE']}>
+                    <MenuReservas />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/Reservar"
-              element={
-                <PrivateRoute>
-                  <Reservar />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/MenuReservasDetalle/:id"
+                element={
+                  <PrivateRoute roles={['ADMIN_ROLE']}>
+                    <MenuReservasDetalle />
+                  </PrivateRoute>
+                }
+              />
 
-            <Route
-              path="/Reservas"
-              element={
-                <PrivateRoute>
-                  <Reservas />
-                </PrivateRoute>
-              }
-            />
-
-            {/* SOLO ADMIN */}
-            <Route
-              path="/MenuReservas"
-              element={
-                <PrivateRoute roles={['ADMIN_ROLE']}>
-                  <MenuReservas />
-                </PrivateRoute>
-              }
-            />
-<Route
-  path="/MenuReservasDetalle/:id"
-  element={
-    <PrivateRoute roles={["ADMIN_ROLE"]}>
-      <MenuReservasDetalle />
-    </PrivateRoute>
-  }
-/>
-            <Route
-              path="*"
-              element={
-                status === 'authenticated' ? (
-                  <Navigate to="/Menu" replace />
-                ) : (
-                  <Navigate to="/LoginScreen" replace />
-                )
-              }
-            />
-          </Routes>
+              <Route
+                path="*"
+                element={
+                  status === 'authenticated'
+                    ? <Navigate to="/Menu" replace />
+                    : <Navigate to="/LoginScreen" replace />
+                }
+              />
+            </Routes>
+          </Box>
         </Box>
       </Fade>
     </Box>
