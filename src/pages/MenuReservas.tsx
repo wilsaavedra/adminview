@@ -158,20 +158,23 @@ const filtradas = dataLimpia.filter((mr: MenuReserva) => {
         </Typography>
       ) : (
 <TableContainer
-  component={Paper}
   sx={{
+    width: "100%",
     overflowX: "auto",
+    overflowY: "hidden",
     WebkitOverflowScrolling: "touch",
-    px: 0,               // evita padding fantasma en iOS
+
+    // Este FIX asegura que NO exista doble scroll
+    display: "block"
   }}
 >
-  <Table
-    sx={{
-      minWidth: 950,     // igual que Reservas
-      width: "fit-content", // NO usar max-content
-      tableLayout: "auto",
-    }}
-  >
+ <Table
+  sx={{
+    minWidth: "max-content",
+    width: "100%",
+    tableLayout: "auto",
+  }}
+>
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>
                 <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
