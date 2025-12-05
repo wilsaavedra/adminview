@@ -69,23 +69,25 @@ function AppContent() {
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
-    <Box
+ <Box
   sx={{
     flexGrow: 1,
     ml: showSidebar ? { md: '260px' } : 0,
 
-    // 🔥 No centrar contenido, permitir ancho completo
-    display: 'block',
+    // 🔥 Permite que el contenido crezca horizontalmente sin corte
+    overflowX: "auto",
 
-    // 🔥 Eliminamos centrado que rompe tablas y móvil
-    alignItems: 'stretch',
-    justifyContent: 'flex-start',
+    // 🔥 No limitar ancho para tablas
+    width: "100%",
 
-    // 🔥 En móvil cero padding lateral
-    p: { xs: 0, sm: 1, md: 3 },
+    // 🔥 Sin centrado vertical forzado
+    display: "block",
 
-    width: '100%',
-    minHeight: 'inherit',
+    // 🔥 IMPORTANTE: en móvil cero padding para no recortar scroll
+    p: { xs: 0, sm: 0, md: 2 },
+
+    // 🔥 Garantiza que el scroll sea del contenedor padre, no del hijo
+    position: "relative",
   }}
 >
           <Routes>
