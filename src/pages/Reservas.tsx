@@ -217,21 +217,22 @@ setReservas(reservasFiltradas);
           },
         }}
       >
-    <Table
+ <Table
   sx={{
+    minWidth: "max-content",   // ← fuerza a que NO colapsen columnas
     width: "100%",
+    tableLayout: "auto",
     borderCollapse: "separate",
     borderSpacing: 0,
+
     "& th, & td": {
-      border: 0,
       borderRight: "none",
       borderLeft: "none",
+      whiteSpace: "nowrap",        // evita saltos extraños en móvil
     },
-    "& tr": {
-      border: 0,
-    },
-    "& *": {
-      border: "none !important",
+
+    "& th:last-child, & td:last-child": {
+      borderRight: "none",
     },
   }}
 >

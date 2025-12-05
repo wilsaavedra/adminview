@@ -185,7 +185,7 @@ export default function MenuReservasDetalle() {
           </Typography>
 
                     {items.map((item: any, i: number) => (
-        <Box
+ <Box
   key={i}
   sx={{
     display: "flex",
@@ -196,29 +196,35 @@ export default function MenuReservasDetalle() {
     mb: 1.5,
     gap: { xs: 1, sm: 2 },
     "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
-    flexWrap: "nowrap",
+    flexWrap: { xs: "wrap", sm: "nowrap" }, // ⭐ permite dos líneas solo en móvil
     width: "100%",
   }}
 >
+  {/* IMAGEN RESPONSIVA */}
   <img
-    src={item.producto.img ? 
-      item.producto.img.includes("cloudinary")
-        ? item.producto.img.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_100,h_100/")
-        : item.producto.img
-      : ""
+    src={
+      item.producto.img
+        ? item.producto.img.includes("cloudinary")
+          ? item.producto.img.replace(
+              "/upload/",
+              "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
+            )
+          : item.producto.img
+        : ""
     }
     alt=""
     style={{
-      width: "70px",
-      height: "70px",
+      width: "65px",
+      height: "65px",
       borderRadius: 12,
       objectFit: "cover",
       flexShrink: 0,
     }}
   />
 
-  <Box sx={{ flex: 1, minWidth: 0 }}>
-    <Typography sx={{ fontSize: { xs: 14.5, sm: 17 }, fontWeight: 600 }}>
+  {/* NOMBRE + CANTIDAD */}
+  <Box sx={{ flex: 1, minWidth: "55%" }}>
+    <Typography sx={{ fontSize: { xs: 14, sm: 17 }, fontWeight: 600 }}>
       {item.producto.nombre}
     </Typography>
 
@@ -227,19 +233,19 @@ export default function MenuReservasDetalle() {
     </Typography>
   </Box>
 
-  {/* PRECIO RESPONSIVO Y QUE NO SE CORTE */}
+  {/* PRECIO QUE SIEMPRE ENTRA EN PANTALLA */}
   <Box
     sx={{
-      minWidth: { xs: 80, sm: 120 },
+      minWidth: { xs: 70, sm: 120 }, // ⭐ más pequeño en móvil
       textAlign: "right",
       pr: { xs: 1, sm: 2 },
-      flexShrink: 0,
+      flexShrink: 1, // ⭐ permite reducir para no salirse
     }}
   >
     <Typography
       sx={{
         fontWeight: 700,
-        fontSize: { xs: 15, sm: 18 },
+        fontSize: { xs: 14.5, sm: 18 },
       }}
     >
       Bs. {item.producto.precio * item.cantidad}
