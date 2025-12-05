@@ -160,15 +160,15 @@ const filtradas = dataLimpia.filter((mr: MenuReserva) => {
 <TableContainer
   component={Paper}
   sx={{
-    width: "100%",
-    overflowX: "auto",         // solo un scroll externo
+    overflowX: "auto",
     WebkitOverflowScrolling: "touch",
+    px: 0,               // evita padding fantasma en iOS
   }}
 >
   <Table
     sx={{
-      width: "max-content",     // 🔥 Fuerza a la tabla a expandirse
-      minWidth: 950,            // 🔥 Evita que se corte en móviles
+      minWidth: 950,     // igual que Reservas
+      width: "fit-content", // NO usar max-content
       tableLayout: "auto",
     }}
   >

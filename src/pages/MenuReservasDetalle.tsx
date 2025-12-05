@@ -114,11 +114,13 @@ export default function MenuReservasDetalle() {
   return (
  <Box
   sx={{
-    px: { xs: 1, sm: 2, md: 4 },
+    px: { xs: 1.5, sm: 2, md: 4 },   // móvil sin empujar
     py: 3,
     width: "100%",
     maxWidth: 1100,
     mx: "auto",
+    mb: 10,
+    animation: "fadeIn 0.4s ease",
   }}
 >
       {/* ---------------- HEADER MINIMALISTA ---------------- */}
