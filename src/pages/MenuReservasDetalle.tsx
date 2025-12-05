@@ -224,15 +224,35 @@ export default function MenuReservasDetalle() {
     </Box>
 
     {/* NOMBRE + CANTIDAD */}
-    <Box sx={{ minWidth: 0 }}>
-      <Typography sx={{ fontSize: { xs: 14, sm: 17 }, fontWeight: 600 }}>
-        {item.producto.nombre}
-      </Typography>
+   <Box
+  sx={{
+    flex: 1,
+    minWidth: 0,               // ⭐ evita empujar al precio
+    overflow: "hidden",
+    pr: 1,                     // espacio para que no choque con el precio
+  }}
+>
+  <Typography
+    sx={{
+      fontSize: { xs: 14, sm: 17 },
+      fontWeight: 600,
+      lineHeight: 1.2,
+      wordBreak: "break-word", // ⭐ permite dividir palabras largas
+    }}
+  >
+    {item.producto.nombre}
+  </Typography>
 
-      <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#6e6e6e" }}>
-        Cantidad: {item.cantidad}
-      </Typography>
-    </Box>
+  <Typography
+    sx={{
+      fontSize: { xs: 12, sm: 14 },
+      color: "#6e6e6e",
+      mt: 0.3,
+    }}
+  >
+    Cantidad: {item.cantidad}
+  </Typography>
+</Box>
 
     {/* PRECIO → ALINEADO CON Bs. 508 */}
   <Box
