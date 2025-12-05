@@ -185,75 +185,67 @@ export default function MenuReservasDetalle() {
           </Typography>
 
                     {items.map((item: any, i: number) => (
-            <Box
-              key={i}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                py: { xs: 1.8, sm: 2.4 },
-                px: { xs: 1, sm: 2 },
-                borderRadius: 2,
-                transition: "0.2s ease",
-                mb: 1.2,
-                "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
-              }}
-            >
-              {/* IMAGEN */}
-              <img
-                src={
-                  item.producto.img
-                    ? item.producto.img.includes("cloudinary")
-                      ? item.producto.img.replace(
-                          "/upload/",
-                          "/upload/f_auto,q_auto,c_fill,w_140,h_140/"
-                        )
-                      : item.producto.img
-                    : ""
-                }
-                alt=""
-                style={{
-                  width: 85,
-                  height: 85,
-                  borderRadius: 14,
-                  objectFit: "cover",
-                  marginRight: 18,
-                  backgroundColor: "#f7f7f7",
-                  boxShadow: "0px 2px 6px rgba(0,0,0,0.08)",
-                }}
-              />
+        <Box
+  key={i}
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    py: { xs: 1.2, sm: 2 },
+    px: { xs: 1, sm: 2 },
+    borderRadius: 2,
+    mb: 1.5,
+    gap: { xs: 1, sm: 2 },
+    "&:hover": { backgroundColor: "rgba(0,0,0,0.03)" },
+    flexWrap: "nowrap",
+    width: "100%",
+  }}
+>
+  <img
+    src={item.producto.img ? 
+      item.producto.img.includes("cloudinary")
+        ? item.producto.img.replace("/upload/", "/upload/f_auto,q_auto,c_fill,w_100,h_100/")
+        : item.producto.img
+      : ""
+    }
+    alt=""
+    style={{
+      width: "70px",
+      height: "70px",
+      borderRadius: 12,
+      objectFit: "cover",
+      flexShrink: 0,
+    }}
+  />
 
-              {/* INFORMACIÓN */}
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography sx={{ fontSize: 17.5, fontWeight: 600 }}>
-                  {item.producto.nombre}
-                </Typography>
+  <Box sx={{ flex: 1, minWidth: 0 }}>
+    <Typography sx={{ fontSize: { xs: 14.5, sm: 17 }, fontWeight: 600 }}>
+      {item.producto.nombre}
+    </Typography>
 
-                <Typography sx={{ fontSize: 13.5, color: "#6e6e6e" }}>
-                  Cantidad: {item.cantidad}
-                </Typography>
-              </Box>
+    <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#6e6e6e" }}>
+      Cantidad: {item.cantidad}
+    </Typography>
+  </Box>
 
-              {/* PRECIO RESPONSIVO */}
-              <Box
-                sx={{
-                  width: { xs: 110, sm: 140, md: 160 },
-                  textAlign: "right",
-                  pr: { xs: 1.5, sm: 3 },
-                  flexShrink: 0,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: 18,
-                    letterSpacing: 0.4,
-                    color: "#1a1a1a",
-                  }}
-                >
-                  Bs. {item.producto.precio * item.cantidad}
-                </Typography>
-              </Box>
-            </Box>
+  {/* PRECIO RESPONSIVO Y QUE NO SE CORTE */}
+  <Box
+    sx={{
+      minWidth: { xs: 80, sm: 120 },
+      textAlign: "right",
+      pr: { xs: 1, sm: 2 },
+      flexShrink: 0,
+    }}
+  >
+    <Typography
+      sx={{
+        fontWeight: 700,
+        fontSize: { xs: 15, sm: 18 },
+      }}
+    >
+      Bs. {item.producto.precio * item.cantidad}
+    </Typography>
+  </Box>
+</Box>
           ))}
         </Box>
       ))}

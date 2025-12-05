@@ -217,22 +217,24 @@ setReservas(reservasFiltradas);
           },
         }}
       >
-        <Table
-          sx={{
-            width: "100%",
-            borderCollapse: "separate", // importante: separa los bordes
-            borderSpacing: 0,           // elimina espacio extra
-            "& th, & td": {
-              borderRight: "none",      // elimina líneas verticales
-              borderLeft: "none",
-            },
-            "& th:last-child, & td:last-child": {
-              borderRight: "none",      // asegura que la última col no tenga línea
-            },
-           // tableLayout: "fixed",   //se aumento
-            //minWidth: 950, // Mantiene buen formato en escritorio
-          }}
-        >
+    <Table
+  sx={{
+    width: "100%",
+    borderCollapse: "separate",
+    borderSpacing: 0,
+    "& th, & td": {
+      border: 0,
+      borderRight: "none",
+      borderLeft: "none",
+    },
+    "& tr": {
+      border: 0,
+    },
+    "& *": {
+      border: "none !important",
+    },
+  }}
+>
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
             <TableRow>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>

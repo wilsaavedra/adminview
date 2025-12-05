@@ -14,6 +14,7 @@ import {
   Grid,
   Select,
   MenuItem,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -21,6 +22,8 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { es } from "date-fns/locale";
 import { parseISO, isSameDay, format, compareAsc } from "date-fns";
+import { TextField } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 interface CreadoPor {
   _id: string;
@@ -43,6 +46,7 @@ interface Reservas {
   confirmacion: boolean;
   comentarios: string;
   resest: string;
+  mesa?:string;
 }
 
 const API = axios.create({
@@ -62,6 +66,16 @@ const isSameUtcDate = (d1: Date, d2: Date) => {
   const toUtcMidnight = (local: Date) =>
     new Date(Date.UTC(local.getFullYear(), local.getMonth(), local.getDate()));
 
+// Devuelve la fecha "YYYY-MM-DD" en zona America/La_Paz
+const ymdLaPaz = (d: Date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/La_Paz",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+
+
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<Reservas[]>([]);
   const [loading, setLoading] = useState(false);
@@ -69,7 +83,10 @@ export default function ReservasPage() {
   const [error, setError] = useState<string | null>(null);
   const totalPax = reservas.reduce((sum, r) => sum + (r.cantidad || 0), 0);
 
+  const [open, setOpen] = useState(false);
+const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
 
+  
   const fetchReservas = async (
     fechaSeleccionada: Date,
     setReservas: (r: Reservas[]) => void,
@@ -86,11 +103,13 @@ export default function ReservasPage() {
         : [];
 
       // Filtrar por fecha y ordenar por hora ascendente
-      const reservasFiltradas: Reservas[] = data
+   // Filtrar por fecha (día local Bolivia) y ordenar por hora ascendente
+const selectedKey = ymdLaPaz(fechaSeleccionada);
+
+const reservasFiltradas: Reservas[] = data
   .filter((reserva) => {
-    const fechaReserva = new Date(reserva.fecha); // UTC
-    const seleccionadoUTC = toUtcMidnight(fechaSeleccionada);
-    return isSameUtcDate(fechaReserva, seleccionadoUTC);
+    const keyReserva = ymdLaPaz(new Date(reserva.fecha)); // fecha de la reserva en La Paz
+    return keyReserva === selectedKey;                     // compara día local Bolivia
   })
   .sort((a, b) => {
     const horaA = new Date(a.fecha).getHours() * 60 + new Date(a.fecha).getMinutes();
@@ -144,7 +163,7 @@ setReservas(reservasFiltradas);
               }}
             />
           </LocalizationProvider>
-          {/* 👉 Aquí mostramos el total pax */}
+         
           {reservas.length > 0 && (
             <Typography
                 variant="subtitle1"
@@ -160,12 +179,14 @@ setReservas(reservasFiltradas);
             variant="h6"
             sx={{ fontWeight: 600, color: "#333", textAlign: "right" }}
           >
-            {fecha?.toLocaleDateString("es-ES", {
-              weekday: "long",
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
+           {fecha &&
+            new Intl.DateTimeFormat("es-ES", {
+                weekday: "long",
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                timeZone: "America/La_Paz",   // 👈 aquí fuerza Bolivia
+            }).format(fecha)}
           </Typography>
         </Box>
       </Grid>
@@ -220,6 +241,8 @@ setReservas(reservasFiltradas);
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Teléfono</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
+              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Adelanto</TableCell>
+              <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Mesa</TableCell>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Estado</TableCell>
             </TableRow>
           </TableHead>
@@ -231,7 +254,14 @@ setReservas(reservasFiltradas);
                 sx={{ bgcolor: getRowColor(reserva.resest) }}
               >
                 <TableCell>{reserva.nombre}</TableCell>
-                <TableCell>{format(parseISO(reserva.fecha), "HH:mm")}</TableCell>
+                <TableCell>
+                    {new Intl.DateTimeFormat("es-BO", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                        timeZone: "America/La_Paz",   // 👈 aquí fuerza Bolivia
+                    }).format(new Date(reserva.fecha))}
+                    </TableCell>
                 <TableCell>{reserva.cantidad}</TableCell>
                 <TableCell>
                     {reserva.telefono.startsWith("+591")
@@ -248,6 +278,57 @@ setReservas(reservasFiltradas);
                 >
                   {reserva.comentarios}
                 </TableCell>
+                <TableCell
+                  sx={{
+                    maxWidth: { xs: 120, sm: 200, md: "auto" }, // controla ancho en móvil
+                    whiteSpace: "normal", // permite salto de línea
+                    wordWrap: "break-word",
+                  }}
+                >
+                 {reserva.pago !== 0 ? reserva.pago : ""}
+                </TableCell>
+                <TableCell
+  sx={{
+    maxWidth: { xs: 50, sm: 60, md: 80 }, // ancho responsivo
+    whiteSpace: "nowrap",
+    padding: "0.25rem",
+    "& .MuiInputBase-root": {
+      bgcolor: "white", // evita heredar el color de la fila
+    },
+  }}
+>
+  <TextField
+    value={reserva.mesa || ""}
+    size="small"
+    variant="outlined"
+   // placeholder="M"
+    inputProps={{
+      maxLength: 2,
+      style: { textAlign: "center" },
+    }}
+    onChange={(e) => {
+      const nuevaMesa = e.target.value;
+      setReservas((prev) =>
+        prev.map((r) =>
+          r._id === reserva._id ? { ...r, mesa: nuevaMesa } : r
+        )
+      );
+    }}
+    onBlur={async (e) => {
+      try {
+        await API.put(`/reservas/${reserva._id}`, {
+          mesa: e.target.value || "",
+        });
+      } catch (err) {
+        console.error("Error al actualizar mesa:", err);
+      }
+    }}
+    sx={{
+      width: "100%",
+      "& input": { p: 0.5 },
+    }}
+  />
+</TableCell>
                 <TableCell>
                   <Select
                     value={reserva.resest || "Pendiente"}
@@ -257,12 +338,27 @@ setReservas(reservasFiltradas);
                       
                         try {
                           if (nuevoEstado === "Cancelo") {
-                            await API.put(`/reservas/${reserva._id}`, {
+                            setReservaSeleccionada(reserva); // guardamos la reserva que se quiere cancelar
+                            setOpen(true); // abrimos el diálogo
+
+                           /* const confirmar = window.confirm("¿Estás seguro de cancelar esta reserva?. Se borrara la reserva.");
+
+                            if (confirmar) {
+                              await API.put(`/reservas/${reserva._id}`, {
+                                resest: nuevoEstado,
+                                estado: false,   // 👈 importante
+                              });
+                          
+                              // quitar de la lista en el frontend
+                              setReservas((prev) => prev.filter((r) => r._id !== reserva._id));
+                            }*/
+                           /* await API.put(`/reservas/${reserva._id}`, {
                               resest: nuevoEstado,
                               estado: false,   // 👈 importante
                             });
                             // quitar de la lista en el frontend
-                            setReservas((prev) => prev.filter((r) => r._id !== reserva._id));
+                            setReservas((prev) => prev.filter((r) => r._id !== reserva._id));*/
+
                           } else {
                             await API.put(`/reservas/${reserva._id}`, { resest: nuevoEstado });
                       
@@ -294,6 +390,45 @@ setReservas(reservasFiltradas);
       </TableContainer>
       
       )}
+
+{/* Dialog de confirmación */}
+<Dialog open={open} onClose={() => setOpen(false)}>
+      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <WarningAmberIcon color="warning" />
+        Confirmar cancelación
+      </DialogTitle>
+      <DialogContent>
+        <Typography>
+          Estás seguro de cancelar esta reserva? <br />
+          Se eliminará la reserva definitivamente.
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpen(false)} variant="outlined">
+          NO
+        </Button>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={async () => {
+            if (reservaSeleccionada) {
+              await API.put(`/reservas/${reservaSeleccionada._id}`, {
+                resest: "Cancelo",
+                estado: false,
+              });
+              setReservas((prev) =>
+                prev.filter((r) => r._id !== reservaSeleccionada._id)
+              );
+            }
+            setOpen(false);
+          }}
+        >
+          SI
+        </Button>
+      </DialogActions>
+    </Dialog>
     </Box>
   );
+ 
 }
+
