@@ -198,101 +198,87 @@ export default function MenuReservasDetalle() {
     }}
   >
     {/* CONTENEDOR INTERNO: IZQUIERDA (img+texto) + DERECHA (precio) */}
-   <Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: "1fr auto",   // ⭐ Izquierda flexible / derecha fija
-    alignItems: "center",
-    width: "100%",
-    columnGap: 1,                       // espacio elegante entre columnas
-  }}
->
-      {/* IZQUIERDA: IMAGEN + NOMBRE + CANTIDAD */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          flex: 1,
-          minWidth: 0,                // ⭐ deja que el texto se adapte
-          gap: { xs: 1, sm: 2 },
-        }}
-      >
-        <img
-          src={
-            item.producto.img
-              ? item.producto.img.includes("cloudinary")
-                ? item.producto.img.replace(
-                    "/upload/",
-                    "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
-                  )
-                : item.producto.img
-              : ""
-          }
-          alt=""
-          style={{
-            width: 65,
-            height: 65,
-            borderRadius: 12,
-            objectFit: "cover",
-            flexShrink: 0,
-          }}
-        />
-
- <Box
-  sx={{
-    flexGrow: 1,
-    minWidth: 0,
-    width: "100%",
-    maxWidth: "calc(100% - 80px)",   // ⭐ SOLUCIÓN DEFINITIVA
-    overflow: "hidden",
-    pr: 1,
-  }}
->
-          <Typography
-            sx={{
-              fontSize: { xs: 14, sm: 17 },
-              fontWeight: 600,
-              lineHeight: 1.2,
-              wordBreak: "break-word", // ⭐ nombre largo no empuja al precio
-            }}
-          >
-            {item.producto.nombre}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontSize: { xs: 12, sm: 14 },
-              color: "#6e6e6e",
-              mt: 0.3,
-            }}
-          >
-            Cantidad: {item.cantidad}
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* DERECHA: PRECIO FIJO PEGADO AL BORDE */}
+  {/* CONTENEDOR INTERNO — SOLUCIÓN FINAL FLEXBOX */}
 <Box
   sx={{
-    flexShrink: 0,
-    width: "60px",      // ⭐ valor fijo estable para iPhone
-    textAlign: "right",
     display: "flex",
-    justifyContent: "flex-end",
-    ml: 1,              // ⭐ distancia clara entre columnas
+    alignItems: "center",
+    width: "100%",
+    gap: 1,
   }}
 >
-  <Typography
-      sx={{
-      fontWeight: 700,
-      fontSize: { xs: 15, sm: 18 },
-      whiteSpace: "nowrap",
-      }}
+  {/* IMAGEN */}
+  <img
+    src={
+      item.producto.img
+        ? item.producto.img.includes("cloudinary")
+          ? item.producto.img.replace(
+              "/upload/",
+              "/upload/f_auto,q_auto,c_fill,w_90,h_90/"
+            )
+          : item.producto.img
+        : ""
+    }
+    alt=""
+    style={{
+      width: 65,
+      height: 65,
+      borderRadius: 12,
+      objectFit: "cover",
+      flexShrink: 0,        // nunca se achica
+    }}
+  />
+
+  {/* TEXTO IZQUIERDA — SE ACHICA SI ES NECESARIO */}
+  <Box
+    sx={{
+      flex: 1,              // ocupa todo lo disponible
+      minWidth: 0,          // ⭐ permite shrink real (Safari fix)
+      overflow: "hidden",
+    }}
   >
+    <Typography
+      sx={{
+        fontSize: { xs: 14, sm: 17 },
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",   // ⭐ nunca empuja al precio
+      }}
+    >
+      {item.producto.nombre}
+    </Typography>
+
+    <Typography
+      sx={{
+        fontSize: { xs: 12, sm: 14 },
+        color: "#6e6e6e",
+        whiteSpace: "nowrap",
+      }}
+    >
+      Cantidad: {item.cantidad}
+    </Typography>
+  </Box>
+
+  {/* PRECIO — ENTRA SIEMPRE */}
+  <Box
+    sx={{
+      flexShrink: 0,
+      textAlign: "right",
+      pl: 1,
+    }}
+  >
+    <Typography
+      sx={{
+        fontWeight: 700,
+        fontSize: { xs: 15, sm: 18 },
+        whiteSpace: "nowrap",
+      }}
+    >
       Bs. {item.producto.precio * item.cantidad}
-  </Typography>
+    </Typography>
+  </Box>
 </Box>
-    </Box>
   </Box>
 ))}
         </Box>
