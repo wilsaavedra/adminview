@@ -243,7 +243,7 @@ export default function MenuReservasDetalle() {
     flexGrow: 1,
     minWidth: 0,
     width: "100%",
-    maxWidth: "55vw",      // ⭐ LÍMITE DURO basados en viewport (Safari sí respeta)
+    maxWidth: "50vw",      // ⭐ LÍMITE DURO basados en viewport (Safari sí respeta)
     overflow: "hidden",
     pr: 1,
   }}
