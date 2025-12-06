@@ -275,7 +275,7 @@ export default function MenuReservasDetalle() {
 <Box
   sx={{
     flexShrink: 0,
-    width: "70px",      // ⭐ valor fijo estable para iPhone
+    width: "60px",      // ⭐ valor fijo estable para iPhone
     textAlign: "right",
     display: "flex",
     justifyContent: "flex-end",
