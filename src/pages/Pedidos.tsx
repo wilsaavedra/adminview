@@ -305,22 +305,26 @@ const Pedidos: React.FC = () => {
           const colors = getHeaderColors(group);
 
           return (
-            <Card
-              key={group.id}
-              elevation={3}
-              sx={{
-                borderRadius: 3,
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                height: "auto",
-                bgcolor: "#ffffff",
-                transition: "all 0.3s ease",
-                opacity: removing === group.id ? 0 : 1,
-                transform: removing === group.id ? "scale(0.85)" : "scale(1)",
-                filter: removing === group.id ? "blur(4px) saturate(200%)" : "none",
-              }}
-            >
+             <Card
+                key={group.id}
+                elevation={3}
+                sx={{
+                    borderRadius: 3,
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+
+                    width: "100%",           // 👉 evita desbordes en móvil
+                    boxSizing: "border-box", // 👉 corrige el cálculo del ancho
+                    height: "auto",
+
+                    bgcolor: "#ffffff",
+                    transition: "all 0.3s ease",
+                    opacity: removing === group.id ? 0 : 1,
+                    transform: removing === group.id ? "scale(0.85)" : "scale(1)",
+                    filter: removing === group.id ? "blur(4px) saturate(200%)" : "none",
+                }}
+                >
               {/* HEADER */}
               <Box
                 sx={{
