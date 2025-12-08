@@ -71,7 +71,11 @@ function AppContent() {
   <Box
   sx={{
     flexGrow: 1,
-    ml: showSidebar ? { md: '260px' } : 0,
+    ml: {
+  xs: 0,  // móvil → jamás empujar
+  sm: 0,  // tablet → jamás empujar
+  md: showSidebar ? "260px" : 0, // desktop → sidebar fijo
+},
     width: '100%',
     minHeight: 'inherit',
 

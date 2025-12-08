@@ -282,18 +282,26 @@ const Pedidos: React.FC = () => {
           const colors = getHeaderColors(group);
 
           return (
-           <Card
+ <Card
   key={group.id}
   elevation={3}
   sx={{
-    borderRadius: 3,          // como antes, bordes suaves MUI
-    overflow: "hidden",       // importante: NO cortar sombras ni contenido
+    borderRadius: 3,
+    overflow: "hidden",
     display: "flex",
     flexDirection: "column",
     bgcolor: "#ffffff",
     height: "auto",
+
+    // 👉 NO usar 100% exacto en móvil
     width: "100%",
-    maxWidth: "100%",
+    maxWidth: {
+      xs: "95vw",   // PERFECTO para iPhone
+      sm: "48vw",   // Tablet
+      md: "100%",   // Desktop normal
+    },
+
+    mx: { xs: "auto" }, // centrar en móvil
     boxSizing: "border-box",
     transition: "all 0.3s ease",
     opacity: removing === group.id ? 0 : 1,
