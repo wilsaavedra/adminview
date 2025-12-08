@@ -78,22 +78,25 @@ function AppContent() {
     >
       {showSidebar && <Sidebar />}
 
-    <Fade in timeout={400}>
- <Box
-  sx={{
-    flexGrow: 1,
-    width: "100%",
-    ml: showSidebar ? { md: "260px" } : 0,
-    boxSizing: "border-box",
-    p: { xs: 2, sm: 3, md: 4 },
+<Fade in timeout={400}>
+  <Box
+    sx={{
+      flexGrow: 1,
+      width: "100%",
+      ml: showSidebar ? { md: "260px" } : 0,
+      boxSizing: "border-box",
+      p: { xs: 2, sm: 3, md: 4 },
 
-    // 🔥 Permite que los grids y tablas se ajusten sin salirse
-    overflowX: "hidden",
+      // 👉 Permitimos que, si algún contenido (tabla) es más ancho,
+      //     el contenedor principal tenga el ÚNICO scroll horizontal.
+      overflowX: "auto",
 
-    // 🔥 Evita que el contenido tenga mínimos más grandes que el viewport
-    maxWidth: "100%",
-  }}
->
+      // 👉 Scroll vertical externo también aquí (solo uno, nada interno).
+      overflowY: "auto",
+
+      maxWidth: "100%",
+    }}
+  >
           <Routes>
             <Route
               path="/LoginScreen"
