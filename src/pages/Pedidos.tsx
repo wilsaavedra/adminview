@@ -279,7 +279,7 @@ const Pedidos: React.FC = () => {
           const colors = getHeaderColors(group);
 
           return (
-           <Card
+ <Card
   key={group.id}
   elevation={3}
   sx={{
@@ -291,18 +291,13 @@ const Pedidos: React.FC = () => {
     flexDirection: "column",
     bgcolor: "#ffffff",
 
-    // -----------------------------------------
-    // ⭐ FIX: permitir que el grid decida ancho
-    // -----------------------------------------
-    width: "100%",        // Ahora ocupa solo su columna
-    maxWidth: "none",     // Libera limitación rígida
-    flex: "1 1 auto",     // Permite al grid formar 3 / 2 / 1 columnas
-    // -----------------------------------------
+    width: "100%",        // ⭐ SE AJUSTA A SU COLUMNA
+    maxWidth: "100%",     // ⭐ NO CRECE MÁS NUNCA
+    flexShrink: 1,        // ⭐ EVITA DESBORDE
+    height: "auto",       // ⭐ NATURAL
 
-    height: "auto",
     boxSizing: "border-box",
     transition: "all 0.3s ease",
-
     opacity: removing === group.id ? 0 : 1,
     transform: removing === group.id ? "scale(0.85)" : "scale(1)",
     filter:
