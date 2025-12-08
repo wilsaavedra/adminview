@@ -4,7 +4,6 @@ import {
   Typography,
   CircularProgress,
   Grid,
-  Paper,
   IconButton,
   Button,
   Table,
@@ -12,7 +11,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
 } from "@mui/material";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -55,9 +54,11 @@ export default function MenuReservas() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-const [fecha, setFecha] = useState<Date | null>(
-  location.state?.fechaSeleccionada ? new Date(location.state.fechaSeleccionada) : new Date()
-);
+  const [fecha, setFecha] = useState<Date | null>(
+    location.state?.fechaSeleccionada
+      ? new Date(location.state.fechaSeleccionada)
+      : new Date()
+  );
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ const [fecha, setFecha] = useState<Date | null>(
   // =====================================
   // CARGAR MENÚ RESERVAS
   // =====================================
-   const fetchMenuReservas = async () => {
+  const fetchMenuReservas = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -83,7 +84,9 @@ const [fecha, setFecha] = useState<Date | null>(
       const data = resp.data.menureservas || [];
 
       // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
-      const dataLimpia = data.filter((mr: any) => mr.reserva && mr.reserva.fecha);
+      const dataLimpia = data.filter(
+        (mr: any) => mr.reserva && mr.reserva.fecha
+      );
 
       const keySelected = ymdLaPaz(fecha!);
 
@@ -134,7 +137,15 @@ const [fecha, setFecha] = useState<Date | null>(
       {/* ===================================== */}
       {/*     FECHA + TÍTULO                   */}
       {/* ===================================== */}
-      <Grid container alignItems="center" justifyContent="space-between" mb={3}>
+     <Grid
+  container
+  alignItems="center"
+  justifyContent="flex-start"
+  mb={3}
+  sx={{
+    gap: 3,              // separa elementos sin empujarlos
+  }}
+>
         <Box>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
@@ -180,41 +191,41 @@ const [fecha, setFecha] = useState<Date | null>(
           No hay reservas en menú para esta fecha.
         </Typography>
       ) : (
-<TableContainer
+        <TableContainer
+          sx={{
+            width: "100%",
+            // ✅ Sin scroll interno, solo el externo del AppContent
+            overflowX: "visible",
+            overflowY: "visible",
+            WebkitOverflowScrolling: "touch",
+            boxShadow: "none",
+            border: "none",
+            display: "block",
+          }}
+        >
+        <Table
   sx={{
-    width: "100%",
-    overflowX: "auto",
-    overflowY: "hidden",
-    WebkitOverflowScrolling: "touch",
-
-    // 🔥 CRÍTICO: evita scroll doble
-    display: "block",
-  }}
->
-<Table
-  sx={{
-    // 🔥 EN MÓVIL LA TABLA PUEDE SER MÁS ANCHA QUE LA PANTALLA
     width: "max-content",
-    minWidth: "100%",  // mantiene buen layout en desktop
-
+    minWidth: 950,        // 🔥 ESTA ES LA CLAVE REAL
     tableLayout: "auto",
+    borderCollapse: "collapse",
+
+    "& th, & td": {
+      padding: "10px 8px",
+      borderBottom: "1px solid #e0e0e0",
+    },
 
     "& th": {
-      whiteSpace: "nowrap",
       fontWeight: 600,
-      padding: "12px 8px",
+      whiteSpace: "normal",
+      wordBreak: "break-word",
+      fontSize: { xs: 12, md: 14 },
     },
 
     "& td": {
+      fontSize: { xs: 12, md: 14 },
       whiteSpace: "normal",
-      wordBreak: "break-word",  // 🔥 evita saltos feos
-      padding: "10px 8px",
-      verticalAlign: "top",
-    },
-
-    // ✅ LÍNEAS DE SEPARACIÓN ENTRE FILAS (igual que en Reservas)
-    "& td, & th": {
-      borderBottom: "1px solid #e0e0e0",
+      wordBreak: "break-word",
     },
   }}
 >
@@ -260,51 +271,52 @@ const [fecha, setFecha] = useState<Date | null>(
                     <TableCell>{pago} Bs</TableCell>
                     <TableCell>{saldo} Bs</TableCell>
 
-
                     {/* VER DETALLE */}
                     <TableCell>
-                     <IconButton
+                      <IconButton
                         onClick={() =>
-                            navigate(`/MenuReservasDetalle/${mr._id}`, {
-                            state: { fechaSeleccionada: fecha }
-                            })
+                          navigate(`/MenuReservasDetalle/${mr._id}`, {
+                            state: { fechaSeleccionada: fecha },
+                          })
                         }
                         color="primary"
-                        >
+                      >
                         <VisibilityIcon />
                       </IconButton>
                     </TableCell>
 
                     {/* ENVIAR PEDIDO */}
                     <TableCell>
-                   <Button
+                      <Button
                         variant="contained"
                         color="success"
                         size="small"
                         startIcon={<SendIcon />}
                         disabled={mr.enviado}
                         onClick={async () => {
-                            try {
+                          try {
                             await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
-                            // 🔥 1. Actualizar UI localmente (marcar como enviado)
-                            setReservas(prev =>
-                                prev.map(r =>
-                                r._id === mr._id ? { ...r, enviado: true } : r
-                                )
+                            setReservas((prev) =>
+                              prev.map((r) =>
+                                r._id === mr._id
+                                  ? { ...r, enviado: true }
+                                  : r
+                              )
                             );
-
-                            // 🔥 2. Opcional: refrescar desde backend
-                            // await fetchMenuReservas();
-
-                            } catch (error) {
+                          } catch (error) {
                             console.error("Error enviando pedido:", error);
-                            }
+                          }
                         }}
-                        sx={{ textTransform: "none" }}
-                        >
+                        sx={{
+                          textTransform: "none",
+                          px: 1.5,
+                          fontSize: { xs: 11, md: 12 },
+                          minWidth: { xs: 80, md: 90 },
+                        }}
+                      >
                         {mr.enviado ? "Enviado" : "Enviar"}
-                        </Button>
+                      </Button>
                     </TableCell>
 
                     {/* FACTURAR */}
@@ -316,7 +328,12 @@ const [fecha, setFecha] = useState<Date | null>(
                         startIcon={<ReceiptIcon />}
                         disabled={mr.facturado}
                         onClick={() => navigate(`/Facturar/${mr._id}`)}
-                        sx={{ textTransform: "none" }}
+                        sx={{
+                          textTransform: "none",
+                          px: 1.5,
+                          fontSize: { xs: 11, md: 12 },
+                          minWidth: { xs: 80, md: 90 },
+                        }}
                       >
                         {mr.facturado ? "Listo" : "Facturar"}
                       </Button>
