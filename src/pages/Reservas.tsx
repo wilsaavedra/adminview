@@ -209,8 +209,9 @@ setReservas(reservasFiltradas);
   component={Paper}
   sx={{
     width: "100%",
-    overflowX: "auto",
-    WebkitOverflowScrolling: "touch",
+    overflowX: "visible",   // ✔️ arregla scroll interno
+    overflowY: "visible",
+    boxShadow: "none",
   }}
 >
   <Table
