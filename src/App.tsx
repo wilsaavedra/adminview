@@ -82,12 +82,16 @@ function AppContent() {
  <Box
   sx={{
     flexGrow: 1,
-    minWidth: "100%",      // ← ← ← 🔥 SOLUCIÓN REAL
-    ml: showSidebar ? { md: "260px" } : 0,
     width: "100%",
+    ml: showSidebar ? { md: "260px" } : 0,
     boxSizing: "border-box",
     p: { xs: 2, sm: 3, md: 4 },
-    overflowX: "auto",
+
+    // 🔥 Permite que los grids y tablas se ajusten sin salirse
+    overflowX: "hidden",
+
+    // 🔥 Evita que el contenido tenga mínimos más grandes que el viewport
+    maxWidth: "100%",
   }}
 >
           <Routes>
