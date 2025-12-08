@@ -212,6 +212,8 @@ setReservas(reservasFiltradas);
           //boxShadow: 3,
           width: "100%",
           overflowX: "visible", // Scroll horizontal en pantallas pequeñas  visible
+          boxShadow: "none",     // ❌ ELIMINA LA SOMBRA DEL PAPER
+          border: "none", 
           "@media (max-width: 900px)": {   
             maxWidth: "100vw",
           },
