@@ -1,10 +1,10 @@
+// src/pages/MenuReservas.tsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
   CircularProgress,
   Grid,
-  Paper,
   IconButton,
   Button,
   Table,
@@ -12,7 +12,8 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  Paper,
 } from "@mui/material";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -50,25 +51,27 @@ interface MenuReserva {
   facturado?: boolean;
 }
 
+const ymdLaPaz = (d: Date) =>
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/La_Paz",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+
 export default function MenuReservas() {
   const [reservas, setReservas] = useState<MenuReserva[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
   const [fecha, setFecha] = useState<Date | null>(
-    location.state?.fechaSeleccionada ? new Date(location.state.fechaSeleccionada) : new Date()
+    location.state?.fechaSeleccionada
+      ? new Date(location.state.fechaSeleccionada)
+      : new Date()
   );
-
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
-  const ymdLaPaz = (d: Date) =>
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/La_Paz",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(d);
+  const navigate = useNavigate();
 
   // =====================================
   // CARGAR MENÚ RESERVAS
@@ -81,7 +84,9 @@ export default function MenuReservas() {
       const resp = await cafeApi.get("/menureservas");
       const data = resp.data.menureservas || [];
 
-      const dataLimpia = data.filter((mr: any) => mr.reserva && mr.reserva.fecha);
+      const dataLimpia = data.filter(
+        (mr: any) => mr.reserva && mr.reserva.fecha
+      );
 
       const keySelected = ymdLaPaz(fecha!);
 
@@ -97,9 +102,16 @@ export default function MenuReservas() {
               `/pedidos/existe/${mr.reserva._id}`
             );
 
-            return { ...mr, enviado: respExiste.data.existe };
-          } catch {
-            return { ...mr, enviado: false };
+            return {
+              ...mr,
+              enviado: respExiste.data.existe,
+            };
+          } catch (error) {
+            console.error("Error consultando pedidos existentes:", error);
+            return {
+              ...mr,
+              enviado: false,
+            };
           }
         })
       );
@@ -118,10 +130,8 @@ export default function MenuReservas() {
   }, [fecha]);
 
   return (
-    <Box sx={{ p: 3, width: "100%", bgcolor: "#fff" }}>
-      {/* ===================================== */}
-      {/*     FECHA + TÍTULO                   */}
-      {/* ===================================== */}
+    <Box sx={{ p: { xs: 2, md: 3 }, width: "100%", bgcolor: "#fff" }}>
+      {/* FECHA + TÍTULO */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Box>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
@@ -151,10 +161,7 @@ export default function MenuReservas() {
         </Typography>
       </Grid>
 
-      {/* ===================================== */}
-      {/*             LISTADO                   */}
-      {/* ===================================== */}
-
+      {/* LISTADO */}
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
           <CircularProgress />
@@ -172,21 +179,21 @@ export default function MenuReservas() {
           component={Paper}
           sx={{
             width: "100%",
-            overflow: "visible",        // 🔥 evita scroll interno
-            boxShadow: "0px 0px 4px rgba(0,0,0,0.1)",
-            borderRadius: "12px",
-            mt: 1,
+            overflowX: "visible",
+            overflowY: "visible",
+            borderRadius: 2,
+            boxShadow: 1,
           }}
         >
           <Table
             sx={{
               width: "100%",
               borderCollapse: "separate",
-              borderSpacing: 0,        // 🔥 bordes correctos
+              borderSpacing: 0,
               "& th": {
                 border: "none",
                 padding: "12px 8px",
-                whiteSpace: "nowrap",
+                whiteSpace: "normal",
               },
               "& td": {
                 border: "none",
@@ -225,7 +232,6 @@ export default function MenuReservas() {
                   <TableRow key={mr._id} hover>
                     <TableCell>{mr.reserva.nombre}</TableCell>
                     <TableCell>{mr.reserva.tipo}</TableCell>
-
                     <TableCell>
                       {mr.reserva.telefono.startsWith("+591")
                         ? mr.reserva.telefono.replace("+591", "")

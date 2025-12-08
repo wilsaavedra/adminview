@@ -1,3 +1,4 @@
+// src/pages/Reservas.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -197,7 +198,6 @@ export default function ReservasPage() {
           component={Paper}
           sx={{
             width: "100%",
-            // 👇 no scroll interno raro, pero bordes completos
             overflowX: "visible",
             overflowY: "visible",
             borderRadius: 2,

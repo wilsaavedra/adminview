@@ -1,4 +1,5 @@
 
+// src/App.tsx
 import React, { useContext } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Box, CircularProgress, Fade } from "@mui/material";
@@ -83,113 +84,102 @@ function AppContent() {
             flexGrow: 1,
             ml: showSidebar ? { md: "260px" } : 0, // sidebar solo desde md
             width: "100%",
-            // 👇 scroll ahora es GLOBAL (body), no interno
             boxSizing: "border-box",
-            p: { xs: 0, sm: 1, md: 3 },
+            p: { xs: 2, sm: 3, md: 4 },
+            // 👇 único scroll horizontal global (no hay internos raros)
+            overflowX: "auto",
           }}
         >
-          {/* CONTENEDOR CENTRAL */}
-          <Box
-            sx={{
-              width: "100%",
-              maxWidth: 1200,
-              mx: "auto",
-              // 👇 sin padding extra en XS para que tablas y cards no se corten
-              px: { xs: 0, sm: 2, md: 3 },
-              boxSizing: "border-box",
-            }}
-          >
-            <Routes>
-              <Route
-                path="/LoginScreen"
-                element={
-                  status === "authenticated" ? (
-                    <Navigate to="/Menu" replace />
-                  ) : (
-                    <LoginScreen />
-                  )
-                }
-              />
+          <Routes>
+            <Route
+              path="/LoginScreen"
+              element={
+                status === "authenticated" ? (
+                  <Navigate to="/Menu" replace />
+                ) : (
+                  <LoginScreen />
+                )
+              }
+            />
 
-              <Route
-                path="/"
-                element={
-                  status === "authenticated" ? (
-                    <Navigate to="/Menu" replace />
-                  ) : (
-                    <Navigate to="/LoginScreen" replace />
-                  )
-                }
-              />
+            <Route
+              path="/"
+              element={
+                status === "authenticated" ? (
+                  <Navigate to="/Menu" replace />
+                ) : (
+                  <Navigate to="/LoginScreen" replace />
+                )
+              }
+            />
 
-              <Route
-                path="/Menu"
-                element={
-                  <PrivateRoute>
-                    <Menu />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/Menu"
+              element={
+                <PrivateRoute>
+                  <Menu />
+                </PrivateRoute>
+              }
+            />
 
-              <Route
-                path="/Reservar"
-                element={
-                  <PrivateRoute>
-                    <Reservar />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/Reservar"
+              element={
+                <PrivateRoute>
+                  <Reservar />
+                </PrivateRoute>
+              }
+            />
 
-              <Route
-                path="/Reservas"
-                element={
-                  <PrivateRoute>
-                    <Reservas />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/Reservas"
+              element={
+                <PrivateRoute>
+                  <Reservas />
+                </PrivateRoute>
+              }
+            />
 
-              <Route
-                path="/MenuReservas"
-                element={
-                  <PrivateRoute roles={["ADMIN_ROLE"]}>
-                    <MenuReservas />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/MenuReservas"
+              element={
+                <PrivateRoute roles={["ADMIN_ROLE"]}>
+                  <MenuReservas />
+                </PrivateRoute>
+              }
+            />
 
-              <Route
-                path="/MenuReservasDetalle/:id"
-                element={
-                  <PrivateRoute roles={["ADMIN_ROLE"]}>
-                    <MenuReservasDetalle />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/MenuReservasDetalle/:id"
+              element={
+                <PrivateRoute roles={["ADMIN_ROLE"]}>
+                  <MenuReservasDetalle />
+                </PrivateRoute>
+              }
+            />
 
-              <Route
-                path="/Pedidos"
-                element={
-                  <PrivateRoute
-                    roles={["ADMIN_ROLE", "BAR_ROLE", "COCINA_ROLE", "PARRILLA_ROLE"]}
-                  >
-                    <Pedidos />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/Pedidos"
+              element={
+                <PrivateRoute
+                  roles={["ADMIN_ROLE", "BAR_ROLE", "COCINA_ROLE", "PARRILLA_ROLE"]}
+                >
+                  <Pedidos />
+                </PrivateRoute>
+              }
+            />
 
-              <Route
-                path="*"
-                element={
-                  status === "authenticated" ? (
-                    <Navigate to="/Menu" replace />
-                  ) : (
-                    <Navigate to="/LoginScreen" replace />
-                  )
-                }
-              />
-            </Routes>
-          </Box>
+            <Route
+              path="*"
+              element={
+                status === "authenticated" ? (
+                  <Navigate to="/Menu" replace />
+                ) : (
+                  <Navigate to="/LoginScreen" replace />
+                )
+              }
+            />
+          </Routes>
         </Box>
       </Fade>
     </Box>
