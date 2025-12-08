@@ -236,21 +236,38 @@ const Pedidos: React.FC = () => {
       >
         Pedidos en curso
       </Typography>
+{pedidos.length === 0 && (
+  <Typography
+    sx={{
+      textAlign: "center",
+      mt: 5,
+      color: "#777",
+      fontSize: "1.1rem",
+      px: 2
+    }}
+  >
+    No hay pedidos pendientes.
+  </Typography>
+)}
+     <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "1fr",
+      sm: "repeat(2, 1fr)",
+      md: "repeat(3, 1fr)",
+    },
+    gap: { xs: 2, md: 3 },
+    alignItems: "start",
+    width: "100%",
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)",
-          },
-          gap: { xs: 2, md: 3 },
-          alignItems: "start",
-          width: "100%",
-          px: { xs: 1.5, sm: 0 },
-        }}
-      >
+    // 🔥 FIX REAL PARA MÓVIL
+    px: { xs: 0.5, sm: 0, md: 0 },
+
+    // 🔥 EVITA QUE SE CORTE EL CARD EN LOS BORDES
+    overflow: "visible",
+  }}
+>
         {pedidos.map((group) => {
           const colors = getHeaderColors(group);
 

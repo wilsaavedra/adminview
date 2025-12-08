@@ -211,7 +211,7 @@ setReservas(reservasFiltradas);
     width: "100%",
     overflowX: "visible",   // ✔️ arregla scroll interno
     overflowY: "visible",
-    boxShadow: "none",
+   // boxShadow: "none",
   }}
 >
   <Table
