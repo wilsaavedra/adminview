@@ -194,18 +194,16 @@ export default function ReservasPage() {
           No hay reservas para esta fecha.
         </Typography>
       ) : (
- <TableContainer
+<TableContainer
   component={Paper}
   sx={{
     width: "100%",
 
-    // 🔥 Recupera scroll externo en móvil & tablet
-    overflowX: "auto",
+    // 🔥 NO SCROLL INTERNO
+    overflowX: "visible",
     overflowY: "visible",
-    display: "block",
-    WebkitOverflowScrolling: "touch",
 
-    // 🔥 Quitar bordes
+    // 🔥 Estilo limpio
     borderRadius: 0,
     boxShadow: "none",
     border: "none",
@@ -213,26 +211,20 @@ export default function ReservasPage() {
 >
        <Table
   sx={{
-    // 🔥 Permite que la tabla crezca más que el ancho de la pantalla
-    width: "max-content",
-
-    // 🔥 En desktop ocupa 100%, en móvil permite scroll horizontal
-    minWidth: "100%",
-
+    width: "100%",        // 🔥 Se adapta a pantalla, NO fuerza scroll
+    tableLayout: "auto",  // 🔥 Columnas dinámicas elegantes
     borderCollapse: "collapse",
-    borderSpacing: 0,
 
     "& th": {
       border: "none",
       padding: "12px 8px",
-      whiteSpace: "normal",
+      whiteSpace: "nowrap",
     },
     "& td": {
       border: "none",
       padding: "10px 8px",
       whiteSpace: "normal",
-      verticalAlign: "top",
-      wordBreak: "break-word", // 🔥 evita cortes feos en móvil
+      wordBreak: "break-word",
     },
   }}
 >
