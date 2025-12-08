@@ -68,19 +68,28 @@ function AppContent() {
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
-        <Box
-          sx={{
-            flexGrow: 1,
-            ml: showSidebar ? { md: '260px' } : 0,
-            width: '100%',
-            minHeight: 'inherit',
-            overflowX: 'auto',
-            overflowY: 'auto',
-            display: 'block',
-            p: { xs: 0, sm: 1, md: 3 },
-          }}
-        >
-          <Box sx={{ minWidth: 'max-content', width: '100%' }}>
+     <Box
+  sx={{
+    flexGrow: 1,
+    ml: showSidebar ? { md: '260px' } : 0,
+    width: '100%',
+    minHeight: 'inherit',
+
+    overflowX: 'visible',   // ← IMPORTANTE: permite que las sombras y bordes se vean
+    overflowY: 'auto',
+
+    display: 'block',
+    p: { xs: 0, sm: 1, md: 3 },
+    boxSizing: "border-box",
+  }}
+>
+  <Box
+    sx={{
+      width: "100%",
+      maxWidth: "100%",
+      boxSizing: "border-box",
+    }}
+  >
             <Routes>
               <Route
                 path="/LoginScreen"

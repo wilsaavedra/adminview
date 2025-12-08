@@ -154,7 +154,7 @@ const Pedidos: React.FC = () => {
           group.fechaEnvio = p.fecha_envio;
         }
 
-        // Categoría del producto
+        // === OBTENER LA CATEGORÍA REAL DEL PRODUCTO ===
         let cat = p.producto.categoria?.nombre
           ? p.producto.categoria.nombre.toUpperCase().trim()
           : "";
@@ -181,7 +181,7 @@ const Pedidos: React.FC = () => {
         }
       }
 
-      // ORDEN
+      // === ORDENAMIENTO GLOBAL POR CATEGORÍAS ===
       const ORDER = [
         "ENTRADAS",
         "ENSALADAS",
@@ -251,184 +251,158 @@ const Pedidos: React.FC = () => {
   }
 
   return (
-    <Box
-      sx={{
-        p: { xs: 2, md: 3 },
-        width: "100%",
-        bgcolor: "#ffffff",
-        minHeight: "100%",
-      }}
-    >
+    <Box sx={{ p: { xs: 2, md: 3 }, width: "100%", bgcolor: "#ffffff", minHeight: "100%" }}>
+
+      {/* TÍTULO FUERA DEL GRID — CORRECCIÓN CLAVE */}
       <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
         Pedidos en curso
       </Typography>
 
-      {/* GRID 100% RESPONSIVE */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",           // móvil
-            sm: "repeat(2, 1fr)", // tablet
-            md: "repeat(3, 1fr)", // desktop
-          },
-          gap: 2,
+      {/* GRID RESPONSIVO REAL */}
+           <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "1fr",          // móvil
+      sm: "repeat(2, 1fr)", // tablet
+      md: "repeat(3, 1fr)", // desktop
+    },
+    gap: 2,
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
 
-          width: "100%",
-          maxWidth: "100%",
-          overflowX: "hidden",
-          boxSizing: "border-box",
-        }}
-      >
+    // Cada hijo respeta el ancho de la columna sin salirse
+    "& > *": {
+      minWidth: 0,
+    },
+  }}
+>
         {pedidos.map((group) => {
           const colors = getHeaderColors(group);
 
           return (
-            <Card
-              key={group.id}
-              elevation={3}
-              sx={{
-                borderRadius: 3,
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
+           <Card
+  key={group.id}
+  elevation={3}
+  sx={{
+    borderRadius: 3,          // como antes, bordes suaves MUI
+    overflow: "hidden",       // importante: NO cortar sombras ni contenido
+    display: "flex",
+    flexDirection: "column",
+    bgcolor: "#ffffff",
+    height: "auto",
+    width: "100%",
+    maxWidth: "100%",
+    boxSizing: "border-box",
+    transition: "all 0.3s ease",
+    opacity: removing === group.id ? 0 : 1,
+    transform: removing === group.id ? "scale(0.85)" : "scale(1)",
+    filter: removing === group.id ? "blur(4px) saturate(200%)" : "none",
+  }}
+>
+  {/* HEADER */}
+  <Box
+    sx={{
+      bgcolor: colors.bg,
+      borderBottom: "1px solid rgba(0,0,0,0.06)",
+      px: 2,
+      py: 1.5,
+      display: "flex",
+      flexDirection: "column",
+      gap: 0.6,
+    }}
+  >
+    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {getCategoriaIcon(group.categoria)}
+        <Typography
+          variant="subtitle1"
+          sx={{ fontWeight: 700, textTransform: "uppercase", color: colors.text }}
+        >
+          Mesa {group.mesa}
+        </Typography>
+      </Box>
 
-                width: "100%",      // evita overflow
-                maxWidth: "100%",
-                boxSizing: "border-box",
+      <Tooltip title="Marcar como entregado">
+        <span>
+          <IconButton
+            size="small"
+            disabled={loadingGroupId === group.id}
+            onClick={() => handleCompletarGrupo(group)}
+            sx={{
+              color: colors.text,
+              "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+            }}
+          >
+            {loadingGroupId === group.id ? (
+              <CircularProgress size={18} />
+            ) : (
+              <CheckCircleIcon />
+            )}
+          </IconButton>
+        </span>
+      </Tooltip>
+    </Box>
 
-                bgcolor: "#ffffff",
-                transition: "all 0.3s ease",
-                opacity: removing === group.id ? 0 : 1,
-                transform: removing === group.id ? "scale(0.85)" : "scale(1)",
-                filter:
-                  removing === group.id
-                    ? "blur(4px) saturate(200%)"
-                    : "none",
-              }}
-            >
-              {/* HEADER */}
-              <Box
-                sx={{
-                  bgcolor: colors.bg,
-                  borderBottom: "1px solid rgba(0,0,0,0.06)",
-                  px: 2,
-                  py: 1.5,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 0.6,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {getCategoriaIcon(group.categoria)}
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        color: colors.text,
-                      }}
-                    >
-                      Mesa {group.mesa}
-                    </Typography>
-                  </Box>
+    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <Typography variant="caption" sx={{ color: "#555" }}>
+        {formatDateTime(group.fechaEnvio)}
+      </Typography>
 
-                  <Tooltip title="Marcar como entregado">
-                    <span>
-                      <IconButton
-                        size="small"
-                        disabled={loadingGroupId === group.id}
-                        onClick={() => handleCompletarGrupo(group)}
-                        sx={{
-                          color: colors.text,
-                          "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
-                        }}
-                      >
-                        {loadingGroupId === group.id ? (
-                          <CircularProgress size={18} />
-                        ) : (
-                          <CheckCircleIcon />
-                        )}
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Box>
+      <Typography
+        variant="caption"
+        sx={{
+          maxWidth: "50%",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          color: "#555",
+          fontWeight: 600,
+        }}
+      >
+        {group.clienteNombre}
+      </Typography>
+    </Box>
+  </Box>
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: 1,
-                  }}
-                >
-                  <Typography variant="caption" sx={{ color: "#555" }}>
-                    {formatDateTime(group.fechaEnvio)}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "#555",
-                      fontWeight: 600,
-                      maxWidth: "50%",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      textAlign: "right",
-                    }}
-                  >
-                    {group.clienteNombre}
-                  </Typography>
-                </Box>
-              </Box>
+  {/* BODY */}
+  <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1.5 }}>
+    {group.productos.map((prod) => (
+      <Box
+        key={prod.id}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          px: 1.5,
+          py: 0.6,
+          borderRadius: 2,
+          bgcolor: "#ffffff",
+          mb: 0.5,
+        }}
+      >
+        <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 32 }}>
+          {prod.cantidad}
+        </Typography>
 
-              {/* BODY */}
-              <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1.5 }}>
-                {group.productos.map((prod) => (
-                  <Box
-                    key={prod.id}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      borderRadius: 2,
-                      px: 1.5,
-                      py: 0.6,
-                      bgcolor: "#ffffff",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 700, minWidth: 32 }}
-                    >
-                      {prod.cantidad}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        flexGrow: 1,
-                        ml: 1,
-                        fontWeight: 500,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {prod.nombre}
-                    </Typography>
-                  </Box>
-                ))}
-              </CardContent>
-            </Card>
+        <Typography
+          variant="body2"
+          sx={{
+            flexGrow: 1,
+            ml: 1,
+            fontWeight: 500,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {prod.nombre}
+        </Typography>
+      </Box>
+    ))}
+  </CardContent>
+</Card>
           );
         })}
       </Box>
