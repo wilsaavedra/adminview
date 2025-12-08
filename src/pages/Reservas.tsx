@@ -217,22 +217,40 @@ setReservas(reservasFiltradas);
           },
         }}
       >
-        <Table
-          sx={{
-            width: "100%",
-            borderCollapse: "separate", // importante: separa los bordes
-            borderSpacing: 0,           // elimina espacio extra
-            "& th, & td": {
-              borderRight: "none",      // elimina líneas verticales
-              borderLeft: "none",
-            },
-            "& th:last-child, & td:last-child": {
-              borderRight: "none",      // asegura que la última col no tenga línea
-            },
-           // tableLayout: "fixed",   //se aumento
-            //minWidth: 950, // Mantiene buen formato en escritorio
-          }}
-        >
+    <Table
+  sx={{
+    width: "100%",
+    borderCollapse: "collapse",
+
+    "& th, & td": {
+      padding: "10px 8px",
+      whiteSpace: "normal",
+      wordBreak: "break-word",
+
+      // 🔥 LÍNEAS HORIZONTALES
+      borderBottom: "1px solid #e0e0e0", // SIEMPRE en desktop
+    },
+
+    // 🔥 QUITAR LÍNEAS VERTICALES SOLO EN MOVIL Y TABLET
+    "& td, & th": {
+      borderLeft: {
+        xs: "none", // móvil
+        sm: "none", // tablet
+        md: "1px solid transparent", // desktop SIN vertical visible
+      },
+      borderRight: {
+        xs: "none",
+        sm: "none",
+        md: "1px solid transparent",
+      },
+    },
+
+    // 💡 Evita que MUI pinte bordes raros en responsive
+    "& td:last-of-type, & th:last-of-type": {
+      borderRight: "none",
+    },
+  }}
+>
           <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
             <TableRow>
               <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>
