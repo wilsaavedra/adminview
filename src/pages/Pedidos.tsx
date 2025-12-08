@@ -363,44 +363,52 @@ const Pedidos: React.FC = () => {
               </Box>
 
               {/* BODY */}
-              <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1.5 }}>
-                {group.productos.map((prod) => (
-                  <Box
-                    key={prod.id}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      px: 1.5,
-                      py: 0.6,
-                      borderRadius: 2,
-                      bgcolor: "#ffffff",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 700, minWidth: 32 }}
-                    >
-                      {prod.cantidad}
-                    </Typography>
+  <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1 }}>
+  {group.productos.map((prod) => (
+    <Box
+      key={prod.id}
+      sx={{
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",     // 🔥 alineación perfecta
+        gap: 0.4,                 // 🔥 MUCHO MENOS ESPACIO ENTRE CANTIDAD Y NOMBRE
+        px: 1,
+        py: 0.4,
+        borderRadius: 2,
+        bgcolor: "#ffffff",
+        mb: 0.5,
+        width: "100%",
+      }}
+    >
+      {/* CANTIDAD */}
+      <Typography
+        variant="body2"
+        sx={{
+          fontWeight: 700,
+          minWidth: 18,           // 🔥 más pequeño, justo lo necesario
+          textAlign: "left",
+        }}
+      >
+        {prod.cantidad}
+      </Typography>
 
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        flexGrow: 1,
-                        ml: 1,
-                        fontWeight: 500,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {prod.nombre}
-                    </Typography>
-                  </Box>
-                ))}
-              </CardContent>
+      {/* NOMBRE DEL PRODUCTO */}
+      <Typography
+        variant="body2"
+        sx={{
+          flexGrow: 1,
+          fontWeight: 500,
+
+          whiteSpace: "normal",
+          wordBreak: "break-word",
+          lineHeight: 1.3,
+        }}
+      >
+        {prod.nombre}
+      </Typography>
+    </Box>
+  ))}
+</CardContent>
             </Card>
           );
         })}
