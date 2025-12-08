@@ -15,7 +15,7 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import MenuReservas from './pages/MenuReservas';
 import MenuReservasDetalle from './pages/MenuReservasDetalle';
 
-type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
+type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE' | 'PARRILLA_ROLE' | 'BAR_ROLE';
 
 function PrivateRoute({
   children,
@@ -68,38 +68,32 @@ function AppContent() {
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
-  <Box
-  sx={{
-    flexGrow: 1,
-    ml: {
-  xs: 0,  // móvil → jamás empujar
-  sm: 0,  // tablet → jamás empujar
-  md: showSidebar ? "260px" : 0, // desktop → sidebar fijo
-},
-    width: '100%',
-    minHeight: 'inherit',
+        <Box
+          sx={{
+            flexGrow: 1,
+            ml: showSidebar ? { md: '260px' } : 0, // sidebar SOLO desde md
+            width: '100%',
+            minHeight: 'inherit',
 
-    // Evita empujes laterales por el menú hamburguesa
-    overflowX: 'hidden',
-    overflowY: 'auto',
+            /** 🔥 FIX 1 — evita bordes cortados y problemas con las cards */
+            overflowX: 'hidden',
 
-    display: 'block',
+            overflowY: 'auto',
+            p: { xs: 0, sm: 1, md: 3 },
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* CONTENEDOR CENTRAL RESPONSIVE */}
+          <Box
+            sx={{
+              width: '100%',
 
-    // Ajustes perfectos para móvil y tablet
-    px: { xs: 1, sm: 2, md: 3 },
-    pt: { xs: 1, sm: 2, md: 3 },
-    pb: { xs: 2, sm: 2, md: 3 },
+              /** 🔥 FIX 2 — reduce padding XS para que el card entre sin cortarse */
+              px: { xs: 1, sm: 2, md: 3 },
 
-    boxSizing: "border-box",
-  }}
->
-  <Box
-    sx={{
-      width: "100%",
-      maxWidth: "100%",
-      boxSizing: "border-box",
-    }}
-  >
+              boxSizing: 'border-box',
+            }}
+          >
             <Routes>
               <Route
                 path="/LoginScreen"
@@ -163,14 +157,16 @@ function AppContent() {
                   </PrivateRoute>
                 }
               />
-            <Route
-              path="/Pedidos"
-              element={
-                <PrivateRoute roles={['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE']}>
-                  <Pedidos />
-                </PrivateRoute>
-              }
-            />
+
+              <Route
+                path="/Pedidos"
+                element={
+                  <PrivateRoute roles={['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE']}>
+                    <Pedidos />
+                  </PrivateRoute>
+                }
+              />
+
               <Route
                 path="*"
                 element={
@@ -193,6 +189,7 @@ function App() {
       <BrowserRouter>
         <AppContent />
       </BrowserRouter>
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
