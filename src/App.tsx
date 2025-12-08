@@ -10,12 +10,12 @@ import Reservar from './pages/Reservar';
 import Reservas from './pages/Reservas';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import Pedidos from './pages/Pedidos';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import MenuReservas from './pages/MenuReservas';
 import MenuReservasDetalle from './pages/MenuReservasDetalle';
 
-type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINERO_ROLE';
+type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
 
 function PrivateRoute({
   children,
@@ -144,7 +144,14 @@ function AppContent() {
                   </PrivateRoute>
                 }
               />
-
+            <Route
+              path="/Pedidos"
+              element={
+                <PrivateRoute roles={['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE']}>
+                  <Pedidos />
+                </PrivateRoute>
+              }
+            />
               <Route
                 path="*"
                 element={

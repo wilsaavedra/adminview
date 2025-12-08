@@ -73,27 +73,50 @@ const [fecha, setFecha] = useState<Date | null>(
   // =====================================
   // CARGAR MENÚ RESERVAS
   // =====================================
-  const fetchMenuReservas = async () => {
+   const fetchMenuReservas = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const resp = await cafeApi.get("/menureservas");
       console.log("🔥 RESPUESTA /menureservas:", JSON.stringify(resp.data, null, 2));
-   const data = resp.data.menureservas || [];
+      const data = resp.data.menureservas || [];
 
-// 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
-const dataLimpia = data.filter((mr: any) => mr.reserva && mr.reserva.fecha);
+      // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
+      const dataLimpia = data.filter((mr: any) => mr.reserva && mr.reserva.fecha);
 
-const keySelected = ymdLaPaz(fecha!);
+      const keySelected = ymdLaPaz(fecha!);
 
-// 2️⃣ AHORA FILTRAMOS POR LA FECHA
-const filtradas = dataLimpia.filter((mr: MenuReserva) => {
-  const keyRes = ymdLaPaz(new Date(mr.reserva.fecha));
-  return keyRes === keySelected;
-});
+      // 2️⃣ FILTRAR POR FECHA
+      const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
+        const keyRes = ymdLaPaz(new Date(mr.reserva.fecha));
+        return keyRes === keySelected;
+      });
 
-      setReservas(filtradas);
+      // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
+      const filtradasConEnviado: MenuReserva[] = await Promise.all(
+        filtradas.map(async (mr) => {
+          try {
+            const respExiste = await cafeApi.get<{ existe: boolean }>(
+              `/pedidos/existe/${mr.reserva._id}`
+            );
+
+            return {
+              ...mr,
+              enviado: respExiste.data.existe, // true → deshabilitar botón
+            };
+          } catch (error) {
+            console.error("Error consultando pedidos existentes:", error);
+            // Si algo falla, por seguridad lo dejamos como no enviado
+            return {
+              ...mr,
+              enviado: false,
+            };
+          }
+        })
+      );
+
+      setReservas(filtradasConEnviado);
     } catch (err) {
       console.error(err);
       setError("No se pudo cargar el menú de reservas.");
@@ -234,17 +257,34 @@ const filtradas = dataLimpia.filter((mr: MenuReserva) => {
 
                     {/* ENVIAR PEDIDO */}
                     <TableCell>
-                      <Button
+                   <Button
                         variant="contained"
                         color="success"
                         size="small"
                         startIcon={<SendIcon />}
                         disabled={mr.enviado}
-                        onClick={() => navigate(`/EnviarPedido/${mr._id}`)}
+                        onClick={async () => {
+                            try {
+                            await cafeApi.post(`/pedidos/crear/${mr._id}`);
+
+                            // 🔥 1. Actualizar UI localmente (marcar como enviado)
+                            setReservas(prev =>
+                                prev.map(r =>
+                                r._id === mr._id ? { ...r, enviado: true } : r
+                                )
+                            );
+
+                            // 🔥 2. Opcional: refrescar desde backend
+                            // await fetchMenuReservas();
+
+                            } catch (error) {
+                            console.error("Error enviando pedido:", error);
+                            }
+                        }}
                         sx={{ textTransform: "none" }}
-                      >
+                        >
                         {mr.enviado ? "Enviado" : "Enviar"}
-                      </Button>
+                        </Button>
                     </TableCell>
 
                     {/* FACTURAR */}

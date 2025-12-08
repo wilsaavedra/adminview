@@ -21,8 +21,9 @@ import { AuthContext } from '../context/AuthContext';
 import Logo from '../assets/View3.png';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 
-type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINERO_ROLE';
+type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
 
 interface MenuItem {
   text: string;
@@ -54,6 +55,12 @@ const menuItems: MenuItem[] = [
     path: '/MenuReservas',
     roles: ['ADMIN_ROLE'], // solo admin pero admin entra a todo igualmente
   },
+  {
+  text: 'Pedidos',
+  icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />,
+  path: '/Pedidos',
+  roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'],
+},
 ];
 
 interface SidebarProps {
