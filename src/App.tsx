@@ -76,7 +76,7 @@ function AppContent() {
             minHeight: 'inherit',
 
             /** 🔥 FIX 1 — evita bordes cortados y problemas con las cards */
-            overflowX: 'hidden',
+            overflowX: 'visible',
 
             overflowY: 'auto',
             p: { xs: 0, sm: 1, md: 3 },
