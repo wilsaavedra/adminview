@@ -76,14 +76,10 @@ const diffMinutesFromNow = (iso: string) => {
 
 const getCategoriaIcon = (categoria: CategoriaPedido) => {
   switch (categoria) {
-    case "Cocina":
-      return <RestaurantIcon fontSize="small" />;
-    case "Parrilla":
-      return <OutdoorGrillIcon fontSize="small" />;
-    case "Bar":
-      return <LocalBarIcon fontSize="small" />;
-    default:
-      return null;
+    case "Cocina": return <RestaurantIcon fontSize="small" />;
+    case "Parrilla": return <OutdoorGrillIcon fontSize="small" />;
+    case "Bar": return <LocalBarIcon fontSize="small" />;
+    default: return null;
   }
 };
 
@@ -93,18 +89,10 @@ const getHeaderColors = (group: PedidoCardGroup) => {
   const retrasado = minutos >= limite;
 
   if (retrasado) {
-    return {
-      bg: "#ffe0ec",
-      border: "1px solid #f48fb1",
-      text: "#b00020",
-    };
+    return { bg: "#ffe0ec", border: "1px solid #f48fb1", text: "#b00020" };
   }
 
-  return {
-    bg: "#e3f7e4",
-    border: "1px solid #a5d6a7",
-    text: "#1b5e20",
-  };
+  return { bg: "#e3f7e4", border: "1px solid #a5d6a7", text: "#1b5e20" };
 };
 
 const Pedidos: React.FC = () => {
@@ -119,12 +107,10 @@ const Pedidos: React.FC = () => {
 
   const categoriasFiltradas: CategoriaPedido[] = useMemo(() => {
     if (!rol) return [];
-
     if (rol === "ADMIN_ROLE") return ["Cocina", "Parrilla", "Bar"];
     if (rol === "COCINA_ROLE") return ["Cocina"];
     if (rol === "BAR_ROLE") return ["Bar"];
     if (rol === "PARRILLA_ROLE" || rol === "PARILLA_ROLE") return ["Parrilla"];
-
     return [];
   }, [rol]);
 
@@ -168,6 +154,7 @@ const Pedidos: React.FC = () => {
           group.fechaEnvio = p.fecha_envio;
         }
 
+        // Categoría del producto
         let cat = p.producto.categoria?.nombre
           ? p.producto.categoria.nombre.toUpperCase().trim()
           : "";
@@ -178,7 +165,9 @@ const Pedidos: React.FC = () => {
           else cat = "BEBIDAS";
         }
 
-        const existing = group.productos.find((prod) => prod.id === p.producto._id);
+        const existing = group.productos.find(
+          (prod) => prod.id === p.producto._id
+        );
 
         if (existing) {
           existing.cantidad += Number(p.cantidad ?? 1);
@@ -192,6 +181,7 @@ const Pedidos: React.FC = () => {
         }
       }
 
+      // ORDEN
       const ORDER = [
         "ENTRADAS",
         "ENSALADAS",
@@ -269,68 +259,59 @@ const Pedidos: React.FC = () => {
         minHeight: "100%",
       }}
     >
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
         Pedidos en curso
       </Typography>
 
-      {error && <Typography sx={{ mb: 2, color: "red" }}>{error}</Typography>}
-
-      {loading && (
-        <Box sx={{ mt: 5, display: "flex", justifyContent: "center" }}>
-          <CircularProgress />
-        </Box>
-      )}
-
-      {!loading && !error && pedidos.length === 0 && (
-        <Typography sx={{ mt: 4, textAlign: "center", color: "#777" }}>
-          No hay pedidos pendientes.
-        </Typography>
-      )}
-
-      {/* GRID RESPONSIVO */}
+      {/* GRID 100% RESPONSIVE */}
       <Box
         sx={{
-          mt: 1,
           display: "grid",
           gridTemplateColumns: {
-            xs: "1fr",
-            sm: "repeat(2, minmax(0, 1fr))",
-            md: "repeat(3, minmax(0, 1fr))",
+            xs: "1fr",           // móvil
+            sm: "repeat(2, 1fr)", // tablet
+            md: "repeat(3, 1fr)", // desktop
           },
           gap: 2,
-          alignItems: "start",
+
+          width: "100%",
+          maxWidth: "100%",
+          overflowX: "hidden",
+          boxSizing: "border-box",
         }}
       >
         {pedidos.map((group) => {
           const colors = getHeaderColors(group);
 
           return (
-             <Card
-                key={group.id}
-                elevation={3}
-                sx={{
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    display: "flex",
-                    flexDirection: "column",
+            <Card
+              key={group.id}
+              elevation={3}
+              sx={{
+                borderRadius: 3,
+                overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
 
-                    width: "100%",           // 👉 evita desbordes en móvil
-                    boxSizing: "border-box", // 👉 corrige el cálculo del ancho
-                    height: "auto",
+                width: "100%",      // evita overflow
+                maxWidth: "100%",
+                boxSizing: "border-box",
 
-                    bgcolor: "#ffffff",
-                    transition: "all 0.3s ease",
-                    opacity: removing === group.id ? 0 : 1,
-                    transform: removing === group.id ? "scale(0.85)" : "scale(1)",
-                    filter: removing === group.id ? "blur(4px) saturate(200%)" : "none",
-                }}
-                >
+                bgcolor: "#ffffff",
+                transition: "all 0.3s ease",
+                opacity: removing === group.id ? 0 : 1,
+                transform: removing === group.id ? "scale(0.85)" : "scale(1)",
+                filter:
+                  removing === group.id
+                    ? "blur(4px) saturate(200%)"
+                    : "none",
+              }}
+            >
               {/* HEADER */}
               <Box
                 sx={{
                   bgcolor: colors.bg,
                   borderBottom: "1px solid rgba(0,0,0,0.06)",
-                  borderTop: "none",
                   px: 2,
                   py: 1.5,
                   display: "flex",
@@ -338,7 +319,6 @@ const Pedidos: React.FC = () => {
                   gap: 0.6,
                 }}
               >
-                {/* FILA SUPERIOR */}
                 <Box
                   sx={{
                     display: "flex",
@@ -348,21 +328,18 @@ const Pedidos: React.FC = () => {
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     {getCategoriaIcon(group.categoria)}
-
                     <Typography
                       variant="subtitle1"
                       sx={{
                         fontWeight: 700,
                         textTransform: "uppercase",
                         color: colors.text,
-                        letterSpacing: 0.3,
                       }}
                     >
                       Mesa {group.mesa}
                     </Typography>
                   </Box>
 
-                  {/* Ícono ✓ rojo */}
                   <Tooltip title="Marcar como entregado">
                     <span>
                       <IconButton
@@ -370,12 +347,12 @@ const Pedidos: React.FC = () => {
                         disabled={loadingGroupId === group.id}
                         onClick={() => handleCompletarGrupo(group)}
                         sx={{
-                          color: "#d32f2f",
-                          "&:hover": { backgroundColor: "rgba(211,47,47,0.12)" },
+                          color: colors.text,
+                          "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
                         }}
                       >
                         {loadingGroupId === group.id ? (
-                          <CircularProgress size={18} sx={{ color: "#d32f2f" }} />
+                          <CircularProgress size={18} />
                         ) : (
                           <CheckCircleIcon />
                         )}
@@ -384,7 +361,6 @@ const Pedidos: React.FC = () => {
                   </Tooltip>
                 </Box>
 
-                {/* Fecha + Cliente */}
                 <Box
                   sx={{
                     display: "flex",
@@ -393,14 +369,13 @@ const Pedidos: React.FC = () => {
                     gap: 1,
                   }}
                 >
-                  <Typography variant="caption" sx={{ color: "#444" }}>
+                  <Typography variant="caption" sx={{ color: "#555" }}>
                     {formatDateTime(group.fechaEnvio)}
                   </Typography>
-
                   <Typography
                     variant="caption"
                     sx={{
-                      color: "#444",
+                      color: "#555",
                       fontWeight: 600,
                       maxWidth: "50%",
                       overflow: "hidden",
@@ -415,14 +390,14 @@ const Pedidos: React.FC = () => {
               </Box>
 
               {/* BODY */}
-              <CardContent sx={{ bgcolor: "#fff", py: 1.5 }}>
+              <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1.5 }}>
                 {group.productos.map((prod) => (
                   <Box
                     key={prod.id}
                     sx={{
                       display: "flex",
+                      justifyContent: "space-between",
                       alignItems: "center",
-                      gap: 2,
                       borderRadius: 2,
                       px: 1.5,
                       py: 0.6,
@@ -432,12 +407,7 @@ const Pedidos: React.FC = () => {
                   >
                     <Typography
                       variant="body2"
-                      sx={{
-                        fontWeight: 700,
-                        width: 20,
-                        textAlign: "center",
-                        color: "#222",
-                      }}
+                      sx={{ fontWeight: 700, minWidth: 32 }}
                     >
                       {prod.cantidad}
                     </Typography>
@@ -445,11 +415,12 @@ const Pedidos: React.FC = () => {
                     <Typography
                       variant="body2"
                       sx={{
+                        flexGrow: 1,
+                        ml: 1,
                         fontWeight: 500,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
-                        color: "#333",
                       }}
                     >
                       {prod.nombre}
