@@ -212,7 +212,8 @@ export default function ReservasPage() {
  <Table
   sx={{
     width: "100%",
-    tableLayout: "fixed",   // 🔥 vuelve al comportamiento correcto
+    minWidth: "100%",       // evita compresión en desktop
+    tableLayout: "auto",    // 🔥 permite que el contenido determine el ancho real
     borderCollapse: "collapse",
 
     "& th": {
@@ -224,10 +225,8 @@ export default function ReservasPage() {
     "& td": {
       border: "none",
       padding: "10px 8px",
-
-      whiteSpace: "normal",     // 🔥 frases largas SI bajan de línea
-      wordBreak: "normal",      // 🔥 NO rompe palabras
-      overflowWrap: "anywhere", // 🔥 si una palabra es MUY larga, recién ahí rompe
+      whiteSpace: "normal",
+      wordBreak: "break-word",   // 🔥 solo envuelve si es necesario
     },
   }}
 >

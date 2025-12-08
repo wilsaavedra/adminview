@@ -78,18 +78,18 @@ function AppContent() {
     >
       {showSidebar && <Sidebar />}
 
-      <Fade in timeout={400}>
-        <Box
-          sx={{
-            flexGrow: 1,
-            ml: showSidebar ? { md: "260px" } : 0, // sidebar solo desde md
-            width: "100%",
-            boxSizing: "border-box",
-            p: { xs: 2, sm: 3, md: 4 },
-            // 👇 único scroll horizontal global (no hay internos raros)
-            overflowX: "auto",
-          }}
-        >
+    <Fade in timeout={400}>
+  <Box
+    sx={{
+      flexGrow: 1,
+      minWidth: 0,                 // 🔥 ESTO ARREGLA TODO EL COMPORTAMIENTO DE TABLAS
+      ml: showSidebar ? { md: "260px" } : 0,
+      width: "100%",
+      boxSizing: "border-box",
+      p: { xs: 2, sm: 3, md: 4 },
+      overflowX: "auto",          // único scroll global
+    }}
+  >
           <Routes>
             <Route
               path="/LoginScreen"

@@ -211,6 +211,11 @@ const [fecha, setFecha] = useState<Date | null>(
       padding: "10px 8px",
       verticalAlign: "top",
     },
+
+    // ✅ LÍNEAS DE SEPARACIÓN ENTRE FILAS (igual que en Reservas)
+    "& td, & th": {
+      borderBottom: "1px solid #e0e0e0",
+    },
   }}
 >
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
