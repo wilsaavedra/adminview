@@ -14,15 +14,18 @@ import {
   Grid,
   Select,
   MenuItem,
-  Dialog, DialogTitle, DialogContent, DialogActions, Button
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { es } from "date-fns/locale";
-import { parseISO, isSameDay, format, compareAsc } from "date-fns";
-import { TextField } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 interface CreadoPor {
@@ -46,35 +49,21 @@ interface Reservas {
   confirmacion: boolean;
   comentarios: string;
   resest: string;
-  mesa?:string;
+  mesa?: string;
 }
 
 const API = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080/api",
 });
 
-// Helper para comparar solo fecha UTC (año, mes, día en UTC)
-const isSameUtcDate = (d1: Date, d2: Date) => {
-    return (
-      d1.getUTCFullYear() === d2.getUTCFullYear() &&
-      d1.getUTCMonth() === d2.getUTCMonth() &&
-      d1.getUTCDate() === d2.getUTCDate()
-    );
-  };
-  
-  // Convierte la fecha seleccionada a medianoche UTC del día elegido
-  const toUtcMidnight = (local: Date) =>
-    new Date(Date.UTC(local.getFullYear(), local.getMonth(), local.getDate()));
-
 // Devuelve la fecha "YYYY-MM-DD" en zona America/La_Paz
 const ymdLaPaz = (d: Date) =>
-    new Intl.DateTimeFormat("en-CA", {
-      timeZone: "America/La_Paz",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(d);
-
+  new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/La_Paz",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 
 export default function ReservasPage() {
   const [reservas, setReservas] = useState<Reservas[]>([]);
@@ -84,9 +73,8 @@ export default function ReservasPage() {
   const totalPax = reservas.reduce((sum, r) => sum + (r.cantidad || 0), 0);
 
   const [open, setOpen] = useState(false);
-const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
+  const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
 
-  
   const fetchReservas = async (
     fechaSeleccionada: Date,
     setReservas: (r: Reservas[]) => void,
@@ -102,23 +90,25 @@ const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
         ? response.data.reservas
         : [];
 
-      // Filtrar por fecha y ordenar por hora ascendente
-   // Filtrar por fecha (día local Bolivia) y ordenar por hora ascendente
-const selectedKey = ymdLaPaz(fechaSeleccionada);
+      const selectedKey = ymdLaPaz(fechaSeleccionada);
 
-const reservasFiltradas: Reservas[] = data
-  .filter((reserva) => {
-    const keyReserva = ymdLaPaz(new Date(reserva.fecha)); // fecha de la reserva en La Paz
-    return keyReserva === selectedKey;                     // compara día local Bolivia
-  })
-  .sort((a, b) => {
-    const horaA = new Date(a.fecha).getHours() * 60 + new Date(a.fecha).getMinutes();
-    const horaB = new Date(b.fecha).getHours() * 60 + new Date(b.fecha).getMinutes();
-    return horaA - horaB;
-  })
-  .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
+      const reservasFiltradas: Reservas[] = data
+        .filter((reserva) => {
+          const keyReserva = ymdLaPaz(new Date(reserva.fecha));
+          return keyReserva === selectedKey;
+        })
+        .sort((a, b) => {
+          const horaA =
+            new Date(a.fecha).getHours() * 60 +
+            new Date(a.fecha).getMinutes();
+          const horaB =
+            new Date(b.fecha).getHours() * 60 +
+            new Date(b.fecha).getMinutes();
+          return horaA - horaB;
+        })
+        .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
 
-setReservas(reservasFiltradas);
+      setReservas(reservasFiltradas);
     } catch (err) {
       console.error("Error al cargar reservas", err);
       setError("No se pudo cargar las reservas.");
@@ -146,8 +136,7 @@ setReservas(reservasFiltradas);
   };
 
   return (
-    <Box sx={{ p: 3, bgcolor: "#fff" }}>
-      
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: "#fff" }}>
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Box>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
@@ -163,15 +152,15 @@ setReservas(reservasFiltradas);
               }}
             />
           </LocalizationProvider>
-         
+
           {reservas.length > 0 && (
             <Typography
-                variant="subtitle1"
-                sx={{ mt: 1, fontWeight: 500, color: "#444" }}
+              variant="subtitle1"
+              sx={{ mt: 1, fontWeight: 500, color: "#444" }}
             >
-                Cantidad Pax: {totalPax}
+              Cantidad Pax: {totalPax}
             </Typography>
-            )}
+          )}
         </Box>
 
         <Box>
@@ -179,19 +168,18 @@ setReservas(reservasFiltradas);
             variant="h6"
             sx={{ fontWeight: 600, color: "#333", textAlign: "right" }}
           >
-           {fecha &&
-            new Intl.DateTimeFormat("es-ES", {
+            {fecha &&
+              new Intl.DateTimeFormat("es-ES", {
                 weekday: "long",
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
-                timeZone: "America/La_Paz",   // 👈 aquí fuerza Bolivia
-            }).format(fecha)}
+                timeZone: "America/La_Paz",
+              }).format(fecha)}
           </Typography>
         </Box>
       </Grid>
 
-   
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
           <CircularProgress />
@@ -205,219 +193,245 @@ setReservas(reservasFiltradas);
           No hay reservas para esta fecha.
         </Typography>
       ) : (
-<TableContainer
-  component={Paper}
-  sx={{
-    width: "100%",
-    overflowX: "visible",   // ✔️ arregla scroll interno
-    overflowY: "visible",
-   // boxShadow: "none",
-  }}
->
-  <Table
-    sx={{
-      width: "100%",
-      borderCollapse: "separate",
-      borderSpacing: 0,
-      "& th": {
-        border: "none",
-        padding: "12px 8px",
-        whiteSpace: "normal",
-      },
-      "& td": {
-        border: "none",
-        padding: "10px 8px",
-        whiteSpace: "normal",      // ⭐ permite que todo haga wrap
-        verticalAlign: "top",
-      },
-    }}
-  >
-  <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
-    <TableRow>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Nombre</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Hora</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Pax</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Teléfono</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Asistira</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Comentarios</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Adelanto</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Mesa</TableCell>
-      <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>Estado</TableCell>
-    </TableRow>
-  </TableHead>
-
-  <TableBody>
-    {reservas.map((reserva) => (
-      <TableRow
-        key={reserva._id}
-        hover
-        sx={{ bgcolor: getRowColor(reserva.resest) }}
-      >
-        <TableCell>{reserva.nombre}</TableCell>
-
-        <TableCell>
-          {new Intl.DateTimeFormat("es-BO", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-            timeZone: "America/La_Paz",
-          }).format(new Date(reserva.fecha))}
-        </TableCell>
-
-        <TableCell>{reserva.cantidad}</TableCell>
-
-        <TableCell>
-          {reserva.telefono.startsWith("+591")
-            ? reserva.telefono.replace("+591", "")
-            : reserva.telefono}
-        </TableCell>
-
-        <TableCell>{reserva.confirmacion ? "Confirmado" : ""}</TableCell>
-
-        <TableCell
+        <TableContainer
+          component={Paper}
           sx={{
-            maxWidth: { xs: 120, sm: 200, md: "auto" },
-            whiteSpace: "normal",
-            wordWrap: "break-word",
+            width: "100%",
+            // 👇 no scroll interno raro, pero bordes completos
+            overflowX: "visible",
+            overflowY: "visible",
+            borderRadius: 2,
+            boxShadow: 1,
           }}
         >
-          {reserva.comentarios}
-        </TableCell>
-
-        <TableCell
-          sx={{
-            maxWidth: { xs: 120, sm: 200, md: "auto" },
-            whiteSpace: "normal",
-            wordWrap: "break-word",
-          }}
-        >
-          {reserva.pago !== 0 ? reserva.pago : ""}
-        </TableCell>
-
-        <TableCell
-          sx={{
-            maxWidth: { xs: 50, sm: 60, md: 80 },
-            whiteSpace: "nowrap",
-            padding: "0.25rem",
-            "& .MuiInputBase-root": {
-              bgcolor: "white",
-            },
-          }}
-        >
-          <TextField
-            value={reserva.mesa || ""}
-            size="small"
-            variant="outlined"
-            inputProps={{
-              maxLength: 2,
-              style: { textAlign: "center" },
-            }}
-            onChange={(e) => {
-              const nuevaMesa = e.target.value;
-              setReservas((prev) =>
-                prev.map((r) =>
-                  r._id === reserva._id ? { ...r, mesa: nuevaMesa } : r
-                )
-              );
-            }}
-            onBlur={async (e) => {
-              try {
-                await API.put(`/reservas/${reserva._id}`, {
-                  mesa: e.target.value || "",
-                });
-              } catch (err) {
-                console.error("Error al actualizar mesa:", err);
-              }
-            }}
+          <Table
             sx={{
               width: "100%",
-              "& input": { p: 0.5 },
-            }}
-          />
-        </TableCell>
-
-        <TableCell>
-          <Select
-            value={reserva.resest || "Pendiente"}
-            size="small"
-            onChange={async (e) => {
-              const nuevoEstado = e.target.value;
-              try {
-                if (nuevoEstado === "Cancelo") {
-                  setReservaSeleccionada(reserva);
-                  setOpen(true);
-                } else {
-                  await API.put(`/reservas/${reserva._id}`, {
-                    resest: nuevoEstado,
-                  });
-
-                  setReservas((prev) =>
-                    prev.map((r) =>
-                      r._id === reserva._id ? { ...r, resest: nuevoEstado } : r
-                    )
-                  );
-                }
-              } catch (err) {
-                console.error("Error al actualizar estado:", err);
-              }
-            }}
-            sx={{
-              minWidth: { xs: 100, sm: 120, md: 140 },
+              borderCollapse: "separate",
+              borderSpacing: 0,
+              "& th": {
+                border: "none",
+                padding: "12px 8px",
+                whiteSpace: "normal",
+              },
+              "& td": {
+                border: "none",
+                padding: "10px 8px",
+                whiteSpace: "normal",
+                verticalAlign: "top",
+              },
             }}
           >
-            {["Pendiente", "Llego", "Cancelo", "No vino"].map((estado) => (
-              <MenuItem key={estado} value={estado}>
-                {estado}
-              </MenuItem>
-            ))}
-          </Select>
-        </TableCell>
-      </TableRow>
-    ))}
-  </TableBody>
-</Table>
-      </TableContainer>
-      
+            <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
+              <TableRow>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Nombre
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Hora
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Pax
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Teléfono
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Asistira
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Comentarios
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Adelanto
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Mesa
+                </TableCell>
+                <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                  Estado
+                </TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {reservas.map((reserva) => (
+                <TableRow
+                  key={reserva._id}
+                  hover
+                  sx={{ bgcolor: getRowColor(reserva.resest) }}
+                >
+                  <TableCell>{reserva.nombre}</TableCell>
+
+                  <TableCell>
+                    {new Intl.DateTimeFormat("es-BO", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                      timeZone: "America/La_Paz",
+                    }).format(new Date(reserva.fecha))}
+                  </TableCell>
+
+                  <TableCell>{reserva.cantidad}</TableCell>
+
+                  <TableCell>
+                    {reserva.telefono.startsWith("+591")
+                      ? reserva.telefono.replace("+591", "")
+                      : reserva.telefono}
+                  </TableCell>
+
+                  <TableCell>
+                    {reserva.confirmacion ? "Confirmado" : ""}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      maxWidth: { xs: 120, sm: 200, md: "auto" },
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                    }}
+                  >
+                    {reserva.comentarios}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      maxWidth: { xs: 120, sm: 200, md: "auto" },
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                    }}
+                  >
+                    {reserva.pago !== 0 ? reserva.pago : ""}
+                  </TableCell>
+
+                  <TableCell
+                    sx={{
+                      maxWidth: { xs: 50, sm: 60, md: 80 },
+                      whiteSpace: "nowrap",
+                      padding: "0.25rem",
+                      "& .MuiInputBase-root": {
+                        bgcolor: "white",
+                      },
+                    }}
+                  >
+                    <TextField
+                      value={reserva.mesa || ""}
+                      size="small"
+                      variant="outlined"
+                      inputProps={{
+                        maxLength: 2,
+                        style: { textAlign: "center" },
+                      }}
+                      onChange={(e) => {
+                        const nuevaMesa = e.target.value;
+                        setReservas((prev) =>
+                          prev.map((r) =>
+                            r._id === reserva._id
+                              ? { ...r, mesa: nuevaMesa }
+                              : r
+                          )
+                        );
+                      }}
+                      onBlur={async (e) => {
+                        try {
+                          await API.put(`/reservas/${reserva._id}`, {
+                            mesa: e.target.value || "",
+                          });
+                        } catch (err) {
+                          console.error("Error al actualizar mesa:", err);
+                        }
+                      }}
+                      sx={{
+                        width: "100%",
+                        "& input": { p: 0.5 },
+                      }}
+                    />
+                  </TableCell>
+
+                  <TableCell>
+                    <Select
+                      value={reserva.resest || "Pendiente"}
+                      size="small"
+                      onChange={async (e) => {
+                        const nuevoEstado = e.target.value;
+                        try {
+                          if (nuevoEstado === "Cancelo") {
+                            setReservaSeleccionada(reserva);
+                            setOpen(true);
+                          } else {
+                            await API.put(`/reservas/${reserva._id}`, {
+                              resest: nuevoEstado,
+                            });
+
+                            setReservas((prev) =>
+                              prev.map((r) =>
+                                r._id === reserva._id
+                                  ? { ...r, resest: nuevoEstado }
+                                  : r
+                              )
+                            );
+                          }
+                        } catch (err) {
+                          console.error("Error al actualizar estado:", err);
+                        }
+                      }}
+                      sx={{
+                        minWidth: { xs: 100, sm: 120, md: 140 },
+                      }}
+                    >
+                      {["Pendiente", "Llego", "Cancelo", "No vino"].map(
+                        (estado) => (
+                          <MenuItem key={estado} value={estado}>
+                            {estado}
+                          </MenuItem>
+                        )
+                      )}
+                    </Select>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
 
-{/* Dialog de confirmación */}
-<Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <WarningAmberIcon color="warning" />
-        Confirmar cancelación
-      </DialogTitle>
-      <DialogContent>
-        <Typography>
-          Estás seguro de cancelar esta reserva? <br />
-          Se eliminará la reserva definitivamente.
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={() => setOpen(false)} variant="outlined">
-          NO
-        </Button>
-        <Button
-          color="error"
-          variant="contained"
-          onClick={async () => {
-            if (reservaSeleccionada) {
-              await API.put(`/reservas/${reservaSeleccionada._id}`, {
-                resest: "Cancelo",
-                estado: false,
-              });
-              setReservas((prev) =>
-                prev.filter((r) => r._id !== reservaSeleccionada._id)
-              );
-            }
-            setOpen(false);
-          }}
-        >
-          SI
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {/* Dialog de confirmación */}
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <WarningAmberIcon color="warning" />
+          Confirmar cancelación
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Estás seguro de cancelar esta reserva? <br />
+            Se eliminará la reserva definitivamente.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)} variant="outlined">
+            NO
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={async () => {
+              if (reservaSeleccionada) {
+                await API.put(`/reservas/${reservaSeleccionada._id}`, {
+                  resest: "Cancelo",
+                  estado: false,
+                });
+                setReservas((prev) =>
+                  prev.filter((r) => r._id !== reservaSeleccionada._id)
+                );
+              }
+              setOpen(false);
+            }}
+          >
+            SI
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
- 
 }
 

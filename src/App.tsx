@@ -1,21 +1,26 @@
 
-import React, { useContext } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Box, CircularProgress, Fade } from '@mui/material';
-import Sidebar from './components/Sidebar';
-import LoginScreen from './pages/LoginScreen';
-import Menu from './pages/Menu';
-import Paquetes from './pages/Paquetes';
-import Reservar from './pages/Reservar';
-import Reservas from './pages/Reservas';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Pedidos from './pages/Pedidos';
-import { AuthProvider, AuthContext } from './context/AuthContext';
-import MenuReservas from './pages/MenuReservas';
-import MenuReservasDetalle from './pages/MenuReservasDetalle';
+import React, { useContext } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Box, CircularProgress, Fade } from "@mui/material";
+import Sidebar from "./components/Sidebar";
+import LoginScreen from "./pages/LoginScreen";
+import Menu from "./pages/Menu";
+import Paquetes from "./pages/Paquetes";
+import Reservar from "./pages/Reservar";
+import Reservas from "./pages/Reservas";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Pedidos from "./pages/Pedidos";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
+import MenuReservas from "./pages/MenuReservas";
+import MenuReservasDetalle from "./pages/MenuReservasDetalle";
 
-type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE' | 'PARRILLA_ROLE' | 'BAR_ROLE';
+type Role =
+  | "ADMIN_ROLE"
+  | "USER_ROLE"
+  | "COCINA_ROLE"
+  | "PARRILLA_ROLE"
+  | "BAR_ROLE";
 
 function PrivateRoute({
   children,
@@ -30,7 +35,7 @@ function PrivateRoute({
 
   const userRole = user.rol as Role;
 
-  if (roles && !roles.includes(userRole) && userRole !== 'ADMIN_ROLE') {
+  if (roles && !roles.includes(userRole) && userRole !== "ADMIN_ROLE") {
     return <Navigate to="/Menu" replace />;
   }
 
@@ -41,75 +46,79 @@ function AppContent() {
   const location = useLocation();
   const { status } = useContext(AuthContext);
 
-  const showSidebar = location.pathname !== '/LoginScreen';
-  const isLogin = location.pathname === '/LoginScreen';
+  const showSidebar = location.pathname !== "/LoginScreen";
 
-  if (status === 'checking') {
+  if (status === "checking") {
     return (
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: { xs: '100svh', md: '100vh' },
-          width: '100%',
-          bgcolor: '#f7f7f8',
-          flexDirection: 'column',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: { xs: "100svh", md: "100vh" },
+          width: "100%",
+          bgcolor: "#f7f7f8",
+          flexDirection: "column",
         }}
       >
         <CircularProgress size={60} thickness={4} />
-        <p style={{ marginTop: 16, fontSize: 16, color: '#555' }}>Cargando...</p>
+        <p style={{ marginTop: 16, fontSize: 16, color: "#555" }}>Cargando...</p>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', minHeight: { xs: '100svh', md: '100vh' } }}>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: { xs: "100svh", md: "100vh" },
+        width: "100%",
+      }}
+    >
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
         <Box
           sx={{
             flexGrow: 1,
-            ml: showSidebar ? { md: '260px' } : 0, // sidebar SOLO desde md
-            width: '100%',
-            minHeight: 'inherit',
-
-            /** 🔥 FIX 1 — evita bordes cortados y problemas con las cards */
-            overflowX: 'visible',
-
-            overflowY: 'auto',
+            ml: showSidebar ? { md: "260px" } : 0, // sidebar solo desde md
+            width: "100%",
+            // 👇 scroll ahora es GLOBAL (body), no interno
+            boxSizing: "border-box",
             p: { xs: 0, sm: 1, md: 3 },
-            boxSizing: 'border-box',
           }}
         >
-          {/* CONTENEDOR CENTRAL RESPONSIVE */}
+          {/* CONTENEDOR CENTRAL */}
           <Box
             sx={{
-              width: '100%',
-
-              /** 🔥 FIX 2 — reduce padding XS para que el card entre sin cortarse */
-              px: { xs: 1, sm: 2, md: 3 },
-
-              boxSizing: 'border-box',
+              width: "100%",
+              maxWidth: 1200,
+              mx: "auto",
+              // 👇 sin padding extra en XS para que tablas y cards no se corten
+              px: { xs: 0, sm: 2, md: 3 },
+              boxSizing: "border-box",
             }}
           >
             <Routes>
               <Route
                 path="/LoginScreen"
                 element={
-                  status === 'authenticated'
-                    ? <Navigate to="/Menu" replace />
-                    : <LoginScreen />
+                  status === "authenticated" ? (
+                    <Navigate to="/Menu" replace />
+                  ) : (
+                    <LoginScreen />
+                  )
                 }
               />
 
               <Route
                 path="/"
                 element={
-                  status === 'authenticated'
-                    ? <Navigate to="/Menu" replace />
-                    : <Navigate to="/LoginScreen" replace />
+                  status === "authenticated" ? (
+                    <Navigate to="/Menu" replace />
+                  ) : (
+                    <Navigate to="/LoginScreen" replace />
+                  )
                 }
               />
 
@@ -143,7 +152,7 @@ function AppContent() {
               <Route
                 path="/MenuReservas"
                 element={
-                  <PrivateRoute roles={['ADMIN_ROLE']}>
+                  <PrivateRoute roles={["ADMIN_ROLE"]}>
                     <MenuReservas />
                   </PrivateRoute>
                 }
@@ -152,7 +161,7 @@ function AppContent() {
               <Route
                 path="/MenuReservasDetalle/:id"
                 element={
-                  <PrivateRoute roles={['ADMIN_ROLE']}>
+                  <PrivateRoute roles={["ADMIN_ROLE"]}>
                     <MenuReservasDetalle />
                   </PrivateRoute>
                 }
@@ -161,7 +170,9 @@ function AppContent() {
               <Route
                 path="/Pedidos"
                 element={
-                  <PrivateRoute roles={['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE']}>
+                  <PrivateRoute
+                    roles={["ADMIN_ROLE", "BAR_ROLE", "COCINA_ROLE", "PARRILLA_ROLE"]}
+                  >
                     <Pedidos />
                   </PrivateRoute>
                 }
@@ -170,9 +181,11 @@ function AppContent() {
               <Route
                 path="*"
                 element={
-                  status === 'authenticated'
-                    ? <Navigate to="/Menu" replace />
-                    : <Navigate to="/LoginScreen" replace />
+                  status === "authenticated" ? (
+                    <Navigate to="/Menu" replace />
+                  ) : (
+                    <Navigate to="/LoginScreen" replace />
+                  )
                 }
               />
             </Routes>

@@ -55,11 +55,11 @@ export default function MenuReservas() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-const [fecha, setFecha] = useState<Date | null>(
-  location.state?.fechaSeleccionada ? new Date(location.state.fechaSeleccionada) : new Date()
-);
-  const [error, setError] = useState<string | null>(null);
+  const [fecha, setFecha] = useState<Date | null>(
+    location.state?.fechaSeleccionada ? new Date(location.state.fechaSeleccionada) : new Date()
+  );
 
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const ymdLaPaz = (d: Date) =>
@@ -73,27 +73,23 @@ const [fecha, setFecha] = useState<Date | null>(
   // =====================================
   // CARGAR MENÚ RESERVAS
   // =====================================
-   const fetchMenuReservas = async () => {
+  const fetchMenuReservas = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const resp = await cafeApi.get("/menureservas");
-      console.log("🔥 RESPUESTA /menureservas:", JSON.stringify(resp.data, null, 2));
       const data = resp.data.menureservas || [];
 
-      // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
       const dataLimpia = data.filter((mr: any) => mr.reserva && mr.reserva.fecha);
 
       const keySelected = ymdLaPaz(fecha!);
 
-      // 2️⃣ FILTRAR POR FECHA
       const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
         const keyRes = ymdLaPaz(new Date(mr.reserva.fecha));
         return keyRes === keySelected;
       });
 
-      // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
       const filtradasConEnviado: MenuReserva[] = await Promise.all(
         filtradas.map(async (mr) => {
           try {
@@ -101,17 +97,9 @@ const [fecha, setFecha] = useState<Date | null>(
               `/pedidos/existe/${mr.reserva._id}`
             );
 
-            return {
-              ...mr,
-              enviado: respExiste.data.existe, // true → deshabilitar botón
-            };
-          } catch (error) {
-            console.error("Error consultando pedidos existentes:", error);
-            // Si algo falla, por seguridad lo dejamos como no enviado
-            return {
-              ...mr,
-              enviado: false,
-            };
+            return { ...mr, enviado: respExiste.data.existe };
+          } catch {
+            return { ...mr, enviado: false };
           }
         })
       );
@@ -180,24 +168,34 @@ const [fecha, setFecha] = useState<Date | null>(
           No hay reservas en menú para esta fecha.
         </Typography>
       ) : (
-<TableContainer
-  sx={{
-    width: "100%",
-    overflowX: "auto",
-    overflowY: "hidden",
-    WebkitOverflowScrolling: "touch",
-
-    // Este FIX asegura que NO exista doble scroll
-    display: "block"
-  }}
->
- <Table
-  sx={{
-    minWidth: "max-content",
-    width: "100%",
-    tableLayout: "auto",
-  }}
->
+        <TableContainer
+          component={Paper}
+          sx={{
+            width: "100%",
+            overflow: "visible",        // 🔥 evita scroll interno
+            boxShadow: "0px 0px 4px rgba(0,0,0,0.1)",
+            borderRadius: "12px",
+            mt: 1,
+          }}
+        >
+          <Table
+            sx={{
+              width: "100%",
+              borderCollapse: "separate",
+              borderSpacing: 0,        // 🔥 bordes correctos
+              "& th": {
+                border: "none",
+                padding: "12px 8px",
+                whiteSpace: "nowrap",
+              },
+              "& td": {
+                border: "none",
+                padding: "10px 8px",
+                whiteSpace: "normal",
+                verticalAlign: "top",
+              },
+            }}
+          >
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>
                 <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
@@ -214,9 +212,6 @@ const [fecha, setFecha] = useState<Date | null>(
 
             <TableBody>
               {reservas.map((mr) => {
-                // =====================================
-                //  CALCULAR MONTO REAL DEL MENÚ
-                // =====================================
                 const monto = mr.productos.reduce(
                   (acc, item) =>
                     acc + item.producto.precio * (item.cantidad ?? 1),
@@ -230,6 +225,7 @@ const [fecha, setFecha] = useState<Date | null>(
                   <TableRow key={mr._id} hover>
                     <TableCell>{mr.reserva.nombre}</TableCell>
                     <TableCell>{mr.reserva.tipo}</TableCell>
+
                     <TableCell>
                       {mr.reserva.telefono.startsWith("+591")
                         ? mr.reserva.telefono.replace("+591", "")
@@ -240,51 +236,45 @@ const [fecha, setFecha] = useState<Date | null>(
                     <TableCell>{pago} Bs</TableCell>
                     <TableCell>{saldo} Bs</TableCell>
 
-
                     {/* VER DETALLE */}
                     <TableCell>
-                     <IconButton
+                      <IconButton
                         onClick={() =>
-                            navigate(`/MenuReservasDetalle/${mr._id}`, {
-                            state: { fechaSeleccionada: fecha }
-                            })
+                          navigate(`/MenuReservasDetalle/${mr._id}`, {
+                            state: { fechaSeleccionada: fecha },
+                          })
                         }
                         color="primary"
-                        >
+                      >
                         <VisibilityIcon />
                       </IconButton>
                     </TableCell>
 
                     {/* ENVIAR PEDIDO */}
                     <TableCell>
-                   <Button
+                      <Button
                         variant="contained"
                         color="success"
                         size="small"
                         startIcon={<SendIcon />}
                         disabled={mr.enviado}
                         onClick={async () => {
-                            try {
+                          try {
                             await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
-                            // 🔥 1. Actualizar UI localmente (marcar como enviado)
-                            setReservas(prev =>
-                                prev.map(r =>
+                            setReservas((prev) =>
+                              prev.map((r) =>
                                 r._id === mr._id ? { ...r, enviado: true } : r
-                                )
+                              )
                             );
-
-                            // 🔥 2. Opcional: refrescar desde backend
-                            // await fetchMenuReservas();
-
-                            } catch (error) {
+                          } catch (error) {
                             console.error("Error enviando pedido:", error);
-                            }
+                          }
                         }}
                         sx={{ textTransform: "none" }}
-                        >
+                      >
                         {mr.enviado ? "Enviado" : "Enviar"}
-                        </Button>
+                      </Button>
                     </TableCell>
 
                     {/* FACTURAR */}
