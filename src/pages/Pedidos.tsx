@@ -279,30 +279,38 @@ const Pedidos: React.FC = () => {
           const colors = getHeaderColors(group);
 
           return (
-            <Card
-              key={group.id}
-              elevation={3}
-              sx={{
-                position: "relative",
-                zIndex: 2,
-                borderRadius: 3,
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                bgcolor: "#ffffff",
-                height: "auto",
-                width: "100%",
-                maxWidth: "100%",
-                boxSizing: "border-box",
-                transition: "all 0.3s ease",
-                opacity: removing === group.id ? 0 : 1,
-                transform: removing === group.id ? "scale(0.85)" : "scale(1)",
-                filter:
-                  removing === group.id
-                    ? "blur(4px) saturate(200%)"
-                    : "none",
-              }}
-            >
+           <Card
+  key={group.id}
+  elevation={3}
+  sx={{
+    position: "relative",
+    zIndex: 2,
+    borderRadius: 3,
+    overflow: "hidden",
+    display: "flex",
+    flexDirection: "column",
+    bgcolor: "#ffffff",
+
+    // -----------------------------------------
+    // ⭐ FIX: permitir que el grid decida ancho
+    // -----------------------------------------
+    width: "100%",        // Ahora ocupa solo su columna
+    maxWidth: "none",     // Libera limitación rígida
+    flex: "1 1 auto",     // Permite al grid formar 3 / 2 / 1 columnas
+    // -----------------------------------------
+
+    height: "auto",
+    boxSizing: "border-box",
+    transition: "all 0.3s ease",
+
+    opacity: removing === group.id ? 0 : 1,
+    transform: removing === group.id ? "scale(0.85)" : "scale(1)",
+    filter:
+      removing === group.id
+        ? "blur(4px) saturate(200%)"
+        : "none",
+  }}
+>
               {/* HEADER */}
               <Box
                 sx={{
