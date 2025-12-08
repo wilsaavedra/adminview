@@ -1,10 +1,10 @@
-// src/pages/MenuReservas.tsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
   CircularProgress,
   Grid,
+  Paper,
   IconButton,
   Button,
   Table,
@@ -12,8 +12,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-  Paper,
+  TableRow
 } from "@mui/material";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -51,50 +50,50 @@ interface MenuReserva {
   facturado?: boolean;
 }
 
-const ymdLaPaz = (d: Date) =>
-  new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/La_Paz",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(d);
-
 export default function MenuReservas() {
   const [reservas, setReservas] = useState<MenuReserva[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
 
-  const [fecha, setFecha] = useState<Date | null>(
-    location.state?.fechaSeleccionada
-      ? new Date(location.state.fechaSeleccionada)
-      : new Date()
-  );
+const [fecha, setFecha] = useState<Date | null>(
+  location.state?.fechaSeleccionada ? new Date(location.state.fechaSeleccionada) : new Date()
+);
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
+  const ymdLaPaz = (d: Date) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/La_Paz",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+
   // =====================================
   // CARGAR MENÚ RESERVAS
   // =====================================
-  const fetchMenuReservas = async () => {
+   const fetchMenuReservas = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const resp = await cafeApi.get("/menureservas");
+      console.log("🔥 RESPUESTA /menureservas:", JSON.stringify(resp.data, null, 2));
       const data = resp.data.menureservas || [];
 
-      const dataLimpia = data.filter(
-        (mr: any) => mr.reserva && mr.reserva.fecha
-      );
+      // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
+      const dataLimpia = data.filter((mr: any) => mr.reserva && mr.reserva.fecha);
 
       const keySelected = ymdLaPaz(fecha!);
 
+      // 2️⃣ FILTRAR POR FECHA
       const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
         const keyRes = ymdLaPaz(new Date(mr.reserva.fecha));
         return keyRes === keySelected;
       });
 
+      // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
       const filtradasConEnviado: MenuReserva[] = await Promise.all(
         filtradas.map(async (mr) => {
           try {
@@ -104,10 +103,11 @@ export default function MenuReservas() {
 
             return {
               ...mr,
-              enviado: respExiste.data.existe,
+              enviado: respExiste.data.existe, // true → deshabilitar botón
             };
           } catch (error) {
             console.error("Error consultando pedidos existentes:", error);
+            // Si algo falla, por seguridad lo dejamos como no enviado
             return {
               ...mr,
               enviado: false,
@@ -130,8 +130,10 @@ export default function MenuReservas() {
   }, [fecha]);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, width: "100%", bgcolor: "#fff" }}>
-      {/* FECHA + TÍTULO */}
+    <Box sx={{ p: 3, width: "100%", bgcolor: "#fff" }}>
+      {/* ===================================== */}
+      {/*     FECHA + TÍTULO                   */}
+      {/* ===================================== */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Box>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
@@ -161,7 +163,10 @@ export default function MenuReservas() {
         </Typography>
       </Grid>
 
-      {/* LISTADO */}
+      {/* ===================================== */}
+      {/*             LISTADO                   */}
+      {/* ===================================== */}
+
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
           <CircularProgress />
@@ -175,34 +180,39 @@ export default function MenuReservas() {
           No hay reservas en menú para esta fecha.
         </Typography>
       ) : (
-        <TableContainer
-          component={Paper}
-          sx={{
-            width: "100%",
-            overflowX: "visible",
-            overflowY: "visible",
-            borderRadius: 2,
-            boxShadow: 1,
-          }}
-        >
-          <Table
-            sx={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-              "& th": {
-                border: "none",
-                padding: "12px 8px",
-                whiteSpace: "normal",
-              },
-              "& td": {
-                border: "none",
-                padding: "10px 8px",
-                whiteSpace: "normal",
-                verticalAlign: "top",
-              },
-            }}
-          >
+<TableContainer
+  sx={{
+    width: "100%",
+    overflowX: "auto",
+    overflowY: "hidden",
+    WebkitOverflowScrolling: "touch",
+
+    // 🔥 CRÍTICO: evita scroll doble
+    display: "block",
+  }}
+>
+<Table
+  sx={{
+    // 🔥 EN MÓVIL LA TABLA PUEDE SER MÁS ANCHA QUE LA PANTALLA
+    width: "max-content",
+    minWidth: "100%",  // mantiene buen layout en desktop
+
+    tableLayout: "auto",
+
+    "& th": {
+      whiteSpace: "nowrap",
+      fontWeight: 600,
+      padding: "12px 8px",
+    },
+
+    "& td": {
+      whiteSpace: "normal",
+      wordBreak: "break-word",  // 🔥 evita saltos feos
+      padding: "10px 8px",
+      verticalAlign: "top",
+    },
+  }}
+>
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>
                 <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
@@ -219,6 +229,9 @@ export default function MenuReservas() {
 
             <TableBody>
               {reservas.map((mr) => {
+                // =====================================
+                //  CALCULAR MONTO REAL DEL MENÚ
+                // =====================================
                 const monto = mr.productos.reduce(
                   (acc, item) =>
                     acc + item.producto.precio * (item.cantidad ?? 1),
@@ -242,45 +255,51 @@ export default function MenuReservas() {
                     <TableCell>{pago} Bs</TableCell>
                     <TableCell>{saldo} Bs</TableCell>
 
+
                     {/* VER DETALLE */}
                     <TableCell>
-                      <IconButton
+                     <IconButton
                         onClick={() =>
-                          navigate(`/MenuReservasDetalle/${mr._id}`, {
-                            state: { fechaSeleccionada: fecha },
-                          })
+                            navigate(`/MenuReservasDetalle/${mr._id}`, {
+                            state: { fechaSeleccionada: fecha }
+                            })
                         }
                         color="primary"
-                      >
+                        >
                         <VisibilityIcon />
                       </IconButton>
                     </TableCell>
 
                     {/* ENVIAR PEDIDO */}
                     <TableCell>
-                      <Button
+                   <Button
                         variant="contained"
                         color="success"
                         size="small"
                         startIcon={<SendIcon />}
                         disabled={mr.enviado}
                         onClick={async () => {
-                          try {
+                            try {
                             await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
-                            setReservas((prev) =>
-                              prev.map((r) =>
+                            // 🔥 1. Actualizar UI localmente (marcar como enviado)
+                            setReservas(prev =>
+                                prev.map(r =>
                                 r._id === mr._id ? { ...r, enviado: true } : r
-                              )
+                                )
                             );
-                          } catch (error) {
+
+                            // 🔥 2. Opcional: refrescar desde backend
+                            // await fetchMenuReservas();
+
+                            } catch (error) {
                             console.error("Error enviando pedido:", error);
-                          }
+                            }
                         }}
                         sx={{ textTransform: "none" }}
-                      >
+                        >
                         {mr.enviado ? "Enviado" : "Enviar"}
-                      </Button>
+                        </Button>
                     </TableCell>
 
                     {/* FACTURAR */}

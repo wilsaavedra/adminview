@@ -194,34 +194,48 @@ export default function ReservasPage() {
           No hay reservas para esta fecha.
         </Typography>
       ) : (
-        <TableContainer
-          component={Paper}
-          sx={{
-            width: "100%",
-            overflowX: "visible",
-            overflowY: "visible",
-            borderRadius: 2,
-            boxShadow: 1,
-          }}
-        >
-          <Table
-            sx={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-              "& th": {
-                border: "none",
-                padding: "12px 8px",
-                whiteSpace: "normal",
-              },
-              "& td": {
-                border: "none",
-                padding: "10px 8px",
-                whiteSpace: "normal",
-                verticalAlign: "top",
-              },
-            }}
-          >
+ <TableContainer
+  component={Paper}
+  sx={{
+    width: "100%",
+
+    // 🔥 Recupera scroll externo en móvil & tablet
+    overflowX: "auto",
+    overflowY: "visible",
+    display: "block",
+    WebkitOverflowScrolling: "touch",
+
+    // 🔥 Quitar bordes
+    borderRadius: 0,
+    boxShadow: "none",
+    border: "none",
+  }}
+>
+       <Table
+  sx={{
+    // 🔥 Permite que la tabla crezca más que el ancho de la pantalla
+    width: "max-content",
+
+    // 🔥 En desktop ocupa 100%, en móvil permite scroll horizontal
+    minWidth: "100%",
+
+    borderCollapse: "collapse",
+    borderSpacing: 0,
+
+    "& th": {
+      border: "none",
+      padding: "12px 8px",
+      whiteSpace: "normal",
+    },
+    "& td": {
+      border: "none",
+      padding: "10px 8px",
+      whiteSpace: "normal",
+      verticalAlign: "top",
+      wordBreak: "break-word", // 🔥 evita cortes feos en móvil
+    },
+  }}
+>
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>
                 <TableCell sx={{ color: "#fff", whiteSpace: "nowrap" }}>
