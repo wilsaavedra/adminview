@@ -68,18 +68,24 @@ function AppContent() {
       {showSidebar && <Sidebar />}
 
       <Fade in timeout={400}>
-     <Box
+  <Box
   sx={{
     flexGrow: 1,
     ml: showSidebar ? { md: '260px' } : 0,
     width: '100%',
     minHeight: 'inherit',
 
-    overflowX: 'visible',   // ← IMPORTANTE: permite que las sombras y bordes se vean
+    // Evita empujes laterales por el menú hamburguesa
+    overflowX: 'hidden',
     overflowY: 'auto',
 
     display: 'block',
-    p: { xs: 0, sm: 1, md: 3 },
+
+    // Ajustes perfectos para móvil y tablet
+    px: { xs: 1, sm: 2, md: 3 },
+    pt: { xs: 1, sm: 2, md: 3 },
+    pb: { xs: 2, sm: 2, md: 3 },
+
     boxSizing: "border-box",
   }}
 >
