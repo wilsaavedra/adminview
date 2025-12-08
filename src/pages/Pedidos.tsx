@@ -249,7 +249,7 @@ const Pedidos: React.FC = () => {
     No hay pedidos pendientes.
   </Typography>
 )}
-     <Box
+ <Box
   sx={{
     display: "grid",
     gridTemplateColumns: {
@@ -261,11 +261,18 @@ const Pedidos: React.FC = () => {
     alignItems: "start",
     width: "100%",
 
-    // 🔥 FIX REAL PARA MÓVIL
-    px: { xs: 0.5, sm: 0, md: 0 },
+    // 🔥 PUNTO CRÍTICO: permitir crecimiento infinito
+    height: "auto",
+    minHeight: "auto",
 
-    // 🔥 EVITA QUE SE CORTE EL CARD EN LOS BORDES
-    overflow: "visible",
+    // 🔥 ELIMINA SCROLL INTERNO
+    overflow: "visible !important",
+
+    // 🔥 Evita que grid recorte contenido
+    gridAutoRows: "max-content",
+    gridAutoFlow: "row",
+
+    px: { xs: 0.5, sm: 0, md: 0 },
   }}
 >
         {pedidos.map((group) => {

@@ -209,10 +209,10 @@ export default function ReservasPage() {
     border: "none",
   }}
 >
-       <Table
+ <Table
   sx={{
-    width: "100%",        // 🔥 Se adapta a pantalla, NO fuerza scroll
-    tableLayout: "auto",  // 🔥 Columnas dinámicas elegantes
+    width: "100%",
+    tableLayout: "fixed",   // 🔥 vuelve al comportamiento correcto
     borderCollapse: "collapse",
 
     "& th": {
@@ -220,11 +220,14 @@ export default function ReservasPage() {
       padding: "12px 8px",
       whiteSpace: "nowrap",
     },
+
     "& td": {
       border: "none",
       padding: "10px 8px",
-      whiteSpace: "normal",
-      wordBreak: "break-word",
+
+      whiteSpace: "normal",     // 🔥 frases largas SI bajan de línea
+      wordBreak: "normal",      // 🔥 NO rompe palabras
+      overflowWrap: "anywhere", // 🔥 si una palabra es MUY larga, recién ahí rompe
     },
   }}
 >
