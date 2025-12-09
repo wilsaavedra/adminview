@@ -106,7 +106,7 @@ const Pedidos: React.FC = () => {
   const [removing, setRemoving] = useState<string | null>(null);
 
   const rol = user?.rol as string | undefined;
-
+const [loaded, setLoaded] = useState(false);
   const categoriasFiltradas: CategoriaPedido[] = useMemo(() => {
     if (!rol) return [];
     if (rol === "ADMIN_ROLE") return ["Cocina", "Parrilla", "Bar"];
@@ -117,6 +117,7 @@ const Pedidos: React.FC = () => {
   }, [rol]);
 
   const cargarPedidos = async () => {
+   
     if (!categoriasFiltradas.length) return;
 
     const todas: PedidoBackend[] = [];
@@ -208,6 +209,7 @@ const Pedidos: React.FC = () => {
     );
 
     setPedidos(gruposFinal);
+     setLoaded(true);
   };
 
   useEffect(() => {
@@ -236,7 +238,7 @@ const Pedidos: React.FC = () => {
       >
         Pedidos en curso
       </Typography>
-{pedidos.length === 0 && (
+{loaded && pedidos.length === 0 && (
   <Typography
     sx={{
       textAlign: "center",
