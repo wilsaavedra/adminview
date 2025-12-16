@@ -22,6 +22,7 @@ import Logo from '../assets/View3.png';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
 
 type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
 
@@ -49,6 +50,12 @@ const menuItems: MenuItem[] = [
     icon: <ListAltIcon fontSize="small" />,
     path: '/Reservas',
   },
+  {
+  text: "QR",
+  icon: <QrCode2Icon fontSize="small" />,
+  path: "/QRsAdmin",
+  roles: ["ADMIN_ROLE"], // admin ve todo igual, pero lo dejamos claro
+},
   {
     text: 'Menú Reservas',
     icon: <PlaylistAddCheckIcon fontSize="small" />, // ÍCONO NUEVO

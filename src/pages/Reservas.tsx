@@ -139,7 +139,7 @@ export default function ReservasPage() {
       {/* ====== CABECERA: IGUAL QUE MenuReservas ====== */}
       <Grid
         container
-        alignItems="center"
+        alignItems="flex-start"
         justifyContent="flex-start"
         mb={3}
         sx={{ gap: 3 }}
