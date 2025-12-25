@@ -140,13 +140,19 @@ export default function QRsAdmin() {
 
 // 🔄 Actualizar estados consultando primero al banco
 const handleRefresh = async () => {
+  setLoading(true);
+
   try {
-    setLoading(true);
-    const r = await API.post("/pagos/sincronizar");
-    console.log("✅ RESPUESTA /pagos/sincronizar:", r.data);
-    await fetchPagos();
+    // 1️⃣ sincroniza con el banco
+    await API.post("/pagos/sincronizar");
   } catch (err) {
-    console.error("❌ Error sincronizando pagos", err);
+    console.error("⚠️ Error sincronizando pagos", err);
+    // NO retornamos, seguimos igual
+  }
+
+  try {
+    // 2️⃣ siempre recargamos la lista
+    await fetchPagos();
   } finally {
     setLoading(false);
   }
