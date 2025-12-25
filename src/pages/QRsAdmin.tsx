@@ -139,17 +139,18 @@ export default function QRsAdmin() {
   };
 
 // 🔄 Actualizar estados consultando primero al banco
-  const handleRefresh = async () => {
-    try {
-      setLoading(true);
-      await API.post("/pagos/sincronizar"); // 👈 pregunta al BNB
-      await fetchPagos();                   // 👈 recarga la tabla
-    } catch (err) {
-      console.error("Error sincronizando pagos", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleRefresh = async () => {
+  try {
+    setLoading(true);
+    const r = await API.post("/pagos/sincronizar");
+    console.log("✅ RESPUESTA /pagos/sincronizar:", r.data);
+    await fetchPagos();
+  } catch (err) {
+    console.error("❌ Error sincronizando pagos", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Carga inicial / cambio de fecha
   useEffect(() => {
