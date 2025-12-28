@@ -274,7 +274,7 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
                 appearance: 'menulist', // mantiene estilo nativo
             }}
           >
-            {[...Array(20)].map((_, i) => (
+            {[...Array(40)].map((_, i) => (
               <option key={i + 1} value={i + 1}>
                 {i + 1}
               </option>
