@@ -225,11 +225,14 @@ const handleRefresh = async () => {
 
       // Cuando se genere, recargamos lista para que aparezca "pendiente"
       await fetchPagos();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setGenLoading(false);
-    }
+    } catch (e: any) {
+  console.error(e);
+  const msg = e?.response?.data?.msg || "Error generando QR";
+  const detalle = e?.response?.data?.detalle || e?.message || "";
+  alert(`${msg}\n${detalle}`);
+} finally {
+  setGenLoading(false);
+}
   };
 
 const reservasMap = useMemo(() => {
