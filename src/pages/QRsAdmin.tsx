@@ -225,11 +225,17 @@ const handleRefresh = async () => {
 
       // Cuando se genere, recargamos lista para que aparezca "pendiente"
       await fetchPagos();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setGenLoading(false);
-    }
+  } catch (e: any) {
+  const status = e?.response?.status;
+  const data = e?.response?.data;
+  const msg = data?.msg || data?.error || e?.message || "Error desconocido";
+
+  console.error("❌ QR ADMIN:", status, data);
+
+  alert(`No se pudo generar QR (${status || "?"}): ${msg}`);
+} finally {
+  setGenLoading(false);
+}
   };
 
 const reservasMap = useMemo(() => {
