@@ -116,30 +116,54 @@ const [loaded, setLoaded] = useState(false);
     return [];
   }, [rol]);
 
-  const cargarPedidos = async () => {
-   
-    if (!categoriasFiltradas.length) return;
+  const [error, setError] = useState<string | null>(null);
+
+const cargarPedidos = async () => {
+  try {
+    setError(null);
+
+    if (!categoriasFiltradas.length) {
+      setLoaded(true);
+      setPedidos([]);
+      return;
+    }
 
     const todas: PedidoBackend[] = [];
 
     for (const categoria of categoriasFiltradas) {
       const resp = await cafeApi.get<PedidoBackend[]>(`/pedidos/${categoria}`);
-      todas.push(...resp.data);
+      if (Array.isArray(resp.data)) todas.push(...resp.data);
     }
 
     const mapa: Record<string, PedidoCardGroup> = {};
+    const invalidos: any[] = [];
 
     for (const p of todas) {
-      const key = `${p.reserva._id}-${p.categoria}`;
-      const mesa = p.mesa || p.reserva.mesa || "SN";
+      // ✅ GUARDAS: en producción puede venir reserva/producto null
+      if (!p || !p._id || !p.categoria || !p.fecha_envio) {
+        invalidos.push(p);
+        continue;
+      }
+
+      const reservaId = (p as any)?.reserva?._id;
+      const productoId = (p as any)?.producto?._id;
+
+      if (!reservaId || !productoId) {
+        invalidos.push(p);
+        continue;
+      }
+
+      const key = `${reservaId}-${p.categoria}`;
+      const mesa = p.mesa || (p as any)?.reserva?.mesa || "SN";
+      const clienteNombre = (p as any)?.reserva?.nombre || "SN";
 
       if (!mapa[key]) {
         mapa[key] = {
           id: key,
-          reservaId: p.reserva._id,
+          reservaId,
           categoria: p.categoria,
           mesa,
-          clienteNombre: p.reserva.nombre,
+          clienteNombre,
           fechaEnvio: p.fecha_envio,
           productos: [],
           pedidosIds: [],
@@ -149,15 +173,13 @@ const [loaded, setLoaded] = useState(false);
       const group = mapa[key];
       group.pedidosIds.push(p._id);
 
-      if (
-        new Date(p.fecha_envio).getTime() <
-        new Date(group.fechaEnvio).getTime()
-      ) {
+      // fecha más antigua del grupo
+      if (new Date(p.fecha_envio).getTime() < new Date(group.fechaEnvio).getTime()) {
         group.fechaEnvio = p.fecha_envio;
       }
 
-      let cat = p.producto.categoria?.nombre
-        ? p.producto.categoria.nombre.toUpperCase().trim()
+      let cat = (p as any)?.producto?.categoria?.nombre
+        ? (p as any).producto.categoria.nombre.toUpperCase().trim()
         : "";
 
       if (!cat) {
@@ -166,20 +188,23 @@ const [loaded, setLoaded] = useState(false);
         else cat = "BEBIDAS";
       }
 
-      const existing = group.productos.find(
-        (prod) => prod.id === p.producto._id
-      );
+      const existing = group.productos.find((prod) => prod.id === productoId);
 
       if (existing) {
-        existing.cantidad += Number(p.cantidad ?? 1);
+        existing.cantidad += Number((p as any)?.cantidad ?? 1);
       } else {
         group.productos.push({
-          id: p.producto._id,
-          nombre: p.producto.nombre,
-          cantidad: Number(p.cantidad ?? 1),
+          id: productoId,
+          nombre: (p as any)?.producto?.nombre || "Producto",
+          cantidad: Number((p as any)?.cantidad ?? 1),
           categoriaNombre: cat,
         });
       }
+    }
+
+    if (invalidos.length) {
+      console.warn("⚠️ Pedidos inválidos (reserva/producto null o faltantes):", invalidos);
+      // opcional: setError(`Hay ${invalidos.length} pedidos dañados en base de datos.`);
     }
 
     const ORDER = [
@@ -204,13 +229,18 @@ const [loaded, setLoaded] = useState(false);
     });
 
     const gruposFinal = Object.values(mapa).sort(
-      (a, b) =>
-        new Date(a.fechaEnvio).getTime() - new Date(b.fechaEnvio).getTime()
+      (a, b) => new Date(a.fechaEnvio).getTime() - new Date(b.fechaEnvio).getTime()
     );
 
     setPedidos(gruposFinal);
-     setLoaded(true);
-  };
+  } catch (e: any) {
+    console.error("❌ Error cargando pedidos:", e);
+    setPedidos([]);
+    setError(e?.message || "Error cargando pedidos");
+  } finally {
+    setLoaded(true);
+  }
+};
 
   useEffect(() => {
     cargarPedidos();
