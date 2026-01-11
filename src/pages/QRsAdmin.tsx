@@ -209,7 +209,7 @@ const handleRefresh = async () => {
       setGenLoading(true);
 
       // Usamos tu endpoint REAL: POST /pagos/crear
-      const resp = await API.post("/pagos/crear", {
+      const resp = await API.post("/pagos/crear-admin", {
         reservaId,
         subtotal: 0,
         costoEnvases: 0,
