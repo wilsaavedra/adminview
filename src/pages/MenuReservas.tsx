@@ -37,14 +37,29 @@ interface MenuReserva {
   cantidad: number;
 }[];
   reserva: {
-    _id: string;
-    nombre: string;
-    telefono: string;
-    tipo: string;
-    comentarios: string;
-    fecha: string;
-    pago: number;
+  _id: string;
+  nombre: string;
+  telefono: string;
+  tipo: string;
+  comentarios: string;
+  fecha: string;
+  pago: number;
+
+  // ✅ NUEVO: descuento guardado en la reserva
+  descuentoCupon?: number;
+
+  // ✅ NUEVO: opcional, por si quieres mostrarlo en admin
+  cupon?: {
+    _id?: string;
+    codigo?: string;
+    porcentaje?: number;
+    usado?: boolean;
+    fechaUso?: string;
   };
+
+  // ✅ opcional
+  resest?: string;
+};
   enviado?: boolean;
   facturado?: boolean;
 }
@@ -262,14 +277,31 @@ setReservas(filtradasConEnviado);
                 // =====================================
                 //  CALCULAR MONTO REAL DEL MENÚ
                 // =====================================
-                const monto = mr.productos.reduce(
-                  (acc, item) =>
-                    acc + item.producto.precio * (item.cantidad ?? 1),
-                  0
-                );
+              const COSTO_ENVASE_UNITARIO = 2;
 
-                const pago = mr.reserva.pago ?? 0;
-                const saldo = monto - pago;
+const subtotal = mr.productos.reduce(
+  (acc, item) => acc + item.producto.precio * (item.cantidad ?? 1),
+  0
+);
+
+const esLlevar = String(mr.reserva.tipo || "").toLowerCase() === "llevar";
+
+const costoEnvases = esLlevar
+  ? mr.productos.reduce(
+      (acc, item) => acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
+      0
+    )
+  : 0;
+
+const descuento = Number(mr.reserva.descuentoCupon ?? 0);
+
+// ✅ monto real = subtotal + envases - descuento
+const monto = Math.max(0, subtotal + costoEnvases - descuento);
+
+const pago = Number(mr.reserva.pago ?? 0);
+
+// ✅ saldo nunca negativo
+const saldo = Math.max(0, monto - pago);
 
                 return (
                   <TableRow key={mr._id} hover>
