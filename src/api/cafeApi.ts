@@ -18,3 +18,4 @@ cafeApi.interceptors.request.use((config) => {
 });
 
 export default cafeApi;
+ 

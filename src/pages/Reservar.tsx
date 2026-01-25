@@ -63,6 +63,10 @@ const validarHora = (horaStr: string) => {
 };
 
 const Reservar = () => {
+  const newRequestId = () =>
+  (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const [errorHora, setErrorHora] = useState<string | null>(null);
   const [reservaDatos, setReservaDatos] = useState<ReservaDatos>({
     nombre: '',
@@ -73,7 +77,8 @@ const Reservar = () => {
     comentarios:'',
     pago:0
   });
-  const [loading, setLoading] = useState(false);
+ const [loading, setLoading] = useState(false);
+const [requestId, setRequestId] = useState<string>(() => newRequestId());
 
   const handleReservaChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -94,12 +99,15 @@ const Reservar = () => {
   };
 
   const handleReservaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (errorHora) {
-      alert('Corrige el error en la hora antes de enviar');
-      return;
-    }
+  // ✅ anti doble submit inmediato
+  if (loading) return;
+
+  if (errorHora) {
+    alert('Corrige el error en la hora antes de enviar');
+    return;
+  }
 
     if (!reservaDatos.fecha || !reservaDatos.hora) {
       alert('Por favor, ingresa fecha y hora válidas');
@@ -136,26 +144,37 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
 
     try {
       setLoading(true);
-      await cafeApi.post('/reservas', {
-        nombre: reservaDatos.nombre,
-        telefono: `+591${reservaDatos.telefono}`,
-        fecha: fechaHora.toISOString(),
-        cantidad: reservaDatos.personas,
-        comentarios: reservaDatos.comentarios,
-        pago:reservaDatos.pago
-      });
+    await cafeApi.post('/reservas', {
+  nombre: reservaDatos.nombre,
+  telefono: reservaDatos.telefono.startsWith("+")
+    ? reservaDatos.telefono
+    : `+591${reservaDatos.telefono}`,
+  fecha: fechaHora.toISOString(),
+  cantidad: reservaDatos.personas,
+  comentarios: reservaDatos.comentarios,
+  pago: reservaDatos.pago,
 
-      toast.success(`Reserva creada con éxito para ${reservaDatos.nombre}`);
+  // ✅ idempotencia (anti duplicados)
+  requestId,
 
-      setReservaDatos({
-        nombre: '',
-        telefono: '',
-        fecha: '',
-        hora: '',
-        personas: 1,
-        comentarios:'',
-        pago:0
-      });
+  // ✅ opcional: para identificar que fue creado por admin
+  canal: null,
+});
+
+  toast.success(`Reserva creada con éxito para ${reservaDatos.nombre}`);
+
+// ✅ nuevo requestId para la siguiente reserva
+setRequestId(newRequestId());
+
+setReservaDatos({
+  nombre: '',
+  telefono: '',
+  fecha: '',
+  hora: '',
+  personas: 1,
+  comentarios: '',
+  pago: 0
+});
     } catch (error: any) {
       toast.error('Error al enviar la reserva');
     } finally {
