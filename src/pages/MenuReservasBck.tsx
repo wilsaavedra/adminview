@@ -32,19 +32,34 @@ import { useNavigate, useLocation } from "react-router-dom";
 // =====================================
 interface MenuReserva {
   _id: string;
-  productos: {
-    producto: { precio: number; nombre: string };
-    cantidad: number;
-  }[];
+ productos: {
+  producto: { _id: string; precio: number; nombre: string };
+  cantidad: number;
+}[];
   reserva: {
-    _id: string;
-    nombre: string;
-    telefono: string;
-    tipo: string;
-    comentarios: string;
-    fecha: string;
-    pago: number;
+  _id: string;
+  nombre: string;
+  telefono: string;
+  tipo: string;
+  comentarios: string;
+  fecha: string;
+  pago: number;
+
+  // ✅ NUEVO: descuento guardado en la reserva
+  descuentoCupon?: number;
+
+  // ✅ NUEVO: opcional, por si quieres mostrarlo en admin
+  cupon?: {
+    _id?: string;
+    codigo?: string;
+    porcentaje?: number;
+    usado?: boolean;
+    fechaUso?: string;
   };
+
+  // ✅ opcional
+  resest?: string;
+};
   enviado?: boolean;
   facturado?: boolean;
 }
@@ -97,29 +112,43 @@ export default function MenuReservas() {
       });
 
       // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
-      const filtradasConEnviado: MenuReserva[] = await Promise.all(
-        filtradas.map(async (mr) => {
-          try {
-            const respExiste = await cafeApi.get<{ existe: boolean }>(
-              `/pedidos/existe/${mr.reserva._id}`
-            );
+     const filtradasConEnviado: MenuReserva[] = await Promise.all(
+  filtradas.map(async (mr) => {
+    try {
+      const respResumen = await cafeApi.get(`/pedidos/resumen/${mr.reserva._id}`);
+      const enviados: Record<string, number> = respResumen.data?.enviados || {};
 
-            return {
-              ...mr,
-              enviado: respExiste.data.existe, // true → deshabilitar botón
-            };
-          } catch (error) {
-            console.error("Error consultando pedidos existentes:", error);
-            // Si algo falla, por seguridad lo dejamos como no enviado
-            return {
-              ...mr,
-              enviado: false,
-            };
-          }
-        })
-      );
+      // ✅ Calcular si falta algo por enviar (comparando menureservas vs enviados)
+      const faltaAlgo = mr.productos.some((it) => {
+        const pid = it.producto?._id;
+        const cantMenu = it.cantidad ?? 0;
+        const cantEnviada = pid ? (enviados[pid] ?? 0) : 0;
+        return cantMenu > cantEnviada;
+      });
 
-      setReservas(filtradasConEnviado);
+      // ✅ Bloqueo duro si ya está cerrado/facturado (si tu backend lo manda)
+      const cerrado = !!respResumen.data?.cerrado;
+      const facturado = !!respResumen.data?.facturado;
+
+      return {
+        ...mr,
+        // “enviado” ahora significa “bloqueado para enviar”
+        enviado: cerrado || facturado || !faltaAlgo,
+        facturado: facturado || mr.facturado,
+      };
+    } catch (error) {
+      console.error("Error consultando resumen pedidos:", error);
+
+      // Si falla la consulta, NO bloquees por seguridad (para no frenar operación)
+      return {
+        ...mr,
+        enviado: false,
+      };
+    }
+  })
+);
+
+setReservas(filtradasConEnviado);
     } catch (err) {
       console.error(err);
       setError("No se pudo cargar el menú de reservas.");
@@ -248,14 +277,31 @@ export default function MenuReservas() {
                 // =====================================
                 //  CALCULAR MONTO REAL DEL MENÚ
                 // =====================================
-                const monto = mr.productos.reduce(
-                  (acc, item) =>
-                    acc + item.producto.precio * (item.cantidad ?? 1),
-                  0
-                );
+              const COSTO_ENVASE_UNITARIO = 2;
 
-                const pago = mr.reserva.pago ?? 0;
-                const saldo = monto - pago;
+const subtotal = mr.productos.reduce(
+  (acc, item) => acc + item.producto.precio * (item.cantidad ?? 1),
+  0
+);
+
+const esLlevar = String(mr.reserva.tipo || "").toLowerCase() === "llevar";
+
+const costoEnvases = esLlevar
+  ? mr.productos.reduce(
+      (acc, item) => acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
+      0
+    )
+  : 0;
+
+const descuento = Number(mr.reserva.descuentoCupon ?? 0);
+
+// ✅ monto real = subtotal + envases - descuento
+const monto = Math.max(0, subtotal + costoEnvases - descuento);
+
+const pago = Number(mr.reserva.pago ?? 0);
+
+// ✅ saldo nunca negativo
+const saldo = Math.max(0, monto - pago);
 
                 return (
                   <TableRow key={mr._id} hover>
@@ -292,8 +338,8 @@ export default function MenuReservas() {
                         color="success"
                         size="small"
                         startIcon={<SendIcon />}
-                        disabled={mr.enviado}
-                        onClick={async () => {
+                       disabled={mr.enviado || mr.facturado}
+                        onClick={async () => { 
                           try {
                             await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
@@ -315,7 +361,7 @@ export default function MenuReservas() {
                           minWidth: { xs: 80, md: 90 },
                         }}
                       >
-                        {mr.enviado ? "Enviado" : "Enviar"}
+                       {mr.facturado ? "Facturado" : mr.enviado ? "Completo" : "Enviar"}
                       </Button>
                     </TableCell>
 

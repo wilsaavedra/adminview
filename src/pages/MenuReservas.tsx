@@ -12,7 +12,20 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
+
+import CloseIcon from "@mui/icons-material/Close";
+import PaymentsIcon from "@mui/icons-material/Payments";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SendIcon from "@mui/icons-material/Send";
@@ -32,6 +45,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 // =====================================
 interface MenuReserva {
   _id: string;
+  fecha_creacion?: string;
  productos: {
   producto: { _id: string; precio: number; nombre: string };
   cantidad: number;
@@ -64,6 +78,8 @@ interface MenuReserva {
   facturado?: boolean;
 }
 
+type MetodoPagoCierre = "EFECTIVO" | "TARJETA" | "QR";
+
 export default function MenuReservas() {
   const [reservas, setReservas] = useState<MenuReserva[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +93,105 @@ export default function MenuReservas() {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+
+  // ✅ Modal Facturar / Cerrar
+  const [openFacturar, setOpenFacturar] = useState(false);
+  const [mrSeleccionada, setMrSeleccionada] = useState<MenuReserva | null>(null);
+
+  const [metodoPago, setMetodoPago] = useState<MetodoPagoCierre>("EFECTIVO");
+  const [nit, setNit] = useState<string>("");                 // numérico
+  const [nombreFactura, setNombreFactura] = useState<string>("");
+
+  const [buscandoNit, setBuscandoNit] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const abrirModalFacturar = (mr: MenuReserva) => {
+    setMrSeleccionada(mr);
+    setMetodoPago("EFECTIVO");
+    setNit("");
+    setNombreFactura("");
+    setOpenFacturar(true);
+  };
+
+  const cerrarModalFacturar = () => {
+    if (saving) return;
+    setOpenFacturar(false);
+    setMrSeleccionada(null);
+    setBuscandoNit(false);
+  };
+
+  // ✅ lookup por NIT (autocompleta nombre si existe)
+  const buscarDatosFacturaPorNit = async (nitValue: string) => {
+    const clean = nitValue.trim();
+    if (!clean) return;
+
+    try {
+      setBuscandoNit(true);
+      const resp = await cafeApi.get(`/facturas/datos/${clean}`);
+      const data = resp.data?.data; // {nit, nombre}
+      if (data?.nombre) {
+        setNombreFactura(data.nombre);
+      }
+    } catch (e) {
+      // si no existe, no hacemos nada (deja el nombre editable)
+    } finally {
+      setBuscandoNit(false);
+    }
+  };
+
+  // ✅ handler NIT (solo números)
+  const onChangeNit = (value: string) => {
+    const onlyDigits = value.replace(/[^\d]/g, "");
+    setNit(onlyDigits);
+
+    // dispara búsqueda desde 5+ dígitos (ajusta a tu gusto)
+    if (onlyDigits.length >= 5) {
+      buscarDatosFacturaPorNit(onlyDigits);
+    }
+  };
+
+  // ✅ Cerrar o Generar (ambos pagan total, uno además crea FacturaPendiente)
+ const cerrarYSiHayNitGenerar = async () => {
+  if (!mrSeleccionada?.reserva?._id) return;
+
+  const nitClean = nit.trim();
+  const nombreClean = nombreFactura.trim();
+
+  // ✅ regla:
+  // - sin NIT => solo cerrar
+  // - con NIT => requiere nombre (si no existe, no dejar cerrar)
+  if (nitClean && !nombreClean) return;
+
+  try {
+    setSaving(true);
+
+    await cafeApi.post(`/facturas/accion`, {
+      reservaId: mrSeleccionada.reserva._id,
+      metodoPago,
+
+      // opcionales: si vienen, el backend generará factura
+      nit: nitClean || null,
+      nombreFactura: nombreClean || null,
+    });
+
+    // ✅ reflejar en UI
+  const seFacturo = !!nit.trim();
+
+setReservas((prev) =>
+  prev.map((r) =>
+    r._id === mrSeleccionada._id
+      ? { ...r, facturado: seFacturo, enviado: true }
+      : r
+  )
+);
+
+    cerrarModalFacturar();
+  } catch (e) {
+    console.error("❌ Error cerrar/generar factura:", e);
+  } finally {
+    setSaving(false);
+  }
+};
 
   const ymdLaPaz = (d: Date) =>
     new Intl.DateTimeFormat("en-CA", {
@@ -99,17 +214,16 @@ export default function MenuReservas() {
       const data = resp.data.menureservas || [];
 
       // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
-      const dataLimpia = data.filter(
-        (mr: any) => mr.reserva && mr.reserva.fecha
-      );
+ const dataLimpia = data.filter((mr: any) => mr.fecha_creacion);
 
-      const keySelected = ymdLaPaz(fecha!);
+// 🔑 fecha seleccionada en formato YYYY-MM-DD (La Paz)
+const keySelected = ymdLaPaz(fecha!);
 
-      // 2️⃣ FILTRAR POR FECHA
-      const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
-        const keyRes = ymdLaPaz(new Date(mr.reserva.fecha));
-        return keyRes === keySelected;
-      });
+// 2️⃣ FILTRAR POR FECHA
+const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
+  const keyRes = ymdLaPaz(new Date(mr.fecha_creacion!));
+  return keyRes === keySelected;
+});
 
       // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
      const filtradasConEnviado: MenuReserva[] = await Promise.all(
@@ -367,22 +481,17 @@ const saldo = Math.max(0, monto - pago);
 
                     {/* FACTURAR */}
                     <TableCell>
-                      <Button
+                    <Button
                         variant="contained"
                         color="warning"
                         size="small"
                         startIcon={<ReceiptIcon />}
                         disabled={mr.facturado}
-                        onClick={() => navigate(`/Facturar/${mr._id}`)}
-                        sx={{
-                          textTransform: "none",
-                          px: 1.5,
-                          fontSize: { xs: 11, md: 12 },
-                          minWidth: { xs: 80, md: 90 },
-                        }}
-                      >
+                        onClick={() => abrirModalFacturar(mr)}
+                        sx={{ textTransform: "none", px: 1.5, fontSize: { xs: 11, md: 12 }, minWidth: { xs: 80, md: 90 } }}
+                        >
                         {mr.facturado ? "Listo" : "Facturar"}
-                      </Button>
+                        </Button>
                     </TableCell>
                   </TableRow>
                 );
@@ -391,6 +500,248 @@ const saldo = Math.max(0, monto - pago);
           </Table>
         </TableContainer>
       )}
+
+<Dialog open={openFacturar} onClose={cerrarModalFacturar} maxWidth="xs" fullWidth>
+ <DialogTitle
+  sx={{
+    fontWeight: 800,
+    pr: 6, // espacio para el botón X
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  }}
+>
+  Facturar / Cerrar cuenta
+
+  <IconButton
+    onClick={cerrarModalFacturar}
+    size="small"
+    sx={{ position: "absolute", right: 8, top: 8 }}
+    disabled={saving}
+  >
+    <CloseIcon />
+  </IconButton>
+</DialogTitle>
+
+  <DialogContent sx={{ pt: 1 }}>
+    <Typography sx={{ mb: 1, color: "#555" }}>
+      {mrSeleccionada?.reserva?.nombre || "—"}
+    </Typography>
+
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+ <RadioGroup
+  value={metodoPago}
+  onChange={(e) => setMetodoPago(e.target.value as MetodoPagoCierre)}
+  sx={{ gap: 1.2 }}
+>
+
+  {/* ===== EFECTIVO ===== */}
+  <Box
+    onClick={() => setMetodoPago("EFECTIVO")}
+    sx={{
+      border: "1.5px solid",
+      borderColor: metodoPago === "EFECTIVO"
+        ? "rgb(225,63,68)"
+        : "rgba(0,0,0,0.15)",
+      borderRadius: "14px",
+      px: 2,
+      py: 1.4,
+      cursor: "pointer",
+      transition: "all .15s ease",
+      bgcolor: metodoPago === "EFECTIVO"
+        ? "rgba(225,63,68,0.04)"
+        : "#fff",
+      "&:hover": {
+        borderColor: "rgb(225,63,68)",
+        bgcolor: "rgba(225,63,68,0.04)",
+      },
+    }}
+  >
+    <FormControlLabel
+      value="EFECTIVO"
+      control={<Radio sx={{ display: "none" }} />}
+      sx={{ m: 0, width: "100%" }}
+      label={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "12px",
+              bgcolor: "rgba(46,125,50,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <PaymentsIcon sx={{ color: "#2e7d32", fontSize: 26 }} />
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+              Efectivo
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Pago en caja / contado
+            </Typography>
+          </Box>
+        </Box>
+      }
+    />
+  </Box>
+
+  {/* ===== QR ===== */}
+  <Box
+    onClick={() => setMetodoPago("QR")}
+    sx={{
+      border: "1.5px solid",
+      borderColor: metodoPago === "QR"
+        ? "rgb(225,63,68)"
+        : "rgba(0,0,0,0.15)",
+      borderRadius: "14px",
+      px: 2,
+      py: 1.4,
+      cursor: "pointer",
+      transition: "all .15s ease",
+      bgcolor: metodoPago === "QR"
+        ? "rgba(225,63,68,0.04)"
+        : "#fff",
+      "&:hover": {
+        borderColor: "rgb(225,63,68)",
+        bgcolor: "rgba(225,63,68,0.04)",
+      },
+    }}
+  >
+    <FormControlLabel
+      value="QR"
+      control={<Radio sx={{ display: "none" }} />}
+      sx={{ m: 0, width: "100%" }}
+      label={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "12px",
+              bgcolor: "rgba(2,136,209,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <QrCode2Icon sx={{ color: "#0288d1", fontSize: 26 }} />
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+              QR
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Pago con QR bancario
+            </Typography>
+          </Box>
+        </Box>
+      }
+    />
+  </Box>
+
+  {/* ===== TARJETA ===== */}
+  <Box
+    onClick={() => setMetodoPago("TARJETA")}
+    sx={{
+      border: "1.5px solid",
+      borderColor: metodoPago === "TARJETA"
+        ? "rgb(225,63,68)"
+        : "rgba(0,0,0,0.15)",
+      borderRadius: "14px",
+      px: 2,
+      py: 1.4,
+      cursor: "pointer",
+      transition: "all .15s ease",
+      bgcolor: metodoPago === "TARJETA"
+        ? "rgba(225,63,68,0.04)"
+        : "#fff",
+      "&:hover": {
+        borderColor: "rgb(225,63,68)",
+        bgcolor: "rgba(225,63,68,0.04)",
+      },
+    }}
+  >
+    <FormControlLabel
+      value="TARJETA"
+      control={<Radio sx={{ display: "none" }} />}
+      sx={{ m: 0, width: "100%" }}
+      label={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: "12px",
+              bgcolor: "rgba(94,53,177,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CreditCardIcon sx={{ color: "#5e35b1", fontSize: 26 }} />
+          </Box>
+
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+              Tarjeta
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Débito / crédito
+            </Typography>
+          </Box>
+        </Box>
+      }
+    />
+  </Box>
+
+</RadioGroup>
+
+                <TextField
+            label="NIT"
+            size="small"
+            value={nit}
+            onChange={(e) => onChangeNit(e.target.value)}
+            fullWidth
+            inputProps={{ inputMode: "numeric" }}
+            helperText={buscandoNit ? "Buscando datos por NIT..." : " "}
+            />
+
+      <TextField
+        label="Nombre a facturar"
+        size="small"
+        value={nombreFactura}
+        onChange={(e) => setNombreFactura(e.target.value)}
+        fullWidth
+      />
+    </Box>
+  </DialogContent>
+
+ <DialogActions sx={{ px: 3, pb: 3 }}>
+  <Button
+    fullWidth
+    variant="contained"
+    onClick={cerrarYSiHayNitGenerar}
+    disabled={saving || (nit.trim().length > 0 && !nombreFactura.trim())}
+    sx={{
+      height: 44,
+      borderRadius: "12px",
+      backgroundColor: "rgb(225,63,68)",
+      "&:hover": { backgroundColor: "rgb(200,50,55)" },
+      textTransform: "none",
+      fontWeight: 900,
+    }}
+  >
+    {saving ? "Cerrando..." : "Cerrar Cuenta"}
+  </Button>
+</DialogActions>
+</Dialog>
+
     </Box>
   );
 }
