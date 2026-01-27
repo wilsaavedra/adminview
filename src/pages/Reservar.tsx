@@ -14,6 +14,7 @@ interface ReservaDatos {
   personas: number;
   comentarios:string;
   pago?:number;
+  mesa?: string;
 }
 
 //const minFecha = new Date().toISOString().split('T')[0];
@@ -75,19 +76,34 @@ const Reservar = () => {
     hora: '',
     personas: 1,
     comentarios:'',
-    pago:0
+    pago:0,
+    mesa: ''
   });
- const [loading, setLoading] = useState(false);
-const [requestId, setRequestId] = useState<string>(() => newRequestId());
 
-  const handleReservaChange = (
+  const [loading, setLoading] = useState(false);
+  const [requestId, setRequestId] = useState<string>(() => newRequestId());
+
+  // ✅ Mesa sin datos (solo se habilita si telefono === "0000")
+  const [sinDatos, setSinDatos] = useState(false);
+  const esTelefonoMesa = reservaDatos.telefono.trim() === "0000";
+
+   const handleReservaChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
     setReservaDatos((prev) => ({
       ...prev,
       [name]: name === 'personas' ? Number(value) : value,
     }));
+
+    // ✅ si el teléfono deja de ser 0000, apagamos el checkbox automáticamente
+    if (name === 'telefono') {
+      const limpio = String(value).trim();
+      if (limpio !== "0000" && sinDatos) {
+        setSinDatos(false);
+      }
+    }
 
     if (name === 'hora') {
       if (validarHora(value)) {
@@ -144,22 +160,35 @@ const maxFecha = fechaMax.toISOString().split('T')[0];
 
     try {
       setLoading(true);
+    // ✅ si ponen 0000, obligar a confirmar checkbox (evita errores humanos)
+    if (esTelefonoMesa && !sinDatos) {
+      alert('Si el teléfono es 0000, marca "Reserva sin WhatsApp (mesa sin datos)" para confirmar.');
+      return;
+    }
+
+    const telefonoPayload = esTelefonoMesa
+      ? "0000"
+      : (reservaDatos.telefono.startsWith("+")
+          ? reservaDatos.telefono
+          : `+591${String(reservaDatos.telefono).replace(/\D/g, "")}`);
+
     await cafeApi.post('/reservas', {
-  nombre: reservaDatos.nombre,
-  telefono: reservaDatos.telefono.startsWith("+")
-    ? reservaDatos.telefono
-    : `+591${reservaDatos.telefono}`,
-  fecha: fechaHora.toISOString(),
-  cantidad: reservaDatos.personas,
-  comentarios: reservaDatos.comentarios,
-  pago: reservaDatos.pago,
+      nombre: reservaDatos.nombre,
+      telefono: telefonoPayload,
+      fecha: fechaHora.toISOString(),
+      cantidad: reservaDatos.personas,
+      comentarios: reservaDatos.comentarios,
+      pago: reservaDatos.pago,
+      mesa: (reservaDatos.mesa || "").trim() || undefined,
+      // ✅ idempotencia (anti duplicados)
+      requestId,
 
-  // ✅ idempotencia (anti duplicados)
-  requestId,
+      // ✅ opcional: para identificar que fue creado por admin
+      canal: null,
 
-  // ✅ opcional: para identificar que fue creado por admin
-  canal: null,
-});
+      // ✅ regla explícita para backend (solo true si telefono=0000 y checkbox marcado)
+      sinWhatsApp: esTelefonoMesa && sinDatos,
+    });
 
   toast.success(`Reserva creada con éxito para ${reservaDatos.nombre}`);
 
@@ -173,7 +202,8 @@ setReservaDatos({
   hora: '',
   personas: 1,
   comentarios: '',
-  pago: 0
+  pago: 0,
+  mesa: ''
 });
     } catch (error: any) {
       toast.error('Error al enviar la reserva');
@@ -187,7 +217,7 @@ setReservaDatos({
       sx={{
         width: '100%',
     maxWidth: 420,
-    margin: '1rem auto',   // centrado horizontal y un pequeño margen arriba
+    margin: '0.20rem auto',   // centrado horizontal y un pequeño margen arriba
     bgcolor: '#ffffff',
     p: 3,
     borderRadius: 2,
@@ -211,40 +241,58 @@ setReservaDatos({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem',
+          gap: '0.85rem',
         }}
       >
       
 
-      {['nombre', 'telefono', 'fecha'].map((field) => (
-  <label key={field} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-    {field.charAt(0).toUpperCase() + field.slice(1)}
-    <input
-      type={field === 'fecha' ? 'date' : field === 'telefono' ? 'tel' : 'text'}
-      name={field}
-      value={(reservaDatos as any)[field]}
-      onChange={handleReservaChange}
-      required
-      placeholder={field === 'nombre' ? 'Nombre Completo' : field === 'telefono' ? 'Ej. 71234567' : undefined}
-      min={field === 'fecha' ? minFecha : undefined}
-      max={field === 'fecha' ? maxFecha : undefined}
-      pattern={field === 'telefono' ? '^\\+?\\d{8,15}$' : undefined}
-      title={field === 'telefono' ? 'El teléfono debe tener al menos 8 dígitos numéricos' : undefined}
-      style={{
-        width: '100%',
-        padding: '0.5rem 0.75rem',
-        fontSize: '1rem',
-        borderRadius: '6px',
-        border: '1px solid #ccc',
-        boxSizing: 'border-box',
-        textAlign: field === 'fecha' ? 'left' : 'inherit', // alinea la fecha a la izquierda
-        WebkitAppearance: field === 'fecha' ? 'textfield' : undefined, // mantiene icono en iOS
-        MozAppearance: field === 'fecha' ? 'textfield' : undefined, // mantiene icono en Firefox
-        appearance: field === 'fecha' ? 'textfield' : undefined, // mantiene icono en otros navegadores
-      }}
-    />
-  </label>
-))}
+ {['nombre', 'telefono', 'fecha'].map((field) => {
+  const esTel = field === 'telefono';
+
+  return (
+    <label key={field} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
+      {field.charAt(0).toUpperCase() + field.slice(1)}
+
+      <input
+        type={field === 'fecha' ? 'date' : esTel ? 'tel' : 'text'}
+        name={field}
+        value={(reservaDatos as any)[field]}
+        onChange={handleReservaChange}
+
+        // ✅ Teléfono: requerido siempre (pero permitimos 0000 como caso especial)
+        required={true}
+
+        placeholder={
+          field === 'nombre'
+            ? 'Nombre Completo'
+            : esTel
+              ? 'Ej. 71234567'
+              : undefined
+        }
+
+        min={field === 'fecha' ? minFecha : undefined}
+        max={field === 'fecha' ? maxFecha : undefined}
+
+        // ✅ Si NO es 0000, valida dígitos. Si es 0000, no fuerces el pattern.
+        pattern={esTel && !esTelefonoMesa ? '^\\d{8}$' : undefined}
+        title={esTel && !esTelefonoMesa ? 'Teléfono: 8 dígitos (Ej. 71234567). Para mesa sin datos usa 0000.' : undefined}
+
+        style={{
+          width: '100%',
+          padding: '0.5rem 0.75rem',
+          fontSize: '1rem',
+          borderRadius: '6px',
+          border: '1px solid #ccc',
+          boxSizing: 'border-box',
+          textAlign: field === 'fecha' ? 'left' : 'inherit',
+          WebkitAppearance: field === 'fecha' ? 'textfield' : undefined,
+          MozAppearance: field === 'fecha' ? 'textfield' : undefined,
+          appearance: field === 'fecha' ? 'textfield' : undefined,
+        }}
+      />
+    </label>
+  );
+})}
 
 
         <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
@@ -343,6 +391,36 @@ setReservaDatos({
             />
           </label>
 
+<label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
+  Mesa
+  <input
+    type="text"
+    name="mesa"
+    value={reservaDatos.mesa || ''}
+    onChange={handleReservaChange}
+    //placeholder="Ej. 18"
+    style={{
+      width: '100%',
+      padding: '0.5rem 0.75rem',
+      fontSize: '1rem',
+      borderRadius: '6px',
+      border: '1px solid #ccc',
+      boxSizing: 'border-box',
+      minHeight: '2.5rem',
+    }}
+  />
+</label>
+
+{esTelefonoMesa && (
+  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 500 }}>
+    <input
+      type="checkbox"
+      checked={sinDatos}
+      onChange={(e) => setSinDatos(e.target.checked)}
+    />
+    Reserva (mesa sin datos)
+  </label>
+)}
         <button
           type="submit"
           disabled={!!errorHora || loading}

@@ -13,15 +13,20 @@ interface ReservaDatos {
   hora: string;
   personas: number;
   comentarios:string;
- // pago?:number;
+  pago?:number;
 }
 
-const minFecha = new Date().toISOString().split('T')[0];
+//const minFecha = new Date().toISOString().split('T')[0];
+const hoy = new Date();           // fecha y hora local actual
+hoy.setHours(0, 0, 0, 0);        // lleva la hora a medianoche local
+const minFecha = hoy.toISOString().split('T')[0]; // sigue usando el mismo minFecha
+
 const maxFecha = (() => {
   const d = new Date();
   d.setMonth(d.getMonth() + 2);
   return d.toISOString().split('T')[0];
 })();
+
 
 const generarOpcionesHora = (): string[] => {
   const opciones: string[] = [];
@@ -58,6 +63,10 @@ const validarHora = (horaStr: string) => {
 };
 
 const Reservar = () => {
+  const newRequestId = () =>
+  (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const [errorHora, setErrorHora] = useState<string | null>(null);
   const [reservaDatos, setReservaDatos] = useState<ReservaDatos>({
     nombre: '',
@@ -66,8 +75,10 @@ const Reservar = () => {
     hora: '',
     personas: 1,
     comentarios:'',
+    pago:0
   });
-  const [loading, setLoading] = useState(false);
+ const [loading, setLoading] = useState(false);
+const [requestId, setRequestId] = useState<string>(() => newRequestId());
 
   const handleReservaChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -88,26 +99,38 @@ const Reservar = () => {
   };
 
   const handleReservaSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (errorHora) {
-      alert('Corrige el error en la hora antes de enviar');
-      return;
-    }
+  // ✅ anti doble submit inmediato
+  if (loading) return;
+
+  if (errorHora) {
+    alert('Corrige el error en la hora antes de enviar');
+    return;
+  }
 
     if (!reservaDatos.fecha || !reservaDatos.hora) {
       alert('Por favor, ingresa fecha y hora válidas');
       return;
     }
 
-    const [hh, mm] = reservaDatos.hora.split(':').map(Number);
-    const fechaHora = new Date(reservaDatos.fecha);
+    const [hh, mm] = reservaDatos.hora.split(':').map(Number);  
+    const [year, month, day] = reservaDatos.fecha.split('-').map(Number);
+    const fechaHora = new Date(year, month - 1, day, hh, mm, 0, 0);
+    //const fechaHora = new Date(reservaDatos.fecha);
     fechaHora.setHours(hh, mm, 0, 0);
 
-    const hoy = new Date();
+    /*const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const fechaMax = new Date(hoy);
-    fechaMax.setMonth(fechaMax.getMonth() + 2);
+    fechaMax.setMonth(fechaMax.getMonth() + 2);*/
+    const hoy = new Date();
+hoy.setHours(0, 0, 0, 0);
+const fechaMax = new Date(hoy);
+fechaMax.setMonth(fechaMax.getMonth() + 2);
+const minFecha = hoy.toISOString().split('T')[0];
+const maxFecha = fechaMax.toISOString().split('T')[0];
+
 
     if (fechaHora < hoy) {
       alert('La fecha y hora no pueden ser en el pasado');
@@ -121,24 +144,37 @@ const Reservar = () => {
 
     try {
       setLoading(true);
-      await cafeApi.post('/reservas', {
-        nombre: reservaDatos.nombre,
-        telefono: `+591${reservaDatos.telefono}`,
-        fecha: fechaHora.toISOString(),
-        cantidad: reservaDatos.personas,
-        comentarios: reservaDatos.comentarios
-      });
+    await cafeApi.post('/reservas', {
+  nombre: reservaDatos.nombre,
+  telefono: reservaDatos.telefono.startsWith("+")
+    ? reservaDatos.telefono
+    : `+591${reservaDatos.telefono}`,
+  fecha: fechaHora.toISOString(),
+  cantidad: reservaDatos.personas,
+  comentarios: reservaDatos.comentarios,
+  pago: reservaDatos.pago,
 
-      toast.success(`Reserva creada con éxito para ${reservaDatos.nombre}`);
+  // ✅ idempotencia (anti duplicados)
+  requestId,
 
-      setReservaDatos({
-        nombre: '',
-        telefono: '',
-        fecha: '',
-        hora: '',
-        personas: 1,
-        comentarios:''
-      });
+  // ✅ opcional: para identificar que fue creado por admin
+  canal: null,
+});
+
+  toast.success(`Reserva creada con éxito para ${reservaDatos.nombre}`);
+
+// ✅ nuevo requestId para la siguiente reserva
+setRequestId(newRequestId());
+
+setReservaDatos({
+  nombre: '',
+  telefono: '',
+  fecha: '',
+  hora: '',
+  personas: 1,
+  comentarios: '',
+  pago: 0
+});
     } catch (error: any) {
       toast.error('Error al enviar la reserva');
     } finally {
@@ -182,14 +218,14 @@ const Reservar = () => {
 
       {['nombre', 'telefono', 'fecha'].map((field) => (
   <label key={field} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-    {field.charAt(0).toUpperCase() + field.slice(1)}:
+    {field.charAt(0).toUpperCase() + field.slice(1)}
     <input
       type={field === 'fecha' ? 'date' : field === 'telefono' ? 'tel' : 'text'}
       name={field}
       value={(reservaDatos as any)[field]}
       onChange={handleReservaChange}
       required
-      placeholder={field === 'nombre' ? 'Tu nombre' : field === 'telefono' ? 'Ej. 71234567' : undefined}
+      placeholder={field === 'nombre' ? 'Nombre Completo' : field === 'telefono' ? 'Ej. 71234567' : undefined}
       min={field === 'fecha' ? minFecha : undefined}
       max={field === 'fecha' ? maxFecha : undefined}
       pattern={field === 'telefono' ? '^\\+?\\d{8,15}$' : undefined}
@@ -212,7 +248,7 @@ const Reservar = () => {
 
 
         <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-          Hora:
+          Hora
           <select
             name="hora"
             value={reservaDatos.hora}
@@ -240,7 +276,7 @@ const Reservar = () => {
         {errorHora && <p style={{ color: 'red', fontSize: '0.85rem', margin: 0 }}>{errorHora}</p>}
 
         <label style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-          Personas:
+          Personas
           <select
             name="personas"
             value={reservaDatos.personas}
@@ -257,7 +293,7 @@ const Reservar = () => {
                 appearance: 'menulist', // mantiene estilo nativo
             }}
           >
-            {[...Array(20)].map((_, i) => (
+            {[...Array(40)].map((_, i) => (
               <option key={i + 1} value={i + 1}>
                 {i + 1}
               </option>
@@ -266,11 +302,32 @@ const Reservar = () => {
         </label>
 
         <label key={'comentarios'} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
-            {'comentarios'.charAt(0).toUpperCase() + 'comentarios'.slice(1)}:
+            {'comentarios'.charAt(0).toUpperCase() + 'comentarios'.slice(1)}
             <input
               type={ 'text'}
               name={'comentarios'}
               value={(reservaDatos as any)['comentarios']}
+              onChange={handleReservaChange}
+              placeholder={ undefined}
+              style={{
+                width: '100%',
+                padding: '0.5rem 0.75rem',
+                fontSize: '1rem',
+                borderRadius: '6px',
+                border: errorHora ? '2px solid red' : '1px solid #ccc',
+                boxSizing: 'border-box',
+                minHeight: '2.5rem', // asegura altura mínima en móvil
+                appearance: 'menulist', // mantiene estilo nativo
+              }}
+            />
+          </label>
+
+          <label key={'pago'} style={{ display: 'flex', flexDirection: 'column', fontWeight: 500 }}>
+            {'pago'.charAt(0).toUpperCase() + 'pago'.slice(1)}
+            <input
+              type={ 'number'}
+              name={'pago'}
+              value={(reservaDatos as any)['pago']}
               onChange={handleReservaChange}
               placeholder={ undefined}
               style={{
