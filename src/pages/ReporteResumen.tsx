@@ -315,13 +315,20 @@ function KpiCard({
       </Box>
 
       <CardContent sx={{ pt: 1.8 }}>
-        <Typography sx={{ color: "rgba(0,0,0,0.6)", fontSize: 13, mb: 1 }}>
-          {subtitle}
-        </Typography>
+      <Typography
+            sx={{
+                color: "rgba(0,0,0,0.6)",
+                fontSize: 13,
+                mb: 1,
+                display: { xs: "none", sm: "block" }, // 👈 móvil fuera
+            }}
+            >
+            {subtitle}
+            </Typography>
 
-      <Grid container spacing={1} alignItems="baseline">
-  {/* CANTIDAD (secundario pero claro) */}
-  <Grid size={{ xs: 6 }}>
+ <Grid container spacing={0} alignItems="baseline">
+  {/* CANTIDAD (izquierda) */}
+  <Grid size={{ xs: 6 }} sx={{ textAlign: "left" }}>
     <Typography
       sx={{
         fontSize: 26,
@@ -339,21 +346,33 @@ function KpiCard({
     </Typography>
   </Grid>
 
-  {/* IMPORTE (principal) */}
-  <Grid size={{ xs: 6 }}>
+  {/* IMPORTE (derecha) */}
+  <Grid
+    size={{ xs: 6 }}
+    sx={{
+      textAlign: "right",
+    }}
+  >
     {typeof amount === "number" ? (
       <>
         <Typography
           sx={{
-            fontSize: 34,
+            fontSize: { xs: 28, sm: 34 },
             fontWeight: 950,
             lineHeight: 1.05,
             fontVariantNumeric: "tabular-nums",
             letterSpacing: "-0.6px",
+            whiteSpace: "nowrap", // ✅ clave: no se parte y mantiene look “pro”
           }}
         >
           {amount.toFixed(2)}{" "}
-          <Box component="span" sx={{ fontSize: 18, fontWeight: 900 }}>
+          <Box
+            component="span"
+            sx={{
+              fontSize: { xs: 14, sm: 18 },
+              fontWeight: 900,
+            }}
+          >
             Bs
           </Box>
         </Typography>
@@ -364,7 +383,14 @@ function KpiCard({
       </>
     ) : (
       <>
-        <Typography sx={{ fontSize: 34, fontWeight: 950, lineHeight: 1.05 }}>
+        <Typography
+          sx={{
+            fontSize: { xs: 28, sm: 34 },
+            fontWeight: 950,
+            lineHeight: 1.05,
+            whiteSpace: "nowrap",
+          }}
+        >
           —
         </Typography>
         <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
@@ -495,12 +521,25 @@ const serie =
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Typography variant="h5" sx={{ fontWeight: 950, mb: 0.5 }}>
-        Reportes · Resumen
-      </Typography>
-      <Typography sx={{ color: "rgba(0,0,0,0.6)", mb: 2 }}>
-        Vista general de ventas y actividad por periodo.
-      </Typography>
+     <Box
+            sx={{
+                mt: { xs: 6, sm: 0 }, // 👈 baja el título SOLO en móvil
+            }}
+            >
+            <Typography variant="h5" sx={{ fontWeight: 950, mb: 0.5 }}>
+                Reportes · Resumen
+            </Typography>
+
+           <Typography
+                sx={{
+                    color: "rgba(0,0,0,0.6)",
+                    mb: 2,
+                    display: { xs: "none", sm: "block" }, // 👈 oculto en móvil
+                }}
+                >
+                Vista general de ventas y actividad por periodo.
+                </Typography>
+            </Box>
 
       {/* Filtros (estilo limpio + botón) */}
       <Card
