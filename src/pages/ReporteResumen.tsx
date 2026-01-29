@@ -52,21 +52,34 @@ function ymdLaPaz(d: Date) {
  */
 function SimpleLineChart({
   data,
-  height = 190, // ✅ más compacto como la muestra
+  height = 190, // desktop
   emptyLabel = "Sin datos",
 }: {
   data: SeriePoint[];
   height?: number;
   emptyLabel?: string;
 }) {
-  const paddingLeft = 64; // ✅ suficiente para "60 Bs" sin cortar
-  const padding = 22;     // ✅ menos espacio general
+  // ✅ Detecta móvil SIN imports
+  const isMobile =
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(max-width:600px)").matches
+      : false;
+
+  // ✅ En móvil subimos tamaños de texto (porque el SVG se escala)
+  const yTickFont = isMobile ? 16 : 12;
+  const xTickFont = isMobile ? 15 : 11;
+  const axisFont = isMobile ? 16 : 11;
+  const emptyFont = isMobile ? 18 : 14;
+
+  // ✅ un poquito más de espacio en móvil para que no choque
+  const paddingLeft = isMobile ? 78 : 64;
+  const padding = isMobile ? 26 : 22;
+
   const width = 1000;
 
-  const xAxisTitle = "Horas";      // ✅ título eje X
-  const yAxisTitle = "Total Ventas"; // ✅ título eje Y (como la muestra)
+  const xAxisTitle = "Horas";
+  const yAxisTitle = "Total Ventas";
 
-  // base data (placeholder si no hay data)
   const baseData: SeriePoint[] =
     data && data.length > 0
       ? data
@@ -76,12 +89,11 @@ function SimpleLineChart({
           { x: "—", y: 0 },
         ];
 
-  // ✅ si hay 1 solo punto: armamos 0 -> valor -> 0 (como tu ejemplo)
   const safeData: SeriePoint[] = (() => {
     if (!data || data.length !== 1) return baseData;
 
     const only = data[0];
-    const h = Number(String(only.x).slice(0, 2)); // "01:00" -> 1
+    const h = Number(String(only.x).slice(0, 2));
     if (Number.isFinite(h)) {
       const prev = String((h + 23) % 24).padStart(2, "0") + ":00";
       const next = String((h + 1) % 24).padStart(2, "0") + ":00";
@@ -92,7 +104,6 @@ function SimpleLineChart({
       ];
     }
 
-    // fallback si x no es hora
     return [
       { x: "—", y: 0 },
       { x: only.x, y: only.y },
@@ -103,7 +114,6 @@ function SimpleLineChart({
   const maxY = Math.max(...safeData.map((p) => Number(p.y) || 0), 0);
   const safeMaxY = maxY <= 0 ? 1 : maxY;
 
-  // ticks "bonitos" para eje Y (Bs)
   function niceStep(max: number, ticks = 4) {
     if (max <= 0) return 1;
     const rough = max / ticks;
@@ -116,24 +126,16 @@ function SimpleLineChart({
   const step = niceStep(safeMaxY, 4);
   const top = Math.ceil(safeMaxY / step) * step;
 
-  // 5 ticks: 0..top
   const yLabels = Array.from({ length: 5 }, (_, i) => i * step);
 
-  // ✅ NUMÉRICO Bs (si quieres 0 decimales usa toFixed(0))
   const formatBs = (v: number) => `${v.toFixed(0)} Bs`;
 
-  // área interna del chart (ya con margen izquierdo real)
   const innerW = width - paddingLeft - padding;
   const innerH = height - padding * 2;
 
   const points = safeData.map((p, i) => {
-    const x =
-      paddingLeft +
-      (i * innerW) / Math.max(1, safeData.length - 1);
-
-    const y =
-      height - padding - ((Number(p.y) || 0) * innerH) / (top || 1);
-
+    const x = paddingLeft + (i * innerW) / Math.max(1, safeData.length - 1);
+    const y = height - padding - ((Number(p.y) || 0) * innerH) / (top || 1);
     return { x, y, label: p.x, value: Number(p.y) || 0 };
   });
 
@@ -141,84 +143,78 @@ function SimpleLineChart({
     .map((pt, i) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
     .join(" ");
 
-  // ya NO usamos gridLines 0.25.. porque ahora el grid lo hacen yLabels (mejor)
   const isEmpty = !data || data.length === 0;
 
   return (
     <Box sx={{ width: "100%" }}>
       <Box
-  component="svg"
-  viewBox={`0 0 ${width} ${height}`}
-  sx={{
-    width: "100%",
-    height: "auto",
-    display: "block",
-    borderRadius: "12px", // ✅ un poco menos redondeado
-    overflow: "hidden",
-    border: "1px solid rgba(0,0,0,0.08)",
-    background: "#fff",   // ✅ más simple, parecido a la muestra
-  }}
->
-        {/* fondo */}
+        component="svg"
+        viewBox={`0 0 ${width} ${height}`}
+        sx={{
+          width: "100%",
+          height: "auto",
+          display: "block",
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: "1px solid rgba(0,0,0,0.08)",
+          background: "#fff",
+        }}
+      >
         <rect x="0" y="0" width={width} height={height} fill="#fff" />
 
-       {/* ✅ grid + labels eje Y (Bs) */}
-      {yLabels.map((val, idx) => {
-        const y =
-          height - padding - (val * (height - padding * 2)) / (top || 1);
+        {/* grid + labels eje Y */}
+        {yLabels.map((val, idx) => {
+          const y =
+            height - padding - (val * (height - padding * 2)) / (top || 1);
 
-        return (
-          <g key={idx}>
-            {/* línea de grid */}
-            <line
-              x1={paddingLeft}
-              y1={y}
-              x2={width - padding}
-              y2={y}
-              stroke="rgba(0,0,0,0.08)"
-              strokeWidth="1"
-            />
+          return (
+            <g key={idx}>
+              <line
+                x1={paddingLeft}
+                y1={y}
+                x2={width - padding}
+                y2={y}
+                stroke="rgba(0,0,0,0.08)"
+                strokeWidth="1"
+              />
+              <text
+                x={paddingLeft - 12}
+                y={y + 5}
+                textAnchor="end"
+                fontSize={yTickFont}
+                fill="rgba(0,0,0,0.55)"
+              >
+                {formatBs(val)}
+              </text>
+            </g>
+          );
+        })}
 
-            {/* label Bs (ya NO se corta) */}
-            <text
-              x={paddingLeft - 12}
-              y={y + 4}
-              textAnchor="end"
-              fontSize="12"
-              fill="rgba(0,0,0,0.55)"
-            >
-              {formatBs(val)}
-            </text>
-          </g>
-        );
-      })}
+        {/* ejes */}
+        <line
+          x1={paddingLeft}
+          y1={padding}
+          x2={paddingLeft}
+          y2={height - padding}
+          stroke="rgba(0,0,0,0.12)"
+          strokeWidth="1"
+        />
 
-      {/* eje Y */}
-      <line
-        x1={paddingLeft}
-        y1={padding}
-        x2={paddingLeft}
-        y2={height - padding}
-        stroke="rgba(0,0,0,0.12)"
-        strokeWidth="1"
-      />
-
-      {/* eje x */}
-      <line
-        x1={paddingLeft}
-        y1={height - padding}
-        x2={width - padding}
-        y2={height - padding}
-        stroke="rgba(0,0,0,0.12)"
-        strokeWidth="1"
-      />
+        <line
+          x1={paddingLeft}
+          y1={height - padding}
+          x2={width - padding}
+          y2={height - padding}
+          stroke="rgba(0,0,0,0.12)"
+          strokeWidth="1"
+        />
 
         {/* línea */}
         <path
           d={pathD}
           fill="none"
           stroke={isEmpty ? "rgba(0,0,0,0.25)" : "rgb(225,63,68)"}
-          strokeWidth="3"
+          strokeWidth={isMobile ? 4 : 3}
           strokeLinejoin="round"
           strokeLinecap="round"
         />
@@ -229,56 +225,56 @@ function SimpleLineChart({
             key={idx}
             cx={pt.x}
             cy={pt.y}
-            r="4"
+            r={isMobile ? 5 : 4}
             fill="#fff"
             stroke={isEmpty ? "rgba(0,0,0,0.25)" : "rgb(225,63,68)"}
-            strokeWidth="2"
+            strokeWidth={isMobile ? 3 : 2}
           />
         ))}
 
         {/* labels X */}
         {points.map((pt, idx) => {
-  const step = points.length <= 8 ? 1 : Math.ceil(points.length / 6);
-  if (idx % step !== 0 && idx !== points.length - 1) return null;
+          const stepX = points.length <= 8 ? 1 : Math.ceil(points.length / 6);
+          if (idx % stepX !== 0 && idx !== points.length - 1) return null;
 
-  return (
-    <text
-      key={idx}
-      x={pt.x}
-      y={height - 12}   // ✅ sube un poco
-      textAnchor="middle"
-      fontSize="11"     // ✅ más compacto
-      fill="rgba(0,0,0,0.55)"
-    >
-      {pt.label}
-    </text>
-  );
-})}
+          return (
+            <text
+              key={idx}
+              x={pt.x}
+              y={height - (isMobile ? 16 : 12)}
+              textAnchor="middle"
+              fontSize={xTickFont}
+              fill="rgba(0,0,0,0.55)"
+            >
+              {pt.label}
+            </text>
+          );
+        })}
 
-{/* ✅ Título eje X (abajo, centrado, dentro del gráfico) */}
-<text
-  x={(paddingLeft + (width - padding)) / 2}
-  y={height - 2}
-  textAnchor="middle"
-  fontSize="11"
-  fill="rgba(0,0,0,0.55)"
-  style={{ fontWeight: 700 }}
->
-  {xAxisTitle}
-</text>
+        {/* título eje X */}
+        <text
+          x={(paddingLeft + (width - padding)) / 2}
+          y={height - 2}
+          textAnchor="middle"
+          fontSize={axisFont}
+          fill="rgba(0,0,0,0.55)"
+          style={{ fontWeight: 800 }}
+        >
+          {xAxisTitle}
+        </text>
 
-{/* ✅ Título eje Y (izquierda, vertical) */}
-<text
-  x={16}
-  y={(padding + (height - padding)) / 2}
-  textAnchor="middle"
-  fontSize="11"
-  fill="rgba(0,0,0,0.55)"
-  style={{ fontWeight: 700 }}
-  transform={`rotate(-90 16 ${(padding + (height - padding)) / 2})`}
->
-  {yAxisTitle}
-</text>
+        {/* título eje Y */}
+        <text
+          x={isMobile ? 20 : 16}
+          y={(padding + (height - padding)) / 2}
+          textAnchor="middle"
+          fontSize={axisFont}
+          fill="rgba(0,0,0,0.55)"
+          style={{ fontWeight: 800 }}
+          transform={`rotate(-90 ${isMobile ? 20 : 16} ${(padding + (height - padding)) / 2})`}
+        >
+          {yAxisTitle}
+        </text>
 
         {/* overlay sin datos */}
         {isEmpty && (
@@ -294,9 +290,9 @@ function SimpleLineChart({
               x={width / 2}
               y={height / 2}
               textAnchor="middle"
-              fontSize="14"
+              fontSize={emptyFont}
               fill="rgba(0,0,0,0.6)"
-              style={{ fontWeight: 800 }}
+              style={{ fontWeight: 900 }}
             >
               {emptyLabel}
             </text>
@@ -352,12 +348,12 @@ function KpiCard({
         </Typography>
       </Box>
 
-      <CardContent sx={{ pt: 0.8, pb: 0.8, px: 2 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.3 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
+      <CardContent sx={{ pt: 0.7, pb: 0.7, px: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.2 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: 11, color: accentColor }}>
             Cuentas
           </Typography>
-          <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
+          <Typography sx={{ fontWeight: 800, fontSize: 11, color: accentColor }}>
             Importe
           </Typography>
         </Box>
@@ -365,7 +361,7 @@ function KpiCard({
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <Typography
             sx={{
-              fontSize: { xs: 24, sm: 26 },
+              fontSize: { xs: 20, sm: 22 }, // ✅ BAJA: antes 24/26
               fontWeight: 900,
               lineHeight: 1.05,
               color: accentColor,
@@ -377,7 +373,7 @@ function KpiCard({
 
           <Typography
             sx={{
-              fontSize: { xs: 20, sm: 22 },
+              fontSize: { xs: 20, sm: 22 }, // ✅ mismo tamaño que "Cuentas" como la muestra
               fontWeight: 900,
               lineHeight: 1.05,
               color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
@@ -721,7 +717,7 @@ const serie =
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-    <Card
+ <Card
   sx={{
     height: "100%",
     borderRadius: "18px",
@@ -729,44 +725,43 @@ const serie =
     overflow: "hidden",
   }}
 >
-  {/* Header centrado y sólido */}
- <Box
-  sx={{
-    px: 2,
-    py: 0.9,
-    background: "#263238",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <Typography sx={{ fontWeight: 900, fontSize: 15 }}>
-    Clientes atendidos
-  </Typography>
-</Box>
-
-<CardContent sx={{ pt: 0.8, pb: 0.8, px: 2 }}>
-  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.15 }}>
-    <Typography sx={{ fontWeight: 800, fontSize: 11, color: "rgba(0,0,0,0.6)" }}>
-      Clientes
+  <Box
+    sx={{
+      px: 2,
+      py: 0.9,
+      background: "#263238",
+      color: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <Typography sx={{ fontWeight: 900, fontSize: 15 }}>
+      Clientes atendidos
     </Typography>
   </Box>
 
-  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-    <Typography
-      sx={{
-        fontSize: { xs: 22, sm: 24 }, // ✅ mismo tamaño que los otros KPI
-        fontWeight: 900,
-        lineHeight: 1.05,
-        color: "#263238",
-        fontVariantNumeric: "tabular-nums",
-      }}
-    >
-      {data?.clientesAtendidos ?? 0}
-    </Typography>
-  </Box>
-</CardContent>
+  <CardContent sx={{ pt: 0.7, pb: 0.7, px: 2 }}>
+    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.2 }}>
+      <Typography sx={{ fontWeight: 800, fontSize: 11, color: "rgba(0,0,0,0.6)" }}>
+        Clientes
+      </Typography>
+    </Box>
+
+    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+      <Typography
+        sx={{
+          fontSize: { xs: 20, sm: 22 }, // ✅ BAJA: antes 22/24
+          fontWeight: 900,
+          lineHeight: 1.05,
+          color: "#263238",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {data?.clientesAtendidos ?? 0}
+      </Typography>
+    </Box>
+  </CardContent>
 </Card>
         </Grid>
       </Grid>
