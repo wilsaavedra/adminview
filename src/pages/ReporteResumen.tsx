@@ -294,112 +294,94 @@ function KpiCard({
   amount?: number;
   headerBg: string;
 }) {
+  const hasAmount = typeof amount === "number";
+
+  // 🎨 Colores estilo “muestra” (morado/fucsia en labels + verde en importe)
+  const accentColor =
+    title.toLowerCase().includes("abiertas") ? "#6F42C1" : "#E91E63";
+
+  const amountColor = "#2E7D32"; // verde pro tipo ejemplo
+
   return (
-   <Card
-    sx={{
-      height: "100%",
-      borderRadius: "18px",
-      boxShadow: 1,
-      overflow: "hidden",
-    }}
-  >
+    <Card
+      sx={{
+        height: "100%",
+        borderRadius: "18px",
+        boxShadow: 1,
+        overflow: "hidden",
+      }}
+    >
+      {/* Header centrado como la muestra */}
       <Box
         sx={{
           px: 2,
           py: 1.2,
           background: headerBg,
           color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        <Typography sx={{ fontWeight: 950, fontSize: 15 }}>{title}</Typography>
+        <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
+          {title}
+        </Typography>
       </Box>
 
-      <CardContent sx={{ pt: 1.8 }}>
-      <Typography
-            sx={{
-                color: "rgba(0,0,0,0.6)",
-                fontSize: 13,
-                mb: 1,
-                display: { xs: "none", sm: "block" }, // 👈 móvil fuera
-            }}
-            >
-            {subtitle}
-            </Typography>
+      <CardContent sx={{ pt: 1.4, pb: 1.8 }}>
+       
 
- <Grid container spacing={0} alignItems="baseline">
-  {/* CANTIDAD (izquierda) */}
-  <Grid size={{ xs: 6 }} sx={{ textAlign: "left" }}>
-    <Typography
-      sx={{
-        fontSize: 26,
-        fontWeight: 950,
-        lineHeight: 1.05,
-        fontVariantNumeric: "tabular-nums",
-        letterSpacing: "-0.3px",
-      }}
-    >
-      {count}
-    </Typography>
-
-    <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-      Cuentas
-    </Typography>
-  </Grid>
-
-  {/* IMPORTE (derecha) */}
-  <Grid
-    size={{ xs: 6 }}
-    sx={{
-      textAlign: "right",
-    }}
-  >
-    {typeof amount === "number" ? (
-      <>
-        <Typography
+        {/* Labels arriba (Cuentas / Importe) como la muestra */}
+        <Box
           sx={{
-            fontSize: { xs: 28, sm: 34 },
-            fontWeight: 950,
-            lineHeight: 1.05,
-            fontVariantNumeric: "tabular-nums",
-            letterSpacing: "-0.6px",
-            whiteSpace: "nowrap", // ✅ clave: no se parte y mantiene look “pro”
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 0.6,
           }}
         >
-          {amount.toFixed(2)}{" "}
-          <Box
-            component="span"
+          <Typography sx={{ fontWeight: 800, fontSize: 13, color: accentColor }}>
+            Cuentas
+          </Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: 13, color: accentColor }}>
+            Importe
+          </Typography>
+        </Box>
+
+        {/* Valores abajo */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+          }}
+        >
+          {/* Count con color del card */}
+          <Typography
             sx={{
-              fontSize: { xs: 14, sm: 18 },
-              fontWeight: 900,
+              fontSize: { xs: 28, sm: 30 },
+              fontWeight: 950,
+              lineHeight: 1.05,
+              color: accentColor,
+              fontVariantNumeric: "tabular-nums",
             }}
           >
-            Bs
-          </Box>
-        </Typography>
+            {count}
+          </Typography>
 
-        <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-          Importe
-        </Typography>
-      </>
-    ) : (
-      <>
-        <Typography
-          sx={{
-            fontSize: { xs: 28, sm: 34 },
-            fontWeight: 950,
-            lineHeight: 1.05,
-            whiteSpace: "nowrap",
-          }}
-        >
-          —
-        </Typography>
-        <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-          Importe
-        </Typography>
-      </>
-    )}
-  </Grid>
-</Grid>
+          {/* Importe verde */}
+          <Typography
+            sx={{
+              fontSize: { xs: 24, sm: 28 },
+              fontWeight: 950,
+              lineHeight: 1.05,
+              color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
+              fontVariantNumeric: "tabular-nums",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {hasAmount ? amount!.toFixed(2) : "—"}
+          </Typography>
+        </Box>
       </CardContent>
     </Card>
   );
@@ -715,27 +697,27 @@ const serie =
       {/* KPIs (como el ejemplo: cards con header color) */}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
-          <KpiCard
-            title="Cuentas abiertas"
-            subtitle="Estado distinto de pagado"
-            count={data?.cuentasAbiertas?.cantidad ?? 0}
-            amount={data?.cuentasAbiertas?.monto ?? 0}
-            headerBg="linear-gradient(90deg, #6F42C1, #7E57C2)"
-          />
+         <KpiCard
+  title="Cuentas abiertas"
+  subtitle="Estado distinto de pagado"
+  count={data?.cuentasAbiertas?.cantidad ?? 0}
+  amount={data?.cuentasAbiertas?.monto ?? 0}
+  headerBg="#6F42C1"
+/>
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <KpiCard
-            title="Cuentas cerradas"
-            subtitle="Pagadas / cerradas totalmente"
-            count={data?.cuentasCerradas?.cantidad ?? 0}
-            amount={data?.cuentasCerradas?.monto ?? 0}
-            headerBg="linear-gradient(90deg, #E91E63, #D81B60)"
-          />
+      <KpiCard
+  title="Cuentas cerradas"
+  subtitle="Pagadas / cerradas totalmente"
+  count={data?.cuentasCerradas?.cantidad ?? 0}
+  amount={data?.cuentasCerradas?.monto ?? 0}
+  headerBg="#E91E63"
+/>
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card
+    <Card
   sx={{
     height: "100%",
     borderRadius: "18px",
@@ -743,41 +725,58 @@ const serie =
     overflow: "hidden",
   }}
 >
-            <Box
-              sx={{
-                px: 2,
-                py: 1.2,
-                background: "linear-gradient(90deg, #263238, #37474F)",
-                color: "#fff",
-              }}
-            >
-              <Typography sx={{ fontWeight: 950, fontSize: 15 }}>
-                Clientes atendidos
-              </Typography>
-            </Box>
-
- <CardContent sx={{ pt: 1.8 }}>
-  <Typography sx={{ color: "rgba(0,0,0,0.6)", fontSize: 13, mb: 1 }}>
-    Total del periodo
-  </Typography>
-
-  <Typography
+  {/* Header centrado y sólido */}
+  <Box
     sx={{
-      fontSize: 26,
-      fontWeight: 950,
-      lineHeight: 1.05,
-      fontVariantNumeric: "tabular-nums",
-      letterSpacing: "-0.3px",
+      px: 2,
+      py: 1.2,
+      background: "#263238",
+      color: "#fff",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
     }}
   >
-    {data?.clientesAtendidos ?? 0}
-  </Typography>
+    <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
+      Clientes atendidos
+    </Typography>
+  </Box>
 
-  <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12, mt: 0.5 }}>
-    Clientes
-  </Typography>
-</CardContent>
-          </Card>
+  <CardContent sx={{ pt: 1.4, pb: 1.8 }}>
+    {/* Label arriba (como los otros KPI) */}
+    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.6 }}>
+      <Typography
+        sx={{ fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.6)" }}
+      >
+        Clientes
+      </Typography>
+      
+    </Box>
+
+    {/* Valores alineados */}
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: { xs: 28, sm: 30 },
+          fontWeight: 950,
+          lineHeight: 1.05,
+          color: "#263238",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {data?.clientesAtendidos ?? 0}
+      </Typography>
+
+     
+    </Box>
+  </CardContent>
+</Card>
         </Grid>
       </Grid>
     </Box>
