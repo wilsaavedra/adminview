@@ -249,7 +249,7 @@ const points = safeData.map((p, i) => {
           <text
             key={idx}
             x={pt.x}
-            y={h - padBottom + (isMobile ? 40 : 12)}
+           y={h - padBottom + (isMobile ? 18 : 12)}
             textAnchor="middle"
             fontSize={xTickFont}
             fill="rgba(0,0,0,0.55)"
@@ -262,7 +262,7 @@ const points = safeData.map((p, i) => {
         {/* título eje X */}
        <text
         x={(paddingLeft + (width - padding)) / 2}
-        y={h - (isMobile ? 10 : 6)}
+        y={h - (isMobile ? 4 : 6)}
         textAnchor="middle"
         fontSize={axisFont}
         fill="rgba(0,0,0,0.55)"
@@ -370,7 +370,7 @@ function KpiCard({
           <Typography
             sx={{
               fontSize: { xs: 20, sm: 22 }, // ✅ BAJA: antes 24/26
-              fontWeight: 900,
+              fontWeight: 800,
               lineHeight: 1.05,
               color: accentColor,
               fontVariantNumeric: "tabular-nums",
@@ -382,7 +382,7 @@ function KpiCard({
           <Typography
             sx={{
               fontSize: { xs: 20, sm: 22 }, // ✅ mismo tamaño que "Cuentas" como la muestra
-              fontWeight: 900,
+              fontWeight: 800,
               lineHeight: 1.05,
               color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
               fontVariantNumeric: "tabular-nums",
@@ -782,7 +782,7 @@ const serie =
           <Typography
             sx={{
               fontSize: { xs: 16, sm: 18 }, // ✅ antes 20/22 (más chico)
-              fontWeight: 900,
+              fontWeight: 800,
               lineHeight: 1.05,
               color: "rgba(0,0,0,0.55)",
               fontVariantNumeric: "tabular-nums",
