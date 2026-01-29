@@ -52,17 +52,19 @@ function ymdLaPaz(d: Date) {
  */
 function SimpleLineChart({
   data,
-  height = 220,
+  height = 190, // ✅ más compacto como la muestra
   emptyLabel = "Sin datos",
 }: {
   data: SeriePoint[];
   height?: number;
   emptyLabel?: string;
 }) {
-   // ✅ más margen izquierdo para que NO se corten los números del eje Y
-  const paddingLeft = 78;
-  const padding = 28; // mantenemos tu padding para top/bottom/right
+  const paddingLeft = 64; // ✅ suficiente para "60 Bs" sin cortar
+  const padding = 22;     // ✅ menos espacio general
   const width = 1000;
+
+  const xAxisTitle = "Horas";      // ✅ título eje X
+  const yAxisTitle = "Total Ventas"; // ✅ título eje Y (como la muestra)
 
   // base data (placeholder si no hay data)
   const baseData: SeriePoint[] =
@@ -145,19 +147,18 @@ function SimpleLineChart({
   return (
     <Box sx={{ width: "100%" }}>
       <Box
-        component="svg"
-        viewBox={`0 0 ${width} ${height}`}
-        sx={{
-          width: "100%",
-          height: "auto",
-          display: "block",
-          borderRadius: "14px",
-          overflow: "hidden",
-          border: "1px solid rgba(0,0,0,0.06)",
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0.015), rgba(0,0,0,0.00))",
-        }}
-      >
+  component="svg"
+  viewBox={`0 0 ${width} ${height}`}
+  sx={{
+    width: "100%",
+    height: "auto",
+    display: "block",
+    borderRadius: "12px", // ✅ un poco menos redondeado
+    overflow: "hidden",
+    border: "1px solid rgba(0,0,0,0.08)",
+    background: "#fff",   // ✅ más simple, parecido a la muestra
+  }}
+>
         {/* fondo */}
         <rect x="0" y="0" width={width} height={height} fill="#fff" />
 
@@ -237,22 +238,47 @@ function SimpleLineChart({
 
         {/* labels X */}
         {points.map((pt, idx) => {
-          const step = points.length <= 8 ? 1 : Math.ceil(points.length / 6);
-          if (idx % step !== 0 && idx !== points.length - 1) return null;
+  const step = points.length <= 8 ? 1 : Math.ceil(points.length / 6);
+  if (idx % step !== 0 && idx !== points.length - 1) return null;
 
-          return (
-            <text
-              key={idx}
-              x={pt.x}
-              y={height - 8}
-              textAnchor="middle"
-              fontSize="12"
-              fill="rgba(0,0,0,0.55)"
-            >
-              {pt.label}
-            </text>
-          );
-        })}
+  return (
+    <text
+      key={idx}
+      x={pt.x}
+      y={height - 12}   // ✅ sube un poco
+      textAnchor="middle"
+      fontSize="11"     // ✅ más compacto
+      fill="rgba(0,0,0,0.55)"
+    >
+      {pt.label}
+    </text>
+  );
+})}
+
+{/* ✅ Título eje X (abajo, centrado, dentro del gráfico) */}
+<text
+  x={(paddingLeft + (width - padding)) / 2}
+  y={height - 2}
+  textAnchor="middle"
+  fontSize="11"
+  fill="rgba(0,0,0,0.55)"
+  style={{ fontWeight: 700 }}
+>
+  {xAxisTitle}
+</text>
+
+{/* ✅ Título eje Y (izquierda, vertical) */}
+<text
+  x={16}
+  y={(padding + (height - padding)) / 2}
+  textAnchor="middle"
+  fontSize="11"
+  fill="rgba(0,0,0,0.55)"
+  style={{ fontWeight: 700 }}
+  transform={`rotate(-90 16 ${(padding + (height - padding)) / 2})`}
+>
+  {yAxisTitle}
+</text>
 
         {/* overlay sin datos */}
         {isEmpty && (
@@ -296,26 +322,24 @@ function KpiCard({
 }) {
   const hasAmount = typeof amount === "number";
 
-  // 🎨 Colores estilo “muestra” (morado/fucsia en labels + verde en importe)
   const accentColor =
     title.toLowerCase().includes("abiertas") ? "#6F42C1" : "#E91E63";
 
-  const amountColor = "#2E7D32"; // verde pro tipo ejemplo
+  const amountColor = "#2E7D32";
 
   return (
     <Card
       sx={{
         height: "100%",
-        borderRadius: "18px",
+        borderRadius: "14px",
         boxShadow: 1,
         overflow: "hidden",
       }}
     >
-      {/* Header centrado como la muestra */}
       <Box
         sx={{
           px: 2,
-          py: 1.2,
+          py: 0.9,
           background: headerBg,
           color: "#fff",
           display: "flex",
@@ -323,43 +347,26 @@ function KpiCard({
           justifyContent: "center",
         }}
       >
-        <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
+        <Typography sx={{ fontWeight: 900, fontSize: 15 }}>
           {title}
         </Typography>
       </Box>
 
-      <CardContent sx={{ pt: 1.4, pb: 1.8 }}>
-       
-
-        {/* Labels arriba (Cuentas / Importe) como la muestra */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            mb: 0.6,
-          }}
-        >
-          <Typography sx={{ fontWeight: 800, fontSize: 13, color: accentColor }}>
+      <CardContent sx={{ pt: 0.8, pb: 0.8, px: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.3 }}>
+          <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
             Cuentas
           </Typography>
-          <Typography sx={{ fontWeight: 800, fontSize: 13, color: accentColor }}>
+          <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
             Importe
           </Typography>
         </Box>
 
-        {/* Valores abajo */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-          }}
-        >
-          {/* Count con color del card */}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <Typography
             sx={{
-              fontSize: { xs: 28, sm: 30 },
-              fontWeight: 950,
+              fontSize: { xs: 24, sm: 26 },
+              fontWeight: 900,
               lineHeight: 1.05,
               color: accentColor,
               fontVariantNumeric: "tabular-nums",
@@ -368,11 +375,10 @@ function KpiCard({
             {count}
           </Typography>
 
-          {/* Importe verde */}
           <Typography
             sx={{
-              fontSize: { xs: 24, sm: 28 },
-              fontWeight: 950,
+              fontSize: { xs: 20, sm: 22 },
+              fontWeight: 900,
               lineHeight: 1.05,
               color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
               fontVariantNumeric: "tabular-nums",
@@ -688,14 +694,12 @@ const serie =
             emptyLabel="No hay datos para el periodo seleccionado"
           />
 
-          <Typography sx={{ mt: 1.5, color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-            Eje Y: monto cobrado (Bs) · Eje X: {periodo === "dia" ? "horas" : "días"}
-          </Typography>
+      
         </CardContent>
       </Card>
 
       {/* KPIs (como el ejemplo: cards con header color) */}
-      <Grid container spacing={2}>
+      <Grid container spacing={1.4}>
         <Grid size={{ xs: 12, md: 4 }}>
          <KpiCard
   title="Cuentas abiertas"
@@ -726,56 +730,43 @@ const serie =
   }}
 >
   {/* Header centrado y sólido */}
-  <Box
-    sx={{
-      px: 2,
-      py: 1.2,
-      background: "#263238",
-      color: "#fff",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
-    <Typography sx={{ fontWeight: 900, fontSize: 16 }}>
-      Clientes atendidos
+ <Box
+  sx={{
+    px: 2,
+    py: 0.9,
+    background: "#263238",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  <Typography sx={{ fontWeight: 900, fontSize: 15 }}>
+    Clientes atendidos
+  </Typography>
+</Box>
+
+<CardContent sx={{ pt: 0.8, pb: 0.8, px: 2 }}>
+  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.15 }}>
+    <Typography sx={{ fontWeight: 800, fontSize: 11, color: "rgba(0,0,0,0.6)" }}>
+      Clientes
     </Typography>
   </Box>
 
-  <CardContent sx={{ pt: 1.4, pb: 1.8 }}>
-    {/* Label arriba (como los otros KPI) */}
-    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.6 }}>
-      <Typography
-        sx={{ fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.6)" }}
-      >
-        Clientes
-      </Typography>
-      
-    </Box>
-
-    {/* Valores alineados */}
-    <Box
+  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+    <Typography
       sx={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "baseline",
+        fontSize: { xs: 22, sm: 24 }, // ✅ mismo tamaño que los otros KPI
+        fontWeight: 900,
+        lineHeight: 1.05,
+        color: "#263238",
+        fontVariantNumeric: "tabular-nums",
       }}
     >
-      <Typography
-        sx={{
-          fontSize: { xs: 28, sm: 30 },
-          fontWeight: 950,
-          lineHeight: 1.05,
-          color: "#263238",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {data?.clientesAtendidos ?? 0}
-      </Typography>
-
-     
-    </Box>
-  </CardContent>
+      {data?.clientesAtendidos ?? 0}
+    </Typography>
+  </Box>
+</CardContent>
 </Card>
         </Grid>
       </Grid>
