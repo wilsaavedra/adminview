@@ -272,14 +272,14 @@ const points = safeData.map((p, i) => {
         </text>
 
         {/* título eje Y */}
-       <text
-            x={isMobile ? 20 : 16}
+      <text
+            x={isMobile ? 8 : 16}
             y={(padTop + (h - padBottom)) / 2}
             textAnchor="middle"
             fontSize={axisFont}
             fill="rgba(0,0,0,0.55)"
             style={{ fontWeight: 800 }}
-            transform={`rotate(-90 ${isMobile ? 20 : 16} ${(padTop + (h - padBottom)) / 2})`}
+            transform={`rotate(-90 ${isMobile ? 8 : 16} ${(padTop + (h - padBottom)) / 2})`}
             >
             {yAxisTitle}
             </text>
@@ -370,7 +370,7 @@ function KpiCard({
           <Typography
             sx={{
               fontSize: { xs: 20, sm: 22 }, // ✅ BAJA: antes 24/26
-              fontWeight: 800,
+              fontWeight: 700,
               lineHeight: 1.05,
               color: accentColor,
               fontVariantNumeric: "tabular-nums",
@@ -382,7 +382,7 @@ function KpiCard({
           <Typography
             sx={{
               fontSize: { xs: 20, sm: 22 }, // ✅ mismo tamaño que "Cuentas" como la muestra
-              fontWeight: 800,
+              fontWeight: 700,
               lineHeight: 1.05,
               color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
               fontVariantNumeric: "tabular-nums",
