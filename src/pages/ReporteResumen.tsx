@@ -66,7 +66,7 @@ function SimpleLineChart({
       : false;
 
   // ✅ En móvil le damos más alto para que se lea mejor
-  const h = isMobile ? 240 : height;
+  const h = isMobile ? 290 : height;
 
     // ✅ En móvil el SVG se reduce mucho (viewBox 1000px -> pantalla),
   // así que los textos deben ser MUCHO más grandes en unidades del viewBox.
@@ -76,8 +76,12 @@ function SimpleLineChart({
   const emptyFont = isMobile ? 34 : 14;
 
   // ✅ Más aire en móvil para que entren labels grandes
-  const paddingLeft = isMobile ? 112 : 64;
+  const paddingLeft = isMobile ? 112 : 74;
   const padding = isMobile ? 30 : 22;
+
+  // ✅ NUEVO: paddings separados para evitar que se pisen ticks y títulos
+  const padTop = isMobile ? 26 : padding;
+  const padBottom = isMobile ? 74 : 34;
 
   const width = 1000;
 
@@ -135,13 +139,13 @@ function SimpleLineChart({
   const formatBs = (v: number) => `${v.toFixed(0)} Bs`;
 
   const innerW = width - paddingLeft - padding;
-  const innerH = h - padding * 2;
+const innerH = h - padTop - padBottom;
 
-  const points = safeData.map((p, i) => {
-    const x = paddingLeft + (i * innerW) / Math.max(1, safeData.length - 1);
-   const y = h - padding - ((Number(p.y) || 0) * innerH) / (top || 1);
-    return { x, y, label: p.x, value: Number(p.y) || 0 };
-  });
+const points = safeData.map((p, i) => {
+  const x = paddingLeft + (i * innerW) / Math.max(1, safeData.length - 1);
+  const y = h - padBottom - ((Number(p.y) || 0) * innerH) / (top || 1);
+  return { x, y, label: p.x, value: Number(p.y) || 0 };
+});
 
   const pathD = points
     .map((pt, i) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
@@ -167,51 +171,51 @@ function SimpleLineChart({
         <rect x="0" y="0" width={width} height={height} fill="#fff" />
 
         {/* grid + labels eje Y */}
-        {yLabels.map((val, idx) => {
-          const y =
-            height - padding - (val * (height - padding * 2)) / (top || 1);
+       {yLabels.map((val, idx) => {
+  const y =
+    h - padBottom - (val * (h - padTop - padBottom)) / (top || 1);
 
-          return (
-            <g key={idx}>
-              <line
-                x1={paddingLeft}
-                y1={y}
-                x2={width - padding}
-                y2={y}
-                stroke="rgba(0,0,0,0.08)"
-                strokeWidth="1"
-              />
-              <text
-                x={paddingLeft - 12}
-                y={y + 5}
-                textAnchor="end"
-                fontSize={yTickFont}
-                fill="rgba(0,0,0,0.55)"
-              >
-                {formatBs(val)}
-              </text>
-            </g>
-          );
-        })}
+  return (
+    <g key={idx}>
+      <line
+        x1={paddingLeft}
+        y1={y}
+        x2={width - padding}
+        y2={y}
+        stroke="rgba(0,0,0,0.08)"
+        strokeWidth="1"
+      />
+      <text
+        x={paddingLeft - 12}
+        y={y + 5}
+        textAnchor="end"
+        fontSize={yTickFont}
+        fill="rgba(0,0,0,0.55)"
+      >
+        {formatBs(val)}
+      </text>
+    </g>
+  );
+})}
 
         {/* ejes */}
-        <line
-          x1={paddingLeft}
-          y1={padding}
-          x2={paddingLeft}
-         y2={h - padding}
-          stroke="rgba(0,0,0,0.12)"
-          strokeWidth="1"
-        />
+     <line
+  x1={paddingLeft}
+  y1={padTop}
+  x2={paddingLeft}
+  y2={h - padBottom}
+  stroke="rgba(0,0,0,0.12)"
+  strokeWidth="1"
+/>
 
-        <line
-          x1={paddingLeft}
-          y1={height - padding}
-          x2={width - padding}
-          y2={height - padding}
-          stroke="rgba(0,0,0,0.12)"
-          strokeWidth="1"
-        />
+<line
+  x1={paddingLeft}
+  y1={h - padBottom}
+  x2={width - padding}
+  y2={h - padBottom}
+  stroke="rgba(0,0,0,0.12)"
+  strokeWidth="1"
+/>
 
         {/* línea */}
         <path
@@ -242,43 +246,43 @@ function SimpleLineChart({
           if (idx % stepX !== 0 && idx !== points.length - 1) return null;
 
           return (
-            <text
-              key={idx}
-              x={pt.x}
-              y={h - (isMobile ? 18 : 12)}
-              textAnchor="middle"
-              fontSize={xTickFont}
-              fill="rgba(0,0,0,0.55)"
+          <text
+            key={idx}
+            x={pt.x}
+            y={h - padBottom + (isMobile ? 40 : 12)}
+            textAnchor="middle"
+            fontSize={xTickFont}
+            fill="rgba(0,0,0,0.55)"
             >
-              {pt.label}
+            {pt.label}
             </text>
           );
         })}
 
         {/* título eje X */}
-        <text
-          x={(paddingLeft + (width - padding)) / 2}
-          y={h - 2}
-          textAnchor="middle"
-          fontSize={axisFont}
-          fill="rgba(0,0,0,0.55)"
-          style={{ fontWeight: 800 }}
+       <text
+        x={(paddingLeft + (width - padding)) / 2}
+        y={h - (isMobile ? 10 : 6)}
+        textAnchor="middle"
+        fontSize={axisFont}
+        fill="rgba(0,0,0,0.55)"
+        style={{ fontWeight: 800 }}
         >
-          {xAxisTitle}
+        {xAxisTitle}
         </text>
 
         {/* título eje Y */}
-        <text
-          x={isMobile ? 20 : 16}
-          y={(padding + (h - padding)) / 2}
-          textAnchor="middle"
-          fontSize={axisFont}
-          fill="rgba(0,0,0,0.55)"
-          style={{ fontWeight: 800 }}
-          transform={`rotate(-90 ${isMobile ? 20 : 16} ${(padding + (height - padding)) / 2})`}
-        >
-          {yAxisTitle}
-        </text>
+       <text
+            x={isMobile ? 20 : 16}
+            y={(padTop + (h - padBottom)) / 2}
+            textAnchor="middle"
+            fontSize={axisFont}
+            fill="rgba(0,0,0,0.55)"
+            style={{ fontWeight: 800 }}
+            transform={`rotate(-90 ${isMobile ? 20 : 16} ${(padTop + (h - padBottom)) / 2})`}
+            >
+            {yAxisTitle}
+            </text>
 
         {/* overlay sin datos */}
         {isEmpty && (
@@ -354,12 +358,12 @@ function KpiCard({
 
       <CardContent sx={{ pt: 0.7, pb: 0.7, px: 2 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.2 }}>
-          <Typography sx={{ fontWeight: 800, fontSize: 11, color: accentColor }}>
+        <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
             Cuentas
-          </Typography>
-          <Typography sx={{ fontWeight: 800, fontSize: 11, color: accentColor }}>
+            </Typography>
+            <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
             Importe
-          </Typography>
+            </Typography>
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -767,7 +771,7 @@ const serie =
             <Typography
               sx={{
                 fontWeight: 800,
-                fontSize: 11, // ✅ si lo quieres igual a labels de KPI
+                fontSize: 12, // ✅ si lo quieres igual a labels de KPI
                 color: "rgba(0,0,0,0.60)",
               }}
             >
