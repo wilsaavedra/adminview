@@ -85,7 +85,10 @@ const padding = isMobile ? 30 : 22;
 
   const width = 1000;
 
-  const xAxisTitle = "Horas";
+  const xAxisTitle =
+  data && data.length > 0 && data[0].x.includes(":")
+    ? "Horas"
+    : "Días";
   const yAxisTitle = "Total Ventas";
 
   const baseData: SeriePoint[] =
@@ -240,24 +243,36 @@ const points = safeData.map((p, i) => {
           />
         ))}
 
-        {/* labels X */}
-        {points.map((pt, idx) => {
-          const stepX = points.length <= 8 ? 1 : Math.ceil(points.length / 6);
-          if (idx % stepX !== 0 && idx !== points.length - 1) return null;
+       {/* labels X */}
+{points.map((pt, idx) => {
+  const stepX = points.length <= 8 ? 1 : Math.ceil(points.length / 6);
+  if (idx % stepX !== 0 && idx !== points.length - 1) return null;
 
-          return (
-          <text
-            key={idx}
-            x={pt.x}
-           y={h - padBottom + (isMobile ? 18 : 12)}
-            textAnchor="middle"
-            fontSize={xTickFont}
-            fill="rgba(0,0,0,0.55)"
-            >
-            {pt.label}
-            </text>
-          );
-        })}
+  const formatXLabel = (raw: string) => {
+    // Hora: "01:00" => "1"
+    const mHour = /^(\d{2}):\d{2}$/.exec(raw);
+    if (mHour) return String(Number(mHour[1]));
+
+    // Día: "YYYY-MM-DD" => "DD/MM"
+    const mDay = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    if (mDay) return `${mDay[3]}/${mDay[2]}`;
+
+    return raw;
+  };
+
+  return (
+    <text
+      key={idx}
+      x={pt.x}
+      y={h - padBottom + (isMobile ? 18 : 12)}
+      textAnchor="middle"
+      fontSize={xTickFont}
+      fill="rgba(0,0,0,0.55)"
+    >
+      {formatXLabel(pt.label)}
+    </text>
+  );
+})}
 
         {/* título eje X */}
        <text
