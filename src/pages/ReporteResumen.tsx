@@ -18,7 +18,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { es } from "date-fns/locale";
-
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import cafeApi from "../api/cafeApi";
 
@@ -65,15 +65,19 @@ function SimpleLineChart({
       ? window.matchMedia("(max-width:600px)").matches
       : false;
 
-  // ✅ En móvil subimos tamaños de texto (porque el SVG se escala)
-  const yTickFont = isMobile ? 16 : 12;
-  const xTickFont = isMobile ? 15 : 11;
-  const axisFont = isMobile ? 16 : 11;
-  const emptyFont = isMobile ? 18 : 14;
+  // ✅ En móvil le damos más alto para que se lea mejor
+  const h = isMobile ? 240 : height;
 
-  // ✅ un poquito más de espacio en móvil para que no choque
-  const paddingLeft = isMobile ? 78 : 64;
-  const padding = isMobile ? 26 : 22;
+    // ✅ En móvil el SVG se reduce mucho (viewBox 1000px -> pantalla),
+  // así que los textos deben ser MUCHO más grandes en unidades del viewBox.
+  const yTickFont = isMobile ? 34 : 12;
+  const xTickFont = isMobile ? 30 : 11;
+  const axisFont  = isMobile ? 30 : 11;
+  const emptyFont = isMobile ? 34 : 14;
+
+  // ✅ Más aire en móvil para que entren labels grandes
+  const paddingLeft = isMobile ? 112 : 64;
+  const padding = isMobile ? 30 : 22;
 
   const width = 1000;
 
@@ -131,11 +135,11 @@ function SimpleLineChart({
   const formatBs = (v: number) => `${v.toFixed(0)} Bs`;
 
   const innerW = width - paddingLeft - padding;
-  const innerH = height - padding * 2;
+  const innerH = h - padding * 2;
 
   const points = safeData.map((p, i) => {
     const x = paddingLeft + (i * innerW) / Math.max(1, safeData.length - 1);
-    const y = height - padding - ((Number(p.y) || 0) * innerH) / (top || 1);
+   const y = h - padding - ((Number(p.y) || 0) * innerH) / (top || 1);
     return { x, y, label: p.x, value: Number(p.y) || 0 };
   });
 
@@ -149,7 +153,7 @@ function SimpleLineChart({
     <Box sx={{ width: "100%" }}>
       <Box
         component="svg"
-        viewBox={`0 0 ${width} ${height}`}
+       viewBox={`0 0 ${width} ${h}`}
         sx={{
           width: "100%",
           height: "auto",
@@ -195,7 +199,7 @@ function SimpleLineChart({
           x1={paddingLeft}
           y1={padding}
           x2={paddingLeft}
-          y2={height - padding}
+         y2={h - padding}
           stroke="rgba(0,0,0,0.12)"
           strokeWidth="1"
         />
@@ -241,7 +245,7 @@ function SimpleLineChart({
             <text
               key={idx}
               x={pt.x}
-              y={height - (isMobile ? 16 : 12)}
+              y={h - (isMobile ? 18 : 12)}
               textAnchor="middle"
               fontSize={xTickFont}
               fill="rgba(0,0,0,0.55)"
@@ -254,7 +258,7 @@ function SimpleLineChart({
         {/* título eje X */}
         <text
           x={(paddingLeft + (width - padding)) / 2}
-          y={height - 2}
+          y={h - 2}
           textAnchor="middle"
           fontSize={axisFont}
           fill="rgba(0,0,0,0.55)"
@@ -266,7 +270,7 @@ function SimpleLineChart({
         {/* título eje Y */}
         <text
           x={isMobile ? 20 : 16}
-          y={(padding + (height - padding)) / 2}
+          y={(padding + (h - padding)) / 2}
           textAnchor="middle"
           fontSize={axisFont}
           fill="rgba(0,0,0,0.55)"
@@ -283,12 +287,12 @@ function SimpleLineChart({
               x={padding}
               y={padding}
               width={width - padding * 2}
-              height={height - padding * 2}
+              height={h - padding * 2}
               fill="rgba(255,255,255,0.55)"
             />
             <text
               x={width / 2}
-              y={height / 2}
+              y={h / 2}
               textAnchor="middle"
               fontSize={emptyFont}
               fill="rgba(0,0,0,0.6)"
@@ -695,76 +699,99 @@ const serie =
       </Card>
 
       {/* KPIs (como el ejemplo: cards con header color) */}
-      <Grid container spacing={1.4}>
-        <Grid size={{ xs: 12, md: 4 }}>
-         <KpiCard
-  title="Cuentas abiertas"
-  subtitle="Estado distinto de pagado"
-  count={data?.cuentasAbiertas?.cantidad ?? 0}
-  amount={data?.cuentasAbiertas?.monto ?? 0}
-  headerBg="#6F42C1"
-/>
-        </Grid>
+ {/* KPIs principales */}
+<Grid container spacing={1.4}>
+  <Grid size={{ xs: 12, md: 4 }}>
+    <KpiCard
+      title="Cuentas abiertas"
+      subtitle="Estado distinto de pagado"
+      count={data?.cuentasAbiertas?.cantidad ?? 0}
+      amount={data?.cuentasAbiertas?.monto ?? 0}
+      headerBg="#6F42C1"
+    />
+  </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
-      <KpiCard
-  title="Cuentas cerradas"
-  subtitle="Pagadas / cerradas totalmente"
-  count={data?.cuentasCerradas?.cantidad ?? 0}
-  amount={data?.cuentasCerradas?.monto ?? 0}
-  headerBg="#E91E63"
-/>
-        </Grid>
+  <Grid size={{ xs: 12, md: 4 }}>
+    <KpiCard
+      title="Cuentas cerradas"
+      subtitle="Pagadas / cerradas totalmente"
+      count={data?.cuentasCerradas?.cantidad ?? 0}
+      amount={data?.cuentasCerradas?.monto ?? 0}
+      headerBg="#E91E63"
+    />
+  </Grid>
+</Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
- <Card
-  sx={{
-    height: "100%",
-    borderRadius: "18px",
-    boxShadow: 1,
-    overflow: "hidden",
-  }}
+{/* ✅ Clientes atendidos (fila debajo) – MISMO ancho que un KPI (md:4) y centrado */}
+<Grid
+  container
+  spacing={1.4}
+  sx={{ mt: 1 }}
+  justifyContent="flex-start"   // ✅ antes "center"
 >
-  <Box
-    sx={{
-      px: 2,
-      py: 0.9,
-      background: "#263238",
-      color: "#fff",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-  >
-    <Typography sx={{ fontWeight: 900, fontSize: 15 }}>
-      Clientes atendidos
-    </Typography>
-  </Box>
+  <Grid size={{ xs: 12, md: 4 }}>
+    <Card
+      sx={{
+        height: "100%",
+        borderRadius: "14px",
+        boxShadow: "none",
+        bgcolor: "#fff",
+        border: "1px solid rgba(0,0,0,0.06)",
+      }}
+    >
+      <CardContent sx={{ px: 2, py: 1.1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1.5,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                bgcolor: "rgba(25,118,210,0.10)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <PeopleAltIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} />
+            </Box>
 
-  <CardContent sx={{ pt: 0.7, pb: 0.7, px: 2 }}>
-    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.2 }}>
-      <Typography sx={{ fontWeight: 800, fontSize: 11, color: "rgba(0,0,0,0.6)" }}>
-        Clientes
-      </Typography>
-    </Box>
+            <Typography
+              sx={{
+                fontWeight: 800,
+                fontSize: 11, // ✅ si lo quieres igual a labels de KPI
+                color: "rgba(0,0,0,0.60)",
+              }}
+            >
+              Clientes atendidos
+            </Typography>
+          </Box>
 
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-      <Typography
-        sx={{
-          fontSize: { xs: 20, sm: 22 }, // ✅ BAJA: antes 22/24
-          fontWeight: 900,
-          lineHeight: 1.05,
-          color: "#263238",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {data?.clientesAtendidos ?? 0}
-      </Typography>
-    </Box>
-  </CardContent>
-</Card>
-        </Grid>
-      </Grid>
+          <Typography
+            sx={{
+              fontSize: { xs: 16, sm: 18 }, // ✅ antes 20/22 (más chico)
+              fontWeight: 900,
+              lineHeight: 1.05,
+              color: "rgba(0,0,0,0.55)",
+              fontVariantNumeric: "tabular-nums",
+              whiteSpace: "nowrap",
+            }}
+          >
+            ({data?.clientesAtendidos ?? 0})
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
+  </Grid>
+</Grid>
     </Box>
   );
 }
