@@ -59,10 +59,13 @@ function SimpleLineChart({
   height?: number;
   emptyLabel?: string;
 }) {
-  const padding = 28;
+   // ✅ más margen izquierdo para que NO se corten los números del eje Y
+  const paddingLeft = 78;
+  const padding = 28; // mantenemos tu padding para top/bottom/right
   const width = 1000;
 
-  const safeData =
+  // base data (placeholder si no hay data)
+  const baseData: SeriePoint[] =
     data && data.length > 0
       ? data
       : [
@@ -71,27 +74,72 @@ function SimpleLineChart({
           { x: "—", y: 0 },
         ];
 
-  const maxY = Math.max(...safeData.map((p) => p.y), 0);
+  // ✅ si hay 1 solo punto: armamos 0 -> valor -> 0 (como tu ejemplo)
+  const safeData: SeriePoint[] = (() => {
+    if (!data || data.length !== 1) return baseData;
+
+    const only = data[0];
+    const h = Number(String(only.x).slice(0, 2)); // "01:00" -> 1
+    if (Number.isFinite(h)) {
+      const prev = String((h + 23) % 24).padStart(2, "0") + ":00";
+      const next = String((h + 1) % 24).padStart(2, "0") + ":00";
+      return [
+        { x: prev, y: 0 },
+        { x: only.x, y: only.y },
+        { x: next, y: 0 },
+      ];
+    }
+
+    // fallback si x no es hora
+    return [
+      { x: "—", y: 0 },
+      { x: only.x, y: only.y },
+      { x: "—", y: 0 },
+    ];
+  })();
+
+  const maxY = Math.max(...safeData.map((p) => Number(p.y) || 0), 0);
   const safeMaxY = maxY <= 0 ? 1 : maxY;
+
+  // ticks "bonitos" para eje Y (Bs)
+  function niceStep(max: number, ticks = 4) {
+    if (max <= 0) return 1;
+    const rough = max / ticks;
+    const pow = Math.pow(10, Math.floor(Math.log10(rough)));
+    const n = rough / pow;
+    const nice = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+    return nice * pow;
+  }
+
+  const step = niceStep(safeMaxY, 4);
+  const top = Math.ceil(safeMaxY / step) * step;
+
+  // 5 ticks: 0..top
+  const yLabels = Array.from({ length: 5 }, (_, i) => i * step);
+
+  // ✅ NUMÉRICO Bs (si quieres 0 decimales usa toFixed(0))
+  const formatBs = (v: number) => `${v.toFixed(0)} Bs`;
+
+  // área interna del chart (ya con margen izquierdo real)
+  const innerW = width - paddingLeft - padding;
+  const innerH = height - padding * 2;
 
   const points = safeData.map((p, i) => {
     const x =
-      padding +
-      (i * (width - padding * 2)) / Math.max(1, safeData.length - 1);
+      paddingLeft +
+      (i * innerW) / Math.max(1, safeData.length - 1);
+
     const y =
-      height - padding - (p.y * (height - padding * 2)) / safeMaxY;
-    return { x, y, label: p.x, value: p.y };
+      height - padding - ((Number(p.y) || 0) * innerH) / (top || 1);
+
+    return { x, y, label: p.x, value: Number(p.y) || 0 };
   });
 
   const pathD = points
     .map((pt, i) => `${i === 0 ? "M" : "L"} ${pt.x} ${pt.y}`)
     .join(" ");
 
-  const gridLines = [0.25, 0.5, 0.75].map((t) => {
-    const y = height - padding - t * (height - padding * 2);
-    return y;
-  });
-
+  // ya NO usamos gridLines 0.25.. porque ahora el grid lo hacen yLabels (mejor)
   const isEmpty = !data || data.length === 0;
 
   return (
@@ -113,28 +161,56 @@ function SimpleLineChart({
         {/* fondo */}
         <rect x="0" y="0" width={width} height={height} fill="#fff" />
 
-        {/* grid */}
-        {gridLines.map((y, idx) => (
-          <line
-            key={idx}
-            x1={padding}
-            y1={y}
-            x2={width - padding}
-            y2={y}
-            stroke="rgba(0,0,0,0.08)"
-            strokeWidth="1"
-          />
-        ))}
+       {/* ✅ grid + labels eje Y (Bs) */}
+      {yLabels.map((val, idx) => {
+        const y =
+          height - padding - (val * (height - padding * 2)) / (top || 1);
 
-        {/* eje x */}
-        <line
-          x1={padding}
-          y1={height - padding}
-          x2={width - padding}
-          y2={height - padding}
-          stroke="rgba(0,0,0,0.12)"
-          strokeWidth="1"
-        />
+        return (
+          <g key={idx}>
+            {/* línea de grid */}
+            <line
+              x1={paddingLeft}
+              y1={y}
+              x2={width - padding}
+              y2={y}
+              stroke="rgba(0,0,0,0.08)"
+              strokeWidth="1"
+            />
+
+            {/* label Bs (ya NO se corta) */}
+            <text
+              x={paddingLeft - 12}
+              y={y + 4}
+              textAnchor="end"
+              fontSize="12"
+              fill="rgba(0,0,0,0.55)"
+            >
+              {formatBs(val)}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* eje Y */}
+      <line
+        x1={paddingLeft}
+        y1={padding}
+        x2={paddingLeft}
+        y2={height - padding}
+        stroke="rgba(0,0,0,0.12)"
+        strokeWidth="1"
+      />
+
+      {/* eje x */}
+      <line
+        x1={paddingLeft}
+        y1={height - padding}
+        x2={width - padding}
+        y2={height - padding}
+        stroke="rgba(0,0,0,0.12)"
+        strokeWidth="1"
+      />
 
         {/* línea */}
         <path
@@ -219,7 +295,14 @@ function KpiCard({
   headerBg: string;
 }) {
   return (
-    <Card sx={{ borderRadius: "18px", boxShadow: 1, overflow: "hidden" }}>
+   <Card
+    sx={{
+      height: "100%",
+      borderRadius: "18px",
+      boxShadow: 1,
+      overflow: "hidden",
+    }}
+  >
       <Box
         sx={{
           px: 2,
@@ -236,36 +319,61 @@ function KpiCard({
           {subtitle}
         </Typography>
 
-        <Grid container spacing={1} alignItems="baseline">
-           <Grid size={{ xs: 6 }}>
-            <Typography sx={{ fontSize: 34, fontWeight: 950, lineHeight: 1 }}>
-              {count}
-            </Typography>
-            <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-              Cuentas
-            </Typography>
-          </Grid>
+      <Grid container spacing={1} alignItems="baseline">
+  {/* CANTIDAD (secundario pero claro) */}
+  <Grid size={{ xs: 6 }}>
+    <Typography
+      sx={{
+        fontSize: 26,
+        fontWeight: 950,
+        lineHeight: 1.05,
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.3px",
+      }}
+    >
+      {count}
+    </Typography>
 
-          <Grid size={{ xs: 6 }}>
-            {typeof amount === "number" ? (
-              <>
-                <Typography sx={{ fontSize: 18, fontWeight: 950 }}>
-                  {amount.toFixed(2)} Bs
-                </Typography>
-                <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-                  Importe
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography sx={{ fontSize: 18, fontWeight: 950 }}>—</Typography>
-                <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
-                  Importe
-                </Typography>
-              </>
-            )}
-          </Grid>
-        </Grid>
+    <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
+      Cuentas
+    </Typography>
+  </Grid>
+
+  {/* IMPORTE (principal) */}
+  <Grid size={{ xs: 6 }}>
+    {typeof amount === "number" ? (
+      <>
+        <Typography
+          sx={{
+            fontSize: 34,
+            fontWeight: 950,
+            lineHeight: 1.05,
+            fontVariantNumeric: "tabular-nums",
+            letterSpacing: "-0.6px",
+          }}
+        >
+          {amount.toFixed(2)}{" "}
+          <Box component="span" sx={{ fontSize: 18, fontWeight: 900 }}>
+            Bs
+          </Box>
+        </Typography>
+
+        <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
+          Importe
+        </Typography>
+      </>
+    ) : (
+      <>
+        <Typography sx={{ fontSize: 34, fontWeight: 950, lineHeight: 1.05 }}>
+          —
+        </Typography>
+        <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12 }}>
+          Importe
+        </Typography>
+      </>
+    )}
+  </Grid>
+</Grid>
       </CardContent>
     </Card>
   );
@@ -325,7 +433,65 @@ export default function ReporteResumen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.periodo, (params as any).fecha, (params as any).inicio, (params as any).fin]);
 
-  const serie = data?.serie ?? [];
+  const serieRaw = data?.serie ?? [];
+
+function fillHoras(serie: SeriePoint[]) {
+  // Espera formato "HH:00" en x (ej: "01:00")
+  const toH = (s: string) => {
+    const m = /^(\d{2}):/.exec(s);
+    return m ? Number(m[1]) : null;
+  };
+
+  const horas = serie
+    .map(p => toH(p.x))
+    .filter((h): h is number => h !== null);
+
+  if (horas.length === 0) return serie;
+
+  const minH = Math.min(...horas);
+  const maxH = Math.max(...horas);
+
+  const map = new Map(serie.map(p => [p.x, p.y]));
+
+  const out: SeriePoint[] = [];
+  for (let h = minH; h <= maxH; h++) {
+    const label = String(h).padStart(2, "0") + ":00";
+    out.push({ x: label, y: map.get(label) ?? 0 });
+  }
+  return out;
+}
+
+function fillDias(
+  serie: SeriePoint[],
+  inicio: string,
+  fin: string
+) {
+  const map = new Map(serie.map(p => [p.x, p.y]));
+
+  const out: SeriePoint[] = [];
+  let cur = new Date(inicio + "T00:00:00");
+  const end = new Date(fin + "T00:00:00");
+
+  while (cur <= end) {
+    const key = cur.toISOString().slice(0, 10); // YYYY-MM-DD
+    out.push({
+      x: key,
+      y: map.get(key) ?? 0,
+    });
+    cur.setDate(cur.getDate() + 1);
+  }
+
+  return out;
+}
+
+const serie =
+  periodo === "dia"
+    ? fillHoras(serieRaw)
+    : fillDias(
+        serieRaw,
+        params.inicio ?? ymdLaPaz(new Date()),
+        params.fin ?? ymdLaPaz(new Date())
+      );
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -397,49 +563,49 @@ export default function ReporteResumen() {
     </Box>
   </>
 ) : (
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography sx={{ fontWeight: 950, mb: 0.8 }}>
-                        Fecha inicio
-                      </Typography>
-                      <DatePicker
-                        value={fechaInicio}
-                        onChange={(v) => setFechaInicio(v)}
-                        slotProps={{
-                          textField: {
-                            size: "small",
-                            fullWidth: true,
-                            sx: {
-                              bgcolor: "white",
-                              borderRadius: "12px",
-                              boxShadow: 1,
-                            },
-                          },
-                        }}
-                      />
-                    </Grid>
+               <Grid container spacing={2} alignItems="stretch">
+  <Grid size={{ xs: 6, sm: 6 }}>
+    <Typography sx={{ fontWeight: 950, mb: 0.8 }}>
+      Fecha inicio
+    </Typography>
+    <DatePicker
+      value={fechaInicio}
+      onChange={(v) => setFechaInicio(v)}
+      slotProps={{
+        textField: {
+          size: "small",
+          fullWidth: true,
+          sx: {
+            bgcolor: "white",
+            borderRadius: "12px",
+            boxShadow: 1,
+          },
+        },
+      }}
+    />
+  </Grid>
 
-                    <Grid size={{ xs: 12, sm: 6 }}>
-                      <Typography sx={{ fontWeight: 950, mb: 0.8 }}>
-                        Fecha fin
-                      </Typography>
-                      <DatePicker
-                        value={fechaFin}
-                        onChange={(v) => setFechaFin(v)}
-                        slotProps={{
-                          textField: {
-                            size: "small",
-                            fullWidth: true,
-                            sx: {
-                              bgcolor: "white",
-                              borderRadius: "12px",
-                              boxShadow: 1,
-                            },
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
+  <Grid size={{ xs: 6, sm: 6 }}>
+    <Typography sx={{ fontWeight: 950, mb: 0.8 }}>
+      Fecha fin
+    </Typography>
+    <DatePicker
+      value={fechaFin}
+      onChange={(v) => setFechaFin(v)}
+      slotProps={{
+        textField: {
+          size: "small",
+          fullWidth: true,
+          sx: {
+            bgcolor: "white",
+            borderRadius: "12px",
+            boxShadow: 1,
+          },
+        },
+      }}
+    />
+  </Grid>
+</Grid>
                 )}
               </LocalizationProvider>
             </Grid>
@@ -530,7 +696,14 @@ export default function ReporteResumen() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ borderRadius: "18px", boxShadow: 1, overflow: "hidden" }}>
+          <Card
+  sx={{
+    height: "100%",
+    borderRadius: "18px",
+    boxShadow: 1,
+    overflow: "hidden",
+  }}
+>
             <Box
               sx={{
                 px: 2,
@@ -544,14 +717,27 @@ export default function ReporteResumen() {
               </Typography>
             </Box>
 
-            <CardContent sx={{ pt: 1.8 }}>
-              <Typography sx={{ color: "rgba(0,0,0,0.6)", fontSize: 13, mb: 1 }}>
-                Total del periodo
-              </Typography>
-              <Typography sx={{ fontSize: 34, fontWeight: 950, lineHeight: 1 }}>
-                {data?.clientesAtendidos ?? 0}
-              </Typography>
-            </CardContent>
+ <CardContent sx={{ pt: 1.8 }}>
+  <Typography sx={{ color: "rgba(0,0,0,0.6)", fontSize: 13, mb: 1 }}>
+    Total del periodo
+  </Typography>
+
+  <Typography
+    sx={{
+      fontSize: 26,
+      fontWeight: 950,
+      lineHeight: 1.05,
+      fontVariantNumeric: "tabular-nums",
+      letterSpacing: "-0.3px",
+    }}
+  >
+    {data?.clientesAtendidos ?? 0}
+  </Typography>
+
+  <Typography sx={{ color: "rgba(0,0,0,0.55)", fontSize: 12, mt: 0.5 }}>
+    Clientes
+  </Typography>
+</CardContent>
           </Card>
         </Grid>
       </Grid>

@@ -228,18 +228,21 @@ React.useEffect(() => {
 
     <Collapse in={openReportes && !collapsed} timeout="auto" unmountOnExit>
       <List component="div" disablePadding sx={{ mt: 0.3 }}>
-        <ListItemButton
-          selected={location.pathname === "/Reportes/Resumen"}
-          onClick={() => navigate("/Reportes/Resumen")}
-          sx={{
-            borderRadius: 1,
-            ml: 2,
-            mr: 1,
-            py: 0.7,
-            "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
-            "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
-          }}
-        >
+    <ListItemButton
+  selected={location.pathname === "/Reportes/Resumen"}
+  onClick={() => {
+    navigate("/Reportes/Resumen");
+    setMobileOpen(false);
+  }}
+  sx={{
+    borderRadius: 1,
+    ml: 2,
+    mr: 1,
+    py: 0.7,
+    "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+    "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+  }}
+>
           <ListItemIcon sx={{ minWidth: 32, color: "#000" }}>
             <SummarizeOutlinedIcon fontSize="small" />
           </ListItemIcon>
@@ -249,18 +252,21 @@ React.useEffect(() => {
           />
         </ListItemButton>
 
-        <ListItemButton
-          selected={location.pathname === "/Reportes/Productos"}
-          onClick={() => navigate("/Reportes/Productos")}
-          sx={{
-            borderRadius: 1,
-            ml: 2,
-            mr: 1,
-            py: 0.7,
-            "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
-            "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
-          }}
-        >
+       <ListItemButton
+  selected={location.pathname === "/Reportes/Productos"}
+  onClick={() => {
+    navigate("/Reportes/Productos");
+    setMobileOpen(false);
+  }}
+  sx={{
+    borderRadius: 1,
+    ml: 2,
+    mr: 1,
+    py: 0.7,
+    "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+    "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+  }}
+>
           <ListItemIcon sx={{ minWidth: 32, color: "#000" }}>
             <Inventory2OutlinedIcon fontSize="small" />
           </ListItemIcon>
