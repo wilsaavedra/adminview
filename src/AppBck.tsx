@@ -14,6 +14,8 @@ import Pedidos from "./pages/Pedidos";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import MenuReservas from "./pages/MenuReservas";
 import MenuReservasDetalle from "./pages/MenuReservasDetalle";
+import QRsAdmin from "./pages/QRsAdmin";
+
 
 type Role =
   | "ADMIN_ROLE"
@@ -145,7 +147,14 @@ function AppContent() {
                 </PrivateRoute>
               }
             />
-
+           <Route
+              path="/QRsAdmin"
+              element={
+                <PrivateRoute roles={["ADMIN_ROLE"]}>
+                  <QRsAdmin />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/MenuReservas"
               element={
@@ -216,4 +225,3 @@ function App() {
 }
 
 export default App;
-

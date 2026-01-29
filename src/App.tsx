@@ -16,6 +16,8 @@ import { AuthProvider, AuthContext } from "./context/AuthContext";
 import MenuReservas from "./pages/MenuReservas";
 import MenuReservasDetalle from "./pages/MenuReservasDetalle";
 import QRsAdmin from "./pages/QRsAdmin";
+import ReporteResumen from "./pages/ReporteResumen";
+import ReporteProductos from "./pages/ReporteProductos";
 
 type Role =
   | "ADMIN_ROLE"
@@ -150,7 +152,7 @@ function AppContent() {
            <Route
               path="/QRsAdmin"
               element={
-                <PrivateRoute roles={["ADMIN_ROLE"]}>
+                <PrivateRoute>
                   <QRsAdmin />
                 </PrivateRoute>
               }
@@ -183,7 +185,23 @@ function AppContent() {
                 </PrivateRoute>
               }
             />
+   <Route
+                path="/Reportes/Resumen"
+                element={
+                  <PrivateRoute roles={["ADMIN_ROLE"]}>
+                    <ReporteResumen />
+                  </PrivateRoute>
+                }
+              />
 
+              <Route
+                path="/Reportes/Productos"
+                element={
+                  <PrivateRoute roles={["ADMIN_ROLE"]}>
+                    <ReporteProductos />
+                  </PrivateRoute>
+                }
+              />
             <Route
               path="*"
               element={
