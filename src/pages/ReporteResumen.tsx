@@ -441,10 +441,22 @@ function VentasPorPagoCard({
   const map = new Map((rows || []).map((r) => [String(r.metodoPago).toUpperCase(), r]));
 
   const items = [
-    { key: "EFECTIVO", label: "Efectivo", icon: <PaymentsIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} /> },
-    { key: "QR", label: "QR", icon: <QrCode2Icon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} /> },
-    { key: "TARJETA", label: "Tarjeta", icon: <CreditCardIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} /> },
-  ].map((it) => {
+  {
+    key: "EFECTIVO",
+    label: "Efectivo",
+    icon: <PaymentsIcon sx={{ fontSize: 20, color: "rgba(25,118,210,0.95)" }} />,
+  },
+  {
+    key: "QR",
+    label: "QR",
+    icon: <QrCode2Icon sx={{ fontSize: 20, color: "rgba(111,66,193,0.95)" }} />,
+  },
+  {
+    key: "TARJETA",
+    label: "Tarjeta",
+    icon: <CreditCardIcon sx={{ fontSize: 20, color: "rgba(46,125,50,0.95)" }} />,
+  },
+].map((it) => {
     const found = map.get(it.key);
     return {
       ...it,
@@ -478,24 +490,13 @@ function VentasPorPagoCard({
               alignItems: "center",
               justifyContent: "space-between",
               py: 0.8,
-              borderTop: "1px solid rgba(0,0,0,0.06)",
+              borderTop: "1px solid rgba(0,0,0,0.11)",
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.1 }}>
-              <Box
-                sx={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: "50%",
-                  bgcolor: "rgba(25,118,210,0.10)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                {it.icon}
-              </Box>
+             <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+  {it.icon}
+</Box>
 
               <Typography sx={{ fontWeight: 800, fontSize: labelFs, color: "rgba(0,0,0,0.60)" }}>
                 {it.label}
@@ -557,27 +558,21 @@ function ProductosVendidosCard({
         borderRadius: "14px",
         boxShadow: "none",
         bgcolor: "#fff",
-        border: "1px solid rgba(0,0,0,0.06)",
+        border: "1px solid rgba(0,0,0,0.11)",
         height: "100%",
       }}
     >
      <CardContent sx={{ px: 2, py: 1.1 }}>
   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
     <Box sx={{ display: "flex", alignItems: "center", gap: 1.1 }}>
-      <Box
-        sx={{
-          width: 30,
-          height: 30,
-          borderRadius: "50%",
-          bgcolor: "rgba(25,118,210,0.10)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <LocalMallIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} />
-      </Box>
+   <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+  <LocalMallIcon
+    sx={{
+      fontSize: 20,
+       color: "rgb(225,63,68)",
+    }}
+  />
+</Box>
 
       <Typography sx={{ fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.60)" }}>
         Productos vendidos
@@ -1059,7 +1054,7 @@ const serie =
         borderRadius: "14px",
         boxShadow: "none",
         bgcolor: "#fff",
-        border: "1px solid rgba(0,0,0,0.06)",
+        border: "1px solid rgba(0,0,0,0.11)",
       }}
     >
       <CardContent sx={{ px: 2, py: 1.1 }}>
@@ -1072,20 +1067,14 @@ const serie =
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box
-              sx={{
-                width: 30,
-                height: 30,
-                borderRadius: "50%",
-                bgcolor: "rgba(25,118,210,0.10)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <PeopleAltIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} />
-            </Box>
+   <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+  <PeopleAltIcon
+    sx={{
+      fontSize: 20,
+      color: "#F57C00", // 👈 naranja elegante
+    }}
+  />
+</Box>
 
             <Typography
               sx={{
