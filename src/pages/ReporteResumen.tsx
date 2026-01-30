@@ -635,19 +635,19 @@ function ProductosVendidosCard({
                   {idx + 1}
                 </Typography>
 
-                <Typography
-                  sx={{
-                    fontWeight: 800,
-                    fontSize: 13,
-                    color: "rgba(0,0,0,0.65)",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={r.nombre}
-                >
-                  {r.nombre}
-                </Typography>
+               <Typography
+                    sx={{
+                        fontWeight: { xs: 500, sm: 800 },        // 👈 sin bold en móvil
+                        fontSize: { xs: 12, sm: 13 },            // 👈 más pequeño en móvil
+                        color: "rgba(0,0,0,0.65)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                    }}
+                    title={r.nombre}
+                    >
+                    {r.nombre}
+                    </Typography>
 
                 <Typography
                   sx={{
