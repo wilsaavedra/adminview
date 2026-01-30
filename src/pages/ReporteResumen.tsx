@@ -593,7 +593,10 @@ function ProductosVendidosCard({
        <Box
   sx={{
     display: "grid",
-    gridTemplateColumns: { xs: "28px 1fr 64px 92px", sm: "34px 1fr 86px 110px" },
+   gridTemplateColumns: { 
+  xs: "28px minmax(0,1fr) 64px 92px", 
+  sm: "34px minmax(0,1fr) 86px 110px" 
+},
     gap: 1,
     py: 0.9,
     px: 1,
@@ -624,7 +627,10 @@ function ProductosVendidosCard({
                 key={idx}
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "28px 1fr 64px 92px", sm: "34px 1fr 86px 110px" },
+                 gridTemplateColumns: { 
+  xs: "28px minmax(0,1fr) 64px 92px", 
+  sm: "34px minmax(0,1fr) 86px 110px" 
+},
                   gap: 1,
                   py: 0.75,
                  borderBottom: "1px solid rgba(0,0,0,0.06)",
