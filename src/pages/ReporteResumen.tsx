@@ -13,7 +13,9 @@ import {
   Button,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
-
+import PaymentsIcon from "@mui/icons-material/Payments";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -35,6 +37,12 @@ type ResumenResponse = {
   cuentasAbiertas: { cantidad: number; monto: number };
   cuentasCerradas: { cantidad: number; monto: number };
   clientesAtendidos: number;
+
+  ventasPorMetodoPago?: {
+    metodoPago: "EFECTIVO" | "QR" | "TARJETA" | string;
+    cantidad: number;
+    monto: number;
+  }[];
 };
 
 function ymdLaPaz(d: Date) {
@@ -418,6 +426,98 @@ function KpiCard({
   );
 }
 
+function VentasPorPagoCard({
+  rows,
+}: {
+  rows: { metodoPago: string; cantidad: number; monto: number }[];
+}) {
+  const map = new Map((rows || []).map((r) => [String(r.metodoPago).toUpperCase(), r]));
+
+  const items = [
+    { key: "EFECTIVO", label: "Efectivo", icon: <PaymentsIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} /> },
+    { key: "QR", label: "QR", icon: <QrCode2Icon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} /> },
+    { key: "TARJETA", label: "Tarjeta", icon: <CreditCardIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} /> },
+  ].map((it) => {
+    const found = map.get(it.key);
+    return {
+      ...it,
+      cantidad: found?.cantidad ?? 0,
+      monto: found?.monto ?? 0,
+    };
+  });
+
+  const labelFs = 13; // ✅ labels un poquito más grandes
+  const valueFs = { xs: 15, sm: 16 }; // ✅ valores más discretos
+
+  return (
+    <Card
+      sx={{
+        borderRadius: "14px",
+        boxShadow: "none",
+        bgcolor: "#fff",
+        border: "1px solid rgba(0,0,0,0.06)",
+      }}
+    >
+      <CardContent sx={{ px: 2, py: 1.1 }}>
+        <Typography sx={{ fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.60)", mb: 1 }}>
+          Ventas por formas de pago
+        </Typography>
+
+        {items.map((it) => (
+          <Box
+            key={it.key}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              py: 0.8,
+              borderTop: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.1 }}>
+              <Box
+                sx={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: "50%",
+                  bgcolor: "rgba(25,118,210,0.10)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {it.icon}
+              </Box>
+
+              <Typography sx={{ fontWeight: 800, fontSize: labelFs, color: "rgba(0,0,0,0.60)" }}>
+                {it.label}
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.2 }}>
+              <Typography sx={{ fontWeight: 800, fontSize: labelFs, color: "rgba(0,0,0,0.45)" }}>
+                {it.cantidad}
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  fontSize: valueFs,
+                  color: "rgba(46,125,50,0.85)",
+                  fontVariantNumeric: "tabular-nums",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {Number(it.monto || 0).toFixed(2)}
+              </Typography>
+            </Box>
+          </Box>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ReporteResumen() {
   const [periodo, setPeriodo] = useState<Periodo>("dia");
   const [fechaDia, setFechaDia] = useState<Date | null>(new Date());
@@ -442,30 +542,48 @@ export default function ReporteResumen() {
   }, [periodo, fechaDia, fechaInicio, fechaFin]);
 
   const cargar = async () => {
-    setLoading(true);
-    try {
-      const resp = await cafeApi.get("/reportes/resumen", { params });
-      setData(resp.data?.data ?? resp.data);
-    } catch (e: any) {
-  console.error("❌ Error GET /reportes/resumen:", {
-    message: e?.message,
-    status: e?.response?.status,
-    data: e?.response?.data,
-    params,
-  });
+  setLoading(true);
+  try {
+    const resp = await cafeApi.get("/reportes/resumen", { params });
 
-  // Para que no se vea vacío feo:
-  setData({
-    periodo,
-    serie: [],
-    cuentasAbiertas: { cantidad: 0, monto: 0 },
-    cuentasCerradas: { cantidad: 0, monto: 0 },
-    clientesAtendidos: 0,
-  });
-} finally {
-      setLoading(false);
-    }
-  };
+    const payload = resp.data?.data ?? resp.data;
+
+    // Blindaje: garantizamos que siempre exista ventasPorMetodoPago
+    const ventasPorMetodoPago =
+      payload?.ventasPorMetodoPago ??
+      payload?.ventasPorMetodoPago ??
+      [];
+
+    const fixedPayload = {
+      ...payload,
+      ventasPorMetodoPago,
+    };
+
+    console.log("✅ /reportes/resumen payload:", payload);
+    console.log("✅ ventasPorMetodoPago:", ventasPorMetodoPago);
+
+    setData(fixedPayload);
+  } catch (e: any) {
+    console.error("❌ Error GET /reportes/resumen:", {
+      message: e?.message,
+      status: e?.response?.status,
+      data: e?.response?.data,
+      params,
+    });
+
+    // Para que no se vea vacío feo:
+    setData({
+      periodo,
+      serie: [],
+      cuentasAbiertas: { cantidad: 0, monto: 0 },
+      cuentasCerradas: { cantidad: 0, monto: 0 },
+      clientesAtendidos: 0,
+      ventasPorMetodoPago: [],
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     cargar();
@@ -748,11 +866,13 @@ const serie =
 </Grid>
 
 {/* ✅ Clientes atendidos (fila debajo) – MISMO ancho que un KPI (md:4) y centrado */}
+
+
 <Grid
   container
   spacing={1.4}
   sx={{ mt: 1 }}
-  justifyContent="flex-start"   // ✅ antes "center"
+  justifyContent="flex-start"
 >
   <Grid size={{ xs: 12, md: 4 }}>
     <Card
@@ -792,7 +912,7 @@ const serie =
             <Typography
               sx={{
                 fontWeight: 800,
-                fontSize: 12, // ✅ si lo quieres igual a labels de KPI
+                fontSize: 13,
                 color: "rgba(0,0,0,0.60)",
               }}
             >
@@ -802,7 +922,7 @@ const serie =
 
           <Typography
             sx={{
-              fontSize: { xs: 16, sm: 18 }, // ✅ antes 20/22 (más chico)
+              fontSize: { xs: 16, sm: 18 },
               fontWeight: 800,
               lineHeight: 1.05,
               color: "rgba(0,0,0,0.55)",
@@ -816,7 +936,14 @@ const serie =
       </CardContent>
     </Card>
   </Grid>
+
+  {/* ✅ NUEVO: Ventas por formas de pago */}
+  <Grid size={{ xs: 12, md: 4 }}>
+    <VentasPorPagoCard rows={data?.ventasPorMetodoPago ?? []} />
+  </Grid>
 </Grid>
+
+
     </Box>
   );
 }
