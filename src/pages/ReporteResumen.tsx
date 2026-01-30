@@ -508,16 +508,27 @@ function VentasPorPagoCard({
   </Typography>
 
   <Typography
-    sx={{
-      fontWeight: 700,
-      fontSize: valueFs,
-      color: "rgba(46,125,50,0.85)",
-      fontVariantNumeric: "tabular-nums",
-      whiteSpace: "nowrap",
-    }}
-  >
-    {Number(it.monto || 0).toFixed(2)}
-  </Typography>
+  sx={{
+    fontWeight: 700,
+    fontSize: valueFs,
+    color: "rgba(46,125,50,0.85)",
+    fontVariantNumeric: "tabular-nums",
+    whiteSpace: "nowrap",
+  }}
+>
+  <Box
+  component="span"
+  sx={{
+    fontSize: "0.75em",
+    fontWeight: 600,
+    color: "rgb(46,125,50)", // 👈 mismo color que el monto
+    mr: 0.4,
+  }}
+>
+  Bs.
+</Box>
+  {Number(it.monto || 0).toFixed(2)}
+</Typography>
 </Box>
           </Box>
         ))}
