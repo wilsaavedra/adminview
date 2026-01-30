@@ -264,7 +264,7 @@ const points = safeData.map((p, i) => {
     <text
       key={idx}
       x={pt.x}
-      y={h - padBottom + (isMobile ? 18 : 12)}
+      y={h - padBottom + (isMobile ? 28 : 16)}
       textAnchor="middle"
       fontSize={xTickFont}
       fill="rgba(0,0,0,0.55)"
@@ -276,15 +276,15 @@ const points = safeData.map((p, i) => {
 
         {/* título eje X */}
        <text
-        x={(paddingLeft + (width - padding)) / 2}
-        y={h - (isMobile ? 4 : 6)}
-        textAnchor="middle"
-        fontSize={axisFont}
-        fill="rgba(0,0,0,0.55)"
-        style={{ fontWeight: 800 }}
-        >
-        {xAxisTitle}
-        </text>
+            x={(paddingLeft + (width - padding)) / 2}
+            y={h - (isMobile ? 6 : 4)}  // ✅ más pegado al borde inferior, ya no se choca con los ticks
+            textAnchor="middle"
+            fontSize={axisFont}
+            fill="rgba(0,0,0,0.55)"
+            style={{ fontWeight: 800 }}
+            >
+            {xAxisTitle}
+            </text>
 
         {/* título eje Y */}
       <text
@@ -382,22 +382,24 @@ function KpiCard({
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <Typography
-            sx={{
-              fontSize: { xs: 20, sm: 22 }, // ✅ BAJA: antes 24/26
-              fontWeight: 600,
-              lineHeight: 1.05,
-              color: accentColor,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            {count}
-          </Typography>
+         <Typography
+  sx={{
+    fontSize: { xs: 20, sm: 22 },
+    fontWeight: 500,
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
+    lineHeight: 1.05,
+    color: accentColor,
+    fontVariantNumeric: "tabular-nums",
+  }}
+>
+  {count}
+</Typography>
 
           <Typography
             sx={{
               fontSize: { xs: 20, sm: 22 }, // ✅ mismo tamaño que "Cuentas" como la muestra
-              fontWeight: 600,
+             fontWeight: 500,
+    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
               lineHeight: 1.05,
               color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
               fontVariantNumeric: "tabular-nums",
