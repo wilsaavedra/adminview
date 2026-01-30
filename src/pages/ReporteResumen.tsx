@@ -594,7 +594,7 @@ function ProductosVendidosCard({
   sx={{
     display: "grid",
     gridTemplateColumns: { 
-      xs: "24px minmax(0,1fr) 44px 78px", 
+      xs: "24px minmax(0,1fr) 40px 68px", 
       sm: "34px minmax(0,1fr) 86px 110px" 
     },
     gap: { xs: 0.6, sm: 1 },
@@ -628,7 +628,7 @@ function ProductosVendidosCard({
   sx={{
     display: "grid",
     gridTemplateColumns: { 
-      xs: "24px minmax(0,1fr) 44px 78px", 
+      xs: "24px minmax(0,1fr) 40px 68px", 
       sm: "34px minmax(0,1fr) 86px 110px" 
     },
     gap: { xs: 0.6, sm: 1 },
