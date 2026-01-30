@@ -495,22 +495,30 @@ function VentasPorPagoCard({
               </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.2 }}>
-              <Typography sx={{ fontWeight: 800, fontSize: labelFs, color: "rgba(0,0,0,0.45)" }}>
-                {it.cantidad}
-              </Typography>
-              <Typography
-                sx={{
-                  fontWeight: 700,
-                  fontSize: valueFs,
-                  color: "rgba(46,125,50,0.85)",
-                  fontVariantNumeric: "tabular-nums",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {Number(it.monto || 0).toFixed(2)}
-              </Typography>
-            </Box>
+           <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.2 }}>
+  <Typography
+    sx={{
+      fontWeight: 800,
+      fontSize: labelFs,
+      color: "rgba(0,0,0,0.45)",
+      fontVariantNumeric: "tabular-nums",
+    }}
+  >
+    ({it.cantidad})
+  </Typography>
+
+  <Typography
+    sx={{
+      fontWeight: 700,
+      fontSize: valueFs,
+      color: "rgba(46,125,50,0.85)",
+      fontVariantNumeric: "tabular-nums",
+      whiteSpace: "nowrap",
+    }}
+  >
+    {Number(it.monto || 0).toFixed(2)}
+  </Typography>
+</Box>
           </Box>
         ))}
       </CardContent>
