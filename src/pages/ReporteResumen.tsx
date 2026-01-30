@@ -373,10 +373,10 @@ function KpiCard({
 
       <CardContent sx={{ pt: 0.7, pb: 0.7, px: 2 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.2 }}>
-        <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
+        <Typography sx={{ fontWeight: 800, fontSize: 13, color: accentColor }}>
             Cuentas
             </Typography>
-            <Typography sx={{ fontWeight: 800, fontSize: 12, color: accentColor }}>
+            <Typography sx={{ fontWeight: 800, fontSize: 13, color: accentColor }}>
             Importe
             </Typography>
         </Box>
@@ -384,7 +384,7 @@ function KpiCard({
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
   <Typography
   sx={{
-    fontSize: { xs: 20, sm: 22 },
+    fontSize: { xs: 19, sm: 21 },
     fontWeight: 500,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
     lineHeight: 1.05,
@@ -399,7 +399,7 @@ function KpiCard({
 
        <Typography
             sx={{
-                fontSize: { xs: 20, sm: 22 },
+                fontSize: { xs: 19, sm: 21 },
                 fontWeight: 500,
                 fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
                 lineHeight: 1.05,
