@@ -264,7 +264,7 @@ const points = safeData.map((p, i) => {
     <text
       key={idx}
       x={pt.x}
-      y={h - padBottom + (isMobile ? 28 : 16)}
+      y={h - padBottom + (isMobile ? 38 : 22)}
       textAnchor="middle"
       fontSize={xTickFont}
       fill="rgba(0,0,0,0.55)"
@@ -277,7 +277,7 @@ const points = safeData.map((p, i) => {
         {/* título eje X */}
        <text
             x={(paddingLeft + (width - padding)) / 2}
-            y={h - (isMobile ? 6 : 4)}  // ✅ más pegado al borde inferior, ya no se choca con los ticks
+            y={h - (isMobile ? 2 : 0)}  // ✅ más pegado al borde inferior, ya no se choca con los ticks
             textAnchor="middle"
             fontSize={axisFont}
             fill="rgba(0,0,0,0.55)"
@@ -382,32 +382,36 @@ function KpiCard({
         </Box>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-         <Typography
+  <Typography
   sx={{
     fontSize: { xs: 20, sm: 22 },
     fontWeight: 500,
     fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
     lineHeight: 1.05,
-    color: accentColor,
+    // 👇 en vez de color puro, baja el contraste (se ve menos “bold” en iPhone)
+    color: "rgba(111,66,193,0.85)", // para “abiertas” (morado)
     fontVariantNumeric: "tabular-nums",
+    letterSpacing: "-0.2px",
   }}
 >
   {count}
 </Typography>
 
-          <Typography
+       <Typography
             sx={{
-              fontSize: { xs: 20, sm: 22 }, // ✅ mismo tamaño que "Cuentas" como la muestra
-             fontWeight: 500,
-    fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
-              lineHeight: 1.05,
-              color: hasAmount ? amountColor : "rgba(0,0,0,0.35)",
-              fontVariantNumeric: "tabular-nums",
-              whiteSpace: "nowrap",
+                fontSize: { xs: 20, sm: 22 },
+                fontWeight: 500,
+                fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
+                lineHeight: 1.05,
+                // 👇 MISMA lógica que count: baja contraste para que no “grite”
+                color: hasAmount ? "rgba(46,125,50,0.85)" : "rgba(0,0,0,0.35)",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "-0.2px",
+                whiteSpace: "nowrap",
             }}
-          >
+            >
             {hasAmount ? amount!.toFixed(2) : "—"}
-          </Typography>
+            </Typography>
         </Box>
       </CardContent>
     </Card>
