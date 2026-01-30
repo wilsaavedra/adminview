@@ -23,6 +23,7 @@ import { es } from "date-fns/locale";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import cafeApi from "../api/cafeApi";
+import LocalMallIcon from "@mui/icons-material/LocalMall";
 
 type Periodo = "dia" | "personalizado";
 
@@ -42,6 +43,12 @@ type ResumenResponse = {
     metodoPago: "EFECTIVO" | "QR" | "TARJETA" | string;
     cantidad: number;
     monto: number;
+  }[];
+  productosVendidos?: {
+    productoId?: string;
+    nombre: string;
+    cantidad: number;
+    total: number;
   }[];
 };
 
@@ -537,6 +544,147 @@ function VentasPorPagoCard({
   );
 }
 
+function ProductosVendidosCard({
+  rows,
+}: {
+  rows: { nombre: string; cantidad: number; total: number }[];
+}) {
+  const data = (rows || []).filter((r) => r && r.nombre);
+
+  return (
+    <Card
+      sx={{
+        borderRadius: "14px",
+        boxShadow: "none",
+        bgcolor: "#fff",
+        border: "1px solid rgba(0,0,0,0.06)",
+        height: "100%",
+      }}
+    >
+     <CardContent sx={{ px: 2, py: 1.1 }}>
+  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.1 }}>
+      <Box
+        sx={{
+          width: 30,
+          height: 30,
+          borderRadius: "50%",
+          bgcolor: "rgba(25,118,210,0.10)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <LocalMallIcon sx={{ fontSize: 18, color: "rgba(25,118,210,0.85)" }} />
+      </Box>
+
+      <Typography sx={{ fontWeight: 800, fontSize: 13, color: "rgba(0,0,0,0.60)" }}>
+        Productos vendidos
+      </Typography>
+    </Box>
+
+    <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
+      Top
+    </Typography>
+  </Box>
+
+        {/* Header */}
+       <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: { xs: "28px 1fr 64px 92px", sm: "34px 1fr 86px 110px" },
+    gap: 1,
+    py: 0.9,
+    px: 1,
+    borderRadius: "10px",
+    bgcolor: "rgba(0,0,0,0.03)",
+    border: "1px solid rgba(0,0,0,0.06)",
+  }}
+>
+          <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)" }}>#</Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)" }}>Nombre</Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)", textAlign: "right" }}>
+            Cant.
+          </Typography>
+          <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)", textAlign: "right" }}>
+            Total
+          </Typography>
+        </Box>
+
+        {/* Rows */}
+        <Box sx={{ mt: 0.8 }}>
+          {data.length === 0 ? (
+            <Typography sx={{ fontSize: 13, color: "rgba(0,0,0,0.45)", py: 1 }}>
+              No hay productos vendidos en el periodo seleccionado.
+            </Typography>
+          ) : (
+            data.slice(0, 10).map((r, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "28px 1fr 64px 92px", sm: "34px 1fr 86px 110px" },
+                  gap: 1,
+                  py: 0.75,
+                 borderBottom: "1px solid rgba(0,0,0,0.06)",
+                  alignItems: "center",
+                }}
+              >
+                <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
+                  {idx + 1}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: 13,
+                    color: "rgba(0,0,0,0.65)",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={r.nombre}
+                >
+                  {r.nombre}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: 13,
+                    color: "rgba(0,0,0,0.55)",
+                    textAlign: "right",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {Number(r.cantidad || 0)}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: 13,
+                    color: "rgba(46,125,50,0.85)",
+                    textAlign: "right",
+                    fontVariantNumeric: "tabular-nums",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <Box component="span" sx={{ fontSize: "0.75em", fontWeight: 600, color: "rgb(46,125,50)", mr: 0.4 }}>
+                    Bs.
+                  </Box>
+                  {Number(r.total || 0).toFixed(2)}
+                </Typography>
+              </Box>
+            ))
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ReporteResumen() {
   const [periodo, setPeriodo] = useState<Periodo>("dia");
   const [fechaDia, setFechaDia] = useState<Date | null>(new Date());
@@ -573,10 +721,13 @@ export default function ReporteResumen() {
       payload?.ventasPorMetodoPago ??
       [];
 
-    const fixedPayload = {
-      ...payload,
-      ventasPorMetodoPago,
-    };
+   const productosVendidos = payload?.productosVendidos ?? [];
+
+const fixedPayload = {
+  ...payload,
+  ventasPorMetodoPago,
+  productosVendidos,
+};
 
     console.log("✅ /reportes/resumen payload:", payload);
     console.log("✅ ventasPorMetodoPago:", ventasPorMetodoPago);
@@ -598,6 +749,7 @@ export default function ReporteResumen() {
       cuentasCerradas: { cantidad: 0, monto: 0 },
       clientesAtendidos: 0,
       ventasPorMetodoPago: [],
+      productosVendidos: [],
     });
   } finally {
     setLoading(false);
@@ -961,7 +1113,11 @@ const serie =
     <VentasPorPagoCard rows={data?.ventasPorMetodoPago ?? []} />
   </Grid>
 </Grid>
-
+<Grid container spacing={1.4} sx={{ mt: 1 }} justifyContent="flex-start">
+  <Grid size={{ xs: 12 }}>
+    <ProductosVendidosCard rows={data?.productosVendidos ?? []} />
+  </Grid>
+</Grid>
 
     </Box>
   );
