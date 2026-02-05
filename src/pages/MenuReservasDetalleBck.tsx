@@ -5,11 +5,16 @@ import {
   CircularProgress,
   Divider,
   IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import cafeApi from "../api/cafeApi";
-
+import PrintIcon from "@mui/icons-material/Print";
 // ---------------- TIPADO ----------------
 interface MenuReservasDetalleState {
   fechaSeleccionada: Date | string;
@@ -50,6 +55,10 @@ export default function MenuReservasDetalle() {
   const [data, setData] = useState<DetalleMenuReserva | null>(null);
   const [loading, setLoading] = useState(true);
 
+const [openTicket, setOpenTicket] = useState(false);
+const [ticketText, setTicketText] = useState("");
+
+
   const loadDetalle = async () => {
     try {
       const resp = await cafeApi.get(`/menureservas/${id}`);
@@ -60,6 +69,40 @@ export default function MenuReservasDetalle() {
       setLoading(false);
     }
   };
+
+  const imprimirCuenta = async () => {
+  try {
+    if (!id) return;
+
+    // ✅ AHORA: disparar impresión (Render -> Windows Print Service)
+    const resp = await cafeApi.post(`/impresion/cuenta/${id}`);
+
+    if (resp.data?.printed) {
+      alert("✅ Cuenta enviada a impresión (BARRA).");
+   } else {
+  const ticket = resp.data?.ticket;
+
+  if (ticket) {
+    setTicketText(ticket);
+    setOpenTicket(true); // 👈 mostrar en pantalla
+  }
+
+  // opcional: mantener el alert
+  alert(resp.data?.msg || "⚠️ Ticket generado pero no se imprimió.");
+}
+  } catch (e: any) {
+    console.error("❌ imprimirCuenta:", e?.response?.status, e?.response?.data || e);
+
+    const status = e?.response?.status;
+    const msg = e?.response?.data?.msg || e?.response?.data?.message;
+
+    alert(
+      `❌ No se pudo imprimir` +
+        (status ? ` (HTTP ${status})` : "") +
+        (msg ? `: ${msg}` : "")
+    );
+  }
+};
 
   useEffect(() => {
     loadDetalle();
@@ -370,6 +413,77 @@ export default function MenuReservasDetalle() {
     </Typography>
   </Box>
 </Box>
+<Box
+  sx={{
+    mt: 4,
+    px: 1,
+    display: "flex",
+    justifyContent: "center",
+  }}
+>
+ <Button
+  variant="contained"
+  startIcon={<PrintIcon />}
+  onClick={imprimirCuenta}
+  sx={{
+    width: "100%",
+    maxWidth: { xs: "100%", sm: 520, md: 680 }, // 👈 clave
+    height: 48,
+    borderRadius: "14px",
+    backgroundColor: "rgb(225,63,68)",
+    "&:hover": { backgroundColor: "rgb(200,50,55)" },
+    textTransform: "none",
+    fontWeight: 900,
+    fontSize: 15,
+    boxShadow: 2,
+  }}
+>
+  Imprimir Cuenta
+</Button>
+</Box>
+
+<Dialog
+  open={openTicket}
+  onClose={() => setOpenTicket(false)}
+  fullWidth
+  maxWidth="sm"
+>
+  <DialogTitle sx={{ fontWeight: 800 }}>
+    Preview Ticket 80mm
+  </DialogTitle>
+
+  <DialogContent dividers>
+    <Box
+      component="pre"
+      sx={{
+        m: 0,
+        fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+        fontSize: 12,
+        whiteSpace: "pre-wrap",
+        lineHeight: 1.2,
+      }}
+    >
+      {ticketText || "No llegó ticket desde el backend."}
+    </Box>
+  </DialogContent>
+
+  <DialogActions>
+    <Button
+      onClick={() => setOpenTicket(false)}
+      variant="contained"
+      sx={{
+        backgroundColor: "rgb(225,63,68)",
+        "&:hover": { backgroundColor: "rgb(200,50,55)" },
+        fontWeight: 800,
+        textTransform: "none",
+        borderRadius: 2,
+      }}
+    >
+      Cerrar
+    </Button>
+  </DialogActions>
+</Dialog>
+
     </Box>
   );
 }

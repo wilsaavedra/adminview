@@ -10,6 +10,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -58,6 +60,11 @@ export default function MenuReservasDetalle() {
 const [openTicket, setOpenTicket] = useState(false);
 const [ticketText, setTicketText] = useState("");
 
+// ✅ Snackbar (impresión)
+const [snackOpen, setSnackOpen] = useState(false);
+const [snackMsg, setSnackMsg] = useState("");
+const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "info">("info");
+
 
   const loadDetalle = async () => {
     try {
@@ -74,33 +81,39 @@ const [ticketText, setTicketText] = useState("");
   try {
     if (!id) return;
 
-    // ✅ AHORA: disparar impresión (Render -> Windows Print Service)
+    // ✅ Snackbar: enviando...
+    setSnackSeverity("info");
+    setSnackMsg("ENVIANDO A IMPRESIÓN…");
+    setSnackOpen(true);
+
     const resp = await cafeApi.post(`/impresion/cuenta/${id}`);
 
     if (resp.data?.printed) {
-      alert("✅ Cuenta enviada a impresión (BARRA).");
-   } else {
-  const ticket = resp.data?.ticket;
+      setSnackSeverity("success");
+      setSnackMsg("CUENTA ENVIADA A IMPRESIÓN.");
+      setSnackOpen(true);
+      return;
+    }
 
-  if (ticket) {
-    setTicketText(ticket);
-    setOpenTicket(true); // 👈 mostrar en pantalla
-  }
+    // printed:false => preview
+    const ticket = resp.data?.ticket;
+    if (ticket) {
+      setTicketText(ticket);
+      setOpenTicket(true);
+    }
 
-  // opcional: mantener el alert
-  alert(resp.data?.msg || "⚠️ Ticket generado pero no se imprimió.");
-}
+    setSnackSeverity("info");
+    setSnackMsg(String(resp.data?.msg || "TICKET GENERADO (PREVIEW).").toUpperCase());
+    setSnackOpen(true);
   } catch (e: any) {
     console.error("❌ imprimirCuenta:", e?.response?.status, e?.response?.data || e);
 
-    const status = e?.response?.status;
-    const msg = e?.response?.data?.msg || e?.response?.data?.message;
+    const msg =
+      String(e?.response?.data?.msg || e?.response?.data?.message || "NO SE PUDO IMPRIMIR.").toUpperCase();
 
-    alert(
-      `❌ No se pudo imprimir` +
-        (status ? ` (HTTP ${status})` : "") +
-        (msg ? `: ${msg}` : "")
-    );
+    setSnackSeverity("error");
+    setSnackMsg(msg);
+    setSnackOpen(true);
   }
 };
 
@@ -483,6 +496,23 @@ const [ticketText, setTicketText] = useState("");
     </Button>
   </DialogActions>
 </Dialog>
+
+{/* ✅ Snackbar automático */}
+<Snackbar
+  open={snackOpen}
+  autoHideDuration={2500}
+  onClose={() => setSnackOpen(false)}
+  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+>
+  <Alert
+    onClose={() => setSnackOpen(false)}
+    severity={snackSeverity}
+    variant="filled"
+    sx={{ borderRadius: "12px", fontWeight: 900 }}
+  >
+    {snackMsg}
+  </Alert>
+</Snackbar>
 
     </Box>
   );
