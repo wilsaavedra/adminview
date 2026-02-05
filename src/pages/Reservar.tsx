@@ -41,7 +41,7 @@ const generarOpcionesHora = (): string[] => {
   }
   for (let h = 18; h <= 22; h++) {
     for (let m = 0; m < 60; m += 15) {
-      if (h === 18 && m < 30) continue;
+     // if (h === 18 && m < 30) continue;
       if (h === 22 && m > 30) continue;
       opciones.push(`${pad(h)}:${pad(m)}`);
     }
@@ -55,7 +55,7 @@ const validarHora = (horaStr: string) => {
   const minutosTotales = hh * 60 + mm;
   const rango1Inicio = 12 * 60;
   const rango1Fin = 15 * 60;
-  const rango2Inicio = 18 * 60 + 30;
+  const rango2Inicio = 18 * 60;// + 30;
   const rango2Fin = 22 * 60 + 30;
   return (
     (minutosTotales >= rango1Inicio && minutosTotales <= rango1Fin) ||
