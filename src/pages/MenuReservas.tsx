@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import {
   Box,
   Typography,
@@ -93,6 +94,13 @@ export default function MenuReservas() {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+
+  const { user } = useContext(AuthContext);
+
+const primerNombre = (full?: string) => {
+  const s = String(full ?? "").trim();
+  return s ? s.split(/\s+/)[0].toUpperCase() : "";
+};
 
   // ✅ Modal Facturar / Cerrar
   const [openFacturar, setOpenFacturar] = useState(false);
@@ -453,21 +461,27 @@ const saldo = Math.max(0, monto - pago);
                         size="small"
                         startIcon={<SendIcon />}
                        disabled={mr.enviado || mr.facturado}
-                        onClick={async () => { 
-                          try {
-                            await cafeApi.post(`/pedidos/crear/${mr._id}`);
+                            onClick={async () => {
+                                try {
+                                    const mesero = primerNombre(user?.nombre);
 
-                            setReservas((prev) =>
-                              prev.map((r) =>
-                                r._id === mr._id
-                                  ? { ...r, enviado: true }
-                                  : r
-                              )
-                            );
-                          } catch (error) {
-                            console.error("Error enviando pedido:", error);
-                          }
-                        }}
+                                    if (mesero && mr?.reserva?._id) {
+                                    await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
+                                    }
+
+                                    await cafeApi.post(`/pedidos/crear/${mr._id}`);
+
+                                    setReservas((prev) =>
+                                    prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
+                                    );
+                                } catch (error: any) {
+                                    console.error(
+                                    "❌ Error enviando:",
+                                    error?.response?.status,
+                                    error?.response?.data || error
+                                    );
+                                }
+                                }}
                         sx={{
                           textTransform: "none",
                           px: 1.5,
