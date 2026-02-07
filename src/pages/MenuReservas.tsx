@@ -461,27 +461,36 @@ const saldo = Math.max(0, monto - pago);
                         size="small"
                         startIcon={<SendIcon />}
                        disabled={mr.enviado || mr.facturado}
-                            onClick={async () => {
-                                try {
-                                    const mesero = primerNombre(user?.nombre);
+                onClick={async () => {
+  try {
+    const mesero = primerNombre(user?.nombre);
 
-                                    if (mesero && mr?.reserva?._id) {
-                                    await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
-                                    }
+    if (mesero && mr?.reserva?._id) {
+      await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
+    }
 
-                                    await cafeApi.post(`/pedidos/crear/${mr._id}`);
+    const resp = await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
-                                    setReservas((prev) =>
-                                    prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
-                                    );
-                                } catch (error: any) {
-                                    console.error(
-                                    "❌ Error enviando:",
-                                    error?.response?.status,
-                                    error?.response?.data || error
-                                    );
-                                }
-                                }}
+    // ✅ ALERTA SIMPLE (sin JSON)
+    const pedidos = resp?.data?.pedidos_creados ?? 0;
+    const msg = resp?.data?.msg ? `\n${resp.data.msg}` : "";
+    alert(`✅ Pedido enviado.\nPedidos creados: ${pedidos}${msg}`);
+
+    setReservas((prev) =>
+      prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
+    );
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const msg =
+      error?.response?.data?.msg ||
+      error?.response?.data?.error ||
+      error?.message ||
+      "Error desconocido";
+
+    // ✅ ALERTA SIMPLE (sin ensuciar backend)
+    alert(`❌ No se pudo enviar.\nStatus: ${status ?? "-"}\n${msg}`);
+  }
+}}
                         sx={{
                           textTransform: "none",
                           px: 1.5,
