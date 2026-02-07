@@ -469,16 +469,62 @@ const saldo = Math.max(0, monto - pago);
       await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
     }
 
-    const resp = await cafeApi.post(`/pedidos/crear/${mr._id}`);
+   const resp = await cafeApi.post(`/pedidos/crear/${mr._id}?debug=1`);
 
-    // ✅ ALERTA SIMPLE (sin JSON)
-    const pedidos = resp?.data?.pedidos_creados ?? 0;
-    const msg = resp?.data?.msg ? `\n${resp.data.msg}` : "";
-    alert(`✅ Pedido enviado.\nPedidos creados: ${pedidos}${msg}`);
+// ✅ ALERTA (sin JSON crudo): si viene debug, lo resumimos en texto
+const pedidos = resp?.data?.pedidos_creados ?? 0;
+const msg = resp?.data?.msg ? `\n${resp.data.msg}` : "";
 
-    setReservas((prev) =>
-      prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
-    );
+const dbg = resp?.data?.debug;
+
+if (dbg) {
+  const lineas: string[] = [];
+  lineas.push(`✅ Pedido enviado.`);
+  lineas.push(`Pedidos creados: ${pedidos}`);
+
+  // Canales encontrados en DB
+  if (Array.isArray(dbg.confCanalesDB)) {
+    lineas.push(`Canales DB: ${dbg.confCanalesDB.join(", ")}`);
+  }
+
+  // Estado por canal (Bar/Cocina/Parrilla)
+  if (Array.isArray(dbg.resolved)) {
+    for (const r of dbg.resolved) {
+      if (r?.skip === "sin_items") {
+        lineas.push(`- ${r.canal}: sin items`);
+      } else {
+        lineas.push(
+          `- ${r.canal}: conf=${r.existeConf ? "SI" : "NO"} | db="${r.canalEnDB ?? "-"}" | modo="${r.modo ?? "-"}"`
+        );
+      }
+    }
+  }
+
+  // Resultado de impresión
+  if (Array.isArray(dbg.printed)) {
+    for (const p of dbg.printed) {
+      if (!p?.intento) {
+        lineas.push(`- ${p.canal}: NO imprime (${p.motivo})`);
+      } else {
+        lineas.push(
+          `- ${p.canal}: imprime=${p.ok ? "OK" : "NO"} | ip=${p.printerIp} | port=${p.printerPort}`
+        );
+      }
+    }
+  }
+
+  // msg del backend si existe
+  if (msg.trim()) lineas.push(msg.trim());
+
+  alert(lineas.join("\n"));
+} else {
+  // fallback: lo mismo que tenías antes
+  alert(`✅ Pedido enviado.\nPedidos creados: ${pedidos}${msg}`);
+}
+
+setReservas((prev) =>
+  prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
+);
   } catch (error: any) {
     const status = error?.response?.status;
     const msg =
