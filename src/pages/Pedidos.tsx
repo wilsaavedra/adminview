@@ -38,6 +38,9 @@ interface PedidoBackend {
   categoria: CategoriaPedido;
   mesa?: string;
   fecha_envio: string;
+  terminos?: string[];
+  guarniciones?: string[];
+  salsas?: string[];
 }
 
 interface PedidoCardGroup {
@@ -52,6 +55,9 @@ interface PedidoCardGroup {
     nombre: string;
     cantidad: number;
     categoriaNombre?: string;
+    terminos?: string[];
+    guarniciones?: string[];
+    salsas?: string[];
   }[];
   pedidosIds: string[];
 }
@@ -188,18 +194,27 @@ const cargarPedidos = async () => {
         else cat = "BEBIDAS";
       }
 
-      const existing = group.productos.find((prod) => prod.id === productoId);
+      const terminos = Array.isArray((p as any)?.terminos) ? (p as any).terminos : [];
+const guarniciones = Array.isArray((p as any)?.guarniciones) ? (p as any).guarniciones : [];
+const salsas = Array.isArray((p as any)?.salsas) ? (p as any).salsas : [];
+const existing = group.productos.find((prod) => prod.id === productoId);
 
-      if (existing) {
-        existing.cantidad += Number((p as any)?.cantidad ?? 1);
-      } else {
-        group.productos.push({
-          id: productoId,
-          nombre: (p as any)?.producto?.nombre || "Producto",
-          cantidad: Number((p as any)?.cantidad ?? 1),
-          categoriaNombre: cat,
-        });
-      }
+if (existing) {
+  existing.cantidad += Number((p as any)?.cantidad ?? 1);
+  existing.terminos = [...(existing.terminos || []), ...terminos];
+  existing.guarniciones = [...(existing.guarniciones || []), ...guarniciones];
+  existing.salsas = [...(existing.salsas || []), ...salsas];
+} else {
+  group.productos.push({
+    id: productoId,
+    nombre: (p as any)?.producto?.nombre || "Producto",
+    cantidad: Number((p as any)?.cantidad ?? 1),
+    categoriaNombre: cat,
+    terminos,
+    guarniciones,
+    salsas,
+  });
+}
     }
 
     if (invalidos.length) {
@@ -429,7 +444,7 @@ const cargarPedidos = async () => {
       sx={{
         display: "flex",
         justifyContent: "flex-start",
-        alignItems: "center",     // 🔥 alineación perfecta
+        alignItems: "flex-start",     // 🔥 alineación perfecta
         gap: 0.4,                 // 🔥 MUCHO MENOS ESPACIO ENTRE CANTIDAD Y NOMBRE
         px: 1,
         py: 0.4,
@@ -452,19 +467,52 @@ const cargarPedidos = async () => {
       </Typography>
 
       {/* NOMBRE DEL PRODUCTO */}
-      <Typography
-        variant="body2"
-        sx={{
-          flexGrow: 1,
-          fontWeight: 500,
+ <Box sx={{ flexGrow: 1 }}>
+  <Typography
+    variant="body2"
+    sx={{
+      fontWeight: 500,
+      whiteSpace: "normal",
+      wordBreak: "break-word",
+      lineHeight: 1.3,
+    }}
+  >
+    {/* ✅ NOMBRE COMO ESTABA ANTES (sin cambiar mayúsculas/minúsculas) */}
+    {prod.nombre}
 
-          whiteSpace: "normal",
-          wordBreak: "break-word",
-          lineHeight: 1.3,
-        }}
-      >
-        {prod.nombre}
-      </Typography>
+   {/* Parrilla = términos */}
+{group.categoria === "Parrilla" &&
+  prod.terminos &&
+  prod.terminos.length > 0
+  ? ` (${prod.terminos.map(t => String(t).toLowerCase()).join(", ")})`
+  : ""}
+
+{/* Cocina = salsas */}
+{group.categoria === "Cocina" &&
+  String(prod.categoriaNombre || "").toUpperCase().trim() === "PASTAS" &&
+  prod.salsas &&
+  prod.salsas.length > 0
+  ? ` (${prod.salsas.map(s => String(s).toLowerCase()).join(", ")})`
+  : ""}
+  </Typography>
+
+  {/* ✅ SOLO PARRILLA: guarniciones debajo con > */}
+  {group.categoria === "Parrilla" &&
+    prod.guarniciones &&
+    prod.guarniciones.length > 0 && (
+      <Box sx={{ mt: 0.2, ml: 1.1 }}>
+        {prod.guarniciones.map((g, idx) => (
+          <Typography
+            key={`${prod.id}-g-${idx}`}
+            variant="caption"
+            sx={{ display: "block", color: "#555", lineHeight: 1.15 }}
+          >
+            {`>${String(g).toUpperCase()}`}
+          </Typography>
+        ))}
+      </Box>
+  )}
+</Box>
     </Box>
   ))}
 </CardContent>

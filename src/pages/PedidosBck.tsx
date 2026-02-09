@@ -76,10 +76,14 @@ const diffMinutesFromNow = (iso: string) => {
 
 const getCategoriaIcon = (categoria: CategoriaPedido) => {
   switch (categoria) {
-    case "Cocina": return <RestaurantIcon fontSize="small" />;
-    case "Parrilla": return <OutdoorGrillIcon fontSize="small" />;
-    case "Bar": return <LocalBarIcon fontSize="small" />;
-    default: return null;
+    case "Cocina":
+      return <RestaurantIcon fontSize="small" />;
+    case "Parrilla":
+      return <OutdoorGrillIcon fontSize="small" />;
+    case "Bar":
+      return <LocalBarIcon fontSize="small" />;
+    default:
+      return null;
   }
 };
 
@@ -98,13 +102,11 @@ const getHeaderColors = (group: PedidoCardGroup) => {
 const Pedidos: React.FC = () => {
   const { user } = useContext(AuthContext);
   const [pedidos, setPedidos] = useState<PedidoCardGroup[]>([]);
-  const [loading, setLoading] = useState(false);
   const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const rol = user?.rol as string | undefined;
-
+const [loaded, setLoaded] = useState(false);
   const categoriasFiltradas: CategoriaPedido[] = useMemo(() => {
     if (!rol) return [];
     if (rol === "ADMIN_ROLE") return ["Cocina", "Parrilla", "Bar"];
@@ -114,168 +116,195 @@ const Pedidos: React.FC = () => {
     return [];
   }, [rol]);
 
-  const cargarPedidos = async () => {
-    if (!categoriasFiltradas.length) return;
+  const [error, setError] = useState<string | null>(null);
 
-    try {
-      setLoading(true);
-      setError(null);
+const cargarPedidos = async () => {
+  try {
+    setError(null);
 
-      const todas: PedidoBackend[] = [];
-
-      for (const categoria of categoriasFiltradas) {
-        const resp = await cafeApi.get<PedidoBackend[]>(`/pedidos/${categoria}`);
-        todas.push(...resp.data);
-      }
-
-      const mapa: Record<string, PedidoCardGroup> = {};
-
-      for (const p of todas) {
-        const key = `${p.reserva._id}-${p.categoria}`;
-        const mesa = p.mesa || p.reserva.mesa || "SN";
-
-        if (!mapa[key]) {
-          mapa[key] = {
-            id: key,
-            reservaId: p.reserva._id,
-            categoria: p.categoria,
-            mesa,
-            clienteNombre: p.reserva.nombre,
-            fechaEnvio: p.fecha_envio,
-            productos: [],
-            pedidosIds: [],
-          };
-        }
-
-        const group = mapa[key];
-        group.pedidosIds.push(p._id);
-
-        if (new Date(p.fecha_envio).getTime() < new Date(group.fechaEnvio).getTime()) {
-          group.fechaEnvio = p.fecha_envio;
-        }
-
-        // === OBTENER LA CATEGORÍA REAL DEL PRODUCTO ===
-        let cat = p.producto.categoria?.nombre
-          ? p.producto.categoria.nombre.toUpperCase().trim()
-          : "";
-
-        if (!cat) {
-          if (group.categoria === "Cocina") cat = "OTROS";
-          else if (group.categoria === "Parrilla") cat = "CARNES A LA PARRILLA";
-          else cat = "BEBIDAS";
-        }
-
-        const existing = group.productos.find(
-          (prod) => prod.id === p.producto._id
-        );
-
-        if (existing) {
-          existing.cantidad += Number(p.cantidad ?? 1);
-        } else {
-          group.productos.push({
-            id: p.producto._id,
-            nombre: p.producto.nombre,
-            cantidad: Number(p.cantidad ?? 1),
-            categoriaNombre: cat,
-          });
-        }
-      }
-
-      // === ORDENAMIENTO GLOBAL POR CATEGORÍAS ===
-      const ORDER = [
-        "ENTRADAS",
-        "ENSALADAS",
-        "PASTAS",
-        "GUARNICIONES EXTRAS",
-        "OTROS",
-        "SALSAS EXTRAS",
-        "POSTRES",
-        "CARNES A LA PARRILLA",
-        "BEBIDAS",
-        "BAR",
-      ];
-
-      Object.values(mapa).forEach((group) => {
-        group.productos.sort((a, b) => {
-          const A = ORDER.indexOf(a.categoriaNombre || "");
-          const B = ORDER.indexOf(b.categoriaNombre || "");
-          return (A === -1 ? 999 : A) - (B === -1 ? 999 : B);
-        });
-      });
-
-      const gruposOrdenados = Object.values(mapa).sort(
-        (a, b) => new Date(a.fechaEnvio).getTime() - new Date(b.fechaEnvio).getTime()
-      );
-
-      setPedidos(gruposOrdenados);
-    } catch (err) {
-      console.error(err);
-      setError("No se pudieron cargar los pedidos.");
-    } finally {
-      setLoading(false);
+    if (!categoriasFiltradas.length) {
+      setLoaded(true);
+      setPedidos([]);
+      return;
     }
-  };
+
+    const todas: PedidoBackend[] = [];
+
+    for (const categoria of categoriasFiltradas) {
+      const resp = await cafeApi.get<PedidoBackend[]>(`/pedidos/${categoria}`);
+      if (Array.isArray(resp.data)) todas.push(...resp.data);
+    }
+
+    const mapa: Record<string, PedidoCardGroup> = {};
+    const invalidos: any[] = [];
+
+    for (const p of todas) {
+      // ✅ GUARDAS: en producción puede venir reserva/producto null
+      if (!p || !p._id || !p.categoria || !p.fecha_envio) {
+        invalidos.push(p);
+        continue;
+      }
+
+      const reservaId = (p as any)?.reserva?._id;
+      const productoId = (p as any)?.producto?._id;
+
+      if (!reservaId || !productoId) {
+        invalidos.push(p);
+        continue;
+      }
+
+      const key = `${reservaId}-${p.categoria}`;
+      const mesa = p.mesa || (p as any)?.reserva?.mesa || "SN";
+      const clienteNombre = (p as any)?.reserva?.nombre || "SN";
+
+      if (!mapa[key]) {
+        mapa[key] = {
+          id: key,
+          reservaId,
+          categoria: p.categoria,
+          mesa,
+          clienteNombre,
+          fechaEnvio: p.fecha_envio,
+          productos: [],
+          pedidosIds: [],
+        };
+      }
+
+      const group = mapa[key];
+      group.pedidosIds.push(p._id);
+
+      // fecha más antigua del grupo
+      if (new Date(p.fecha_envio).getTime() < new Date(group.fechaEnvio).getTime()) {
+        group.fechaEnvio = p.fecha_envio;
+      }
+
+      let cat = (p as any)?.producto?.categoria?.nombre
+        ? (p as any).producto.categoria.nombre.toUpperCase().trim()
+        : "";
+
+      if (!cat) {
+        if (group.categoria === "Cocina") cat = "OTROS";
+        else if (group.categoria === "Parrilla") cat = "CARNES A LA PARRILLA";
+        else cat = "BEBIDAS";
+      }
+
+      const existing = group.productos.find((prod) => prod.id === productoId);
+
+      if (existing) {
+        existing.cantidad += Number((p as any)?.cantidad ?? 1);
+      } else {
+        group.productos.push({
+          id: productoId,
+          nombre: (p as any)?.producto?.nombre || "Producto",
+          cantidad: Number((p as any)?.cantidad ?? 1),
+          categoriaNombre: cat,
+        });
+      }
+    }
+
+    if (invalidos.length) {
+      console.warn("⚠️ Pedidos inválidos (reserva/producto null o faltantes):", invalidos);
+      // opcional: setError(`Hay ${invalidos.length} pedidos dañados en base de datos.`);
+    }
+
+    const ORDER = [
+      "ENTRADAS",
+      "ENSALADAS",
+      "PASTAS",
+      "GUARNICIONES EXTRAS",
+      "OTROS",
+      "SALSAS EXTRAS",
+      "POSTRES",
+      "CARNES A LA PARRILLA",
+      "BEBIDAS",
+      "BAR",
+    ];
+
+    Object.values(mapa).forEach((group) => {
+      group.productos.sort((a, b) => {
+        const A = ORDER.indexOf(a.categoriaNombre || "");
+        const B = ORDER.indexOf(b.categoriaNombre || "");
+        return (A === -1 ? 999 : A) - (B === -1 ? 999 : B);
+      });
+    });
+
+    const gruposFinal = Object.values(mapa).sort(
+      (a, b) => new Date(a.fechaEnvio).getTime() - new Date(b.fechaEnvio).getTime()
+    );
+
+    setPedidos(gruposFinal);
+  } catch (e: any) {
+    console.error("❌ Error cargando pedidos:", e);
+    setPedidos([]);
+    setError(e?.message || "Error cargando pedidos");
+  } finally {
+    setLoaded(true);
+  }
+};
 
   useEffect(() => {
     cargarPedidos();
   }, [categoriasFiltradas.length]);
 
   const handleCompletarGrupo = async (group: PedidoCardGroup) => {
-    try {
-      setLoadingGroupId(group.id);
-      setRemoving(group.id);
-      await new Promise((res) => setTimeout(res, 300));
+    setLoadingGroupId(group.id);
+    setRemoving(group.id);
 
-      await Promise.all(
-        group.pedidosIds.map((id) => cafeApi.put(`/pedidos/entregar/${id}`))
-      );
+    await new Promise((r) => setTimeout(r, 300));
 
-      setPedidos((prev) => prev.filter((g) => g.id !== group.id));
-    } catch (err) {
-      console.error(err);
-      setError("Error al marcar el pedido como entregado.");
-    } finally {
-      setLoadingGroupId(null);
-    }
+    await Promise.all(
+      group.pedidosIds.map((id) => cafeApi.put(`/pedidos/entregar/${id}`))
+    );
+
+    setPedidos((prev) => prev.filter((g) => g.id !== group.id));
+    setLoadingGroupId(null);
   };
 
-  if (!categoriasFiltradas.length) {
-    return (
-      <Box sx={{ p: 3, textAlign: "center" }}>
-        <ErrorOutlineIcon sx={{ fontSize: 40, color: "#999" }} />
-        <Typography variant="h6" color="text.secondary">
-          Tu rol no tiene acceso a la vista de pedidos.
-        </Typography>
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, width: "100%", bgcolor: "#ffffff", minHeight: "100%" }}>
-
-      {/* TÍTULO FUERA DEL GRID — CORRECCIÓN CLAVE */}
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+    <Box sx={{ width: "100%" }}>
+      <Typography
+        variant="h5"
+        sx={{ fontWeight: 700, mb: 2, px: { xs: 1.5, sm: 0 } }}
+      >
         Pedidos en curso
       </Typography>
-
-      {/* GRID RESPONSIVO REAL */}
-           <Box
+{loaded && pedidos.length === 0 && (
+  <Typography
+    sx={{
+      textAlign: "center",
+      mt: 5,
+      color: "#777",
+      fontSize: "1.1rem",
+      px: 2
+    }}
+  >
+    No hay pedidos pendientes.
+  </Typography>
+)}
+ <Box
   sx={{
     display: "grid",
     gridTemplateColumns: {
-      xs: "1fr",          // móvil
-      sm: "repeat(2, 1fr)", // tablet
-      md: "repeat(3, 1fr)", // desktop
+      xs: "1fr",
+      sm: "repeat(2, 1fr)",
+      md: "repeat(3, 1fr)",
     },
-    gap: 2,
+    gap: { xs: 2, md: 3 },
+    alignItems: "start",
     width: "100%",
-    maxWidth: "100%",
-    boxSizing: "border-box",
 
-    // Cada hijo respeta el ancho de la columna sin salirse
-    "& > *": {
-      minWidth: 0,
-    },
+    // 🔥 PUNTO CRÍTICO: permitir crecimiento infinito
+    height: "auto",
+    minHeight: "auto",
+
+    // 🔥 ELIMINA SCROLL INTERNO
+    overflow: "visible !important",
+
+    // 🔥 Evita que grid recorte contenido
+    gridAutoRows: "max-content",
+    gridAutoFlow: "row",
+
+    px: { xs: 0.5, sm: 0, md: 0 },
   }}
 >
         {pedidos.map((group) => {
@@ -286,131 +315,160 @@ const Pedidos: React.FC = () => {
   key={group.id}
   elevation={3}
   sx={{
+    position: "relative",
+    zIndex: 2,
     borderRadius: 3,
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
     bgcolor: "#ffffff",
-    height: "auto",
 
-    // 👉 NO usar 100% exacto en móvil
-    width: "100%",
-    maxWidth: {
-      xs: "95vw",   // PERFECTO para iPhone
-      sm: "48vw",   // Tablet
-      md: "100%",   // Desktop normal
-    },
+    width: "100%",        // ⭐ SE AJUSTA A SU COLUMNA
+    maxWidth: "100%",     // ⭐ NO CRECE MÁS NUNCA
+    flexShrink: 1,        // ⭐ EVITA DESBORDE
+    height: "auto",       // ⭐ NATURAL
 
-    mx: { xs: "auto" }, // centrar en móvil
     boxSizing: "border-box",
     transition: "all 0.3s ease",
     opacity: removing === group.id ? 0 : 1,
     transform: removing === group.id ? "scale(0.85)" : "scale(1)",
-    filter: removing === group.id ? "blur(4px) saturate(200%)" : "none",
+    filter:
+      removing === group.id
+        ? "blur(4px) saturate(200%)"
+        : "none",
   }}
 >
-  {/* HEADER */}
-  <Box
-    sx={{
-      bgcolor: colors.bg,
-      borderBottom: "1px solid rgba(0,0,0,0.06)",
-      px: 2,
-      py: 1.5,
-      display: "flex",
-      flexDirection: "column",
-      gap: 0.6,
-    }}
-  >
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {getCategoriaIcon(group.categoria)}
-        <Typography
-          variant="subtitle1"
-          sx={{ fontWeight: 700, textTransform: "uppercase", color: colors.text }}
-        >
-          Mesa {group.mesa}
-        </Typography>
-      </Box>
+              {/* HEADER */}
+              <Box
+                sx={{
+                  bgcolor: colors.bg,
+                  borderBottom: "1px solid rgba(0,0,0,0.06)",
+                  px: 2,
+                  py: 1.5,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0.6,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {getCategoriaIcon(group.categoria)}
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        color: colors.text,
+                      }}
+                    >
+                      Mesa {group.mesa}
+                    </Typography>
+                  </Box>
 
-      <Tooltip title="Marcar como entregado">
-        <span>
-          <IconButton
-            size="small"
-            disabled={loadingGroupId === group.id}
-            onClick={() => handleCompletarGrupo(group)}
-            sx={{
-              color: colors.text,
-              "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
-            }}
-          >
-            {loadingGroupId === group.id ? (
-              <CircularProgress size={18} />
-            ) : (
-              <CheckCircleIcon />
-            )}
-          </IconButton>
-        </span>
-      </Tooltip>
-    </Box>
+                  <Tooltip title="Marcar como entregado">
+                    <span>
+                      <IconButton
+                        size="small"
+                        disabled={loadingGroupId === group.id}
+                        onClick={() => handleCompletarGrupo(group)}
+                        sx={{
+                          color: colors.text,
+                          "&:hover": {
+                            backgroundColor: "rgba(0,0,0,0.04)",
+                          },
+                        }}
+                      >
+                        {loadingGroupId === group.id ? (
+                          <CircularProgress size={18} />
+                        ) : (
+                          <CheckCircleIcon />
+                        )}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                </Box>
 
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <Typography variant="caption" sx={{ color: "#555" }}>
-        {formatDateTime(group.fechaEnvio)}
-      </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="caption" sx={{ color: "#555" }}>
+                    {formatDateTime(group.fechaEnvio)}
+                  </Typography>
 
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      maxWidth: "50%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      color: "#555",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {group.clienteNombre}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* BODY */}
+  <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1 }}>
+  {group.productos.map((prod) => (
+    <Box
+      key={prod.id}
+      sx={{
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",     // 🔥 alineación perfecta
+        gap: 0.4,                 // 🔥 MUCHO MENOS ESPACIO ENTRE CANTIDAD Y NOMBRE
+        px: 1,
+        py: 0.4,
+        borderRadius: 2,
+        bgcolor: "#ffffff",
+        mb: 0.5,
+        width: "100%",
+      }}
+    >
+      {/* CANTIDAD */}
       <Typography
-        variant="caption"
+        variant="body2"
         sx={{
-          maxWidth: "50%",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          color: "#555",
-          fontWeight: 600,
+          fontWeight: 700,
+          minWidth: 18,           // 🔥 más pequeño, justo lo necesario
+          textAlign: "left",
         }}
       >
-        {group.clienteNombre}
+        {prod.cantidad}
+      </Typography>
+
+      {/* NOMBRE DEL PRODUCTO */}
+      <Typography
+        variant="body2"
+        sx={{
+          flexGrow: 1,
+          fontWeight: 500,
+
+          whiteSpace: "normal",
+          wordBreak: "break-word",
+          lineHeight: 1.3,
+        }}
+      >
+        {prod.nombre}
       </Typography>
     </Box>
-  </Box>
-
-  {/* BODY */}
-  <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1.5 }}>
-    {group.productos.map((prod) => (
-      <Box
-        key={prod.id}
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          px: 1.5,
-          py: 0.6,
-          borderRadius: 2,
-          bgcolor: "#ffffff",
-          mb: 0.5,
-        }}
-      >
-        <Typography variant="body2" sx={{ fontWeight: 700, minWidth: 32 }}>
-          {prod.cantidad}
-        </Typography>
-
-        <Typography
-          variant="body2"
-          sx={{
-            flexGrow: 1,
-            ml: 1,
-            fontWeight: 500,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {prod.nombre}
-        </Typography>
-      </Box>
-    ))}
-  </CardContent>
-</Card>
+  ))}
+</CardContent>
+            </Card>
           );
         })}
       </Box>
