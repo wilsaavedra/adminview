@@ -21,7 +21,8 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
-  Snackbar,
+   Snackbar,
+  Alert,
 } from "@mui/material";
 
 import CloseIcon from "@mui/icons-material/Close";
@@ -93,12 +94,13 @@ export default function MenuReservas() {
       : new Date()
   );
   const [error, setError] = useState<string | null>(null);
-
+const [sendingId, setSendingId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const { user } = useContext(AuthContext);
   const [snackOpen, setSnackOpen] = useState(false);
 const [snackMsg, setSnackMsg] = useState("Enviado");
+const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "info">("success");
 
 const primerNombre = (full?: string) => {
   const s = String(full ?? "").trim();
@@ -458,42 +460,61 @@ const saldo = Math.max(0, monto - pago);
 
                     {/* ENVIAR PEDIDO */}
                     <TableCell>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="small"
-                        startIcon={<SendIcon />}
-                       disabled={mr.enviado || mr.facturado}
-    onClick={async () => {
-  try {
-    const mesero = primerNombre(user?.nombre);
-
-    if (mesero && mr?.reserva?._id) {
-      await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
-    }
-
-    await cafeApi.post(`/pedidos/crear/${mr._id}`);
-
-    // ✅ SOLO SNACK “Enviado”
-    setSnackOpen(true);
-
-    setReservas((prev) =>
-      prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
-    );
-  } catch (error) {
-    // (sin alert) solo log
-    console.error("❌ No se pudo enviar pedido:", error);
+                 <Button
+  variant="contained"
+  color="success"
+  size="small"
+  startIcon={
+    sendingId === mr._id ? (
+      <CircularProgress size={16} sx={{ color: "#fff" }} />
+    ) : (
+      <SendIcon />
+    )
   }
-}}
-                        sx={{
-                          textTransform: "none",
-                          px: 1.5,
-                          fontSize: { xs: 11, md: 12 },
-                          minWidth: { xs: 80, md: 90 },
-                        }}
-                      >
-                       {mr.facturado ? "Facturado" : mr.enviado ? "Completo" : "Enviar"}
-                      </Button>
+  disabled={mr.enviado || mr.facturado || sendingId === mr._id}
+  onClick={async () => {
+    try {
+      setSendingId(mr._id);
+
+      const mesero = primerNombre(user?.nombre);
+
+      if (mesero && mr?.reserva?._id) {
+        await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
+      }
+
+      await cafeApi.post(`/pedidos/crear/${mr._id}`);
+
+      setSnackMsg("Enviado");
+      setSnackSeverity("success");
+      setSnackOpen(true);
+
+      setReservas((prev) =>
+        prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
+      );
+    } catch (error) {
+      console.error("❌ No se pudo enviar pedido:", error);
+      setSnackMsg("No se pudo enviar");
+      setSnackSeverity("error");
+      setSnackOpen(true);
+    } finally {
+      setSendingId(null);
+    }
+  }}
+  sx={{
+    textTransform: "none",
+    px: 1.5,
+    fontSize: { xs: 11, md: 12 },
+    minWidth: { xs: 92, md: 100 },
+  }}
+>
+  {sendingId === mr._id
+    ? "Enviando..."
+    : mr.facturado
+    ? "Facturado"
+    : mr.enviado
+    ? "Completo"
+    : "Enviar"}
+</Button>
                     </TableCell>
 
                     {/* FACTURAR */}
@@ -759,13 +780,25 @@ const saldo = Math.max(0, monto - pago);
 </DialogActions>
 </Dialog>
 
-        <Snackbar
-        open={snackOpen}
-        onClose={() => setSnackOpen(false)}
-        autoHideDuration={2000}
-        message="Enviado"
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      />
+     <Snackbar
+  open={snackOpen}
+  onClose={() => setSnackOpen(false)}
+  autoHideDuration={2200}
+  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+>
+  <Alert
+    onClose={() => setSnackOpen(false)}
+    severity={snackSeverity}
+    variant="filled"
+    sx={{
+      borderRadius: 2,
+      fontWeight: 800,
+      boxShadow: 3,
+    }}
+  >
+    {snackMsg}
+  </Alert>
+</Snackbar>
 
     </Box>
   );
