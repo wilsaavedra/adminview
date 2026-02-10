@@ -27,6 +27,8 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { es } from "date-fns/locale";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
 
 interface CreadoPor {
   _id: string;
@@ -50,6 +52,7 @@ interface Reservas {
   comentarios: string;
   resest: string;
   mesa?: string;
+   canal?: "self" | "selfregister" | null;
 }
 
 const API = axios.create({
@@ -242,6 +245,7 @@ export default function ReservasPage() {
                 <TableCell sx={{ color: "#fff" }}>Adelanto</TableCell>
                 <TableCell sx={{ color: "#fff" }}>Mesa</TableCell>
                 <TableCell sx={{ color: "#fff" }}>Estado</TableCell>
+                <TableCell sx={{ color: "#fff", textAlign: "right" }}>Canal</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -379,6 +383,20 @@ export default function ReservasPage() {
                       )}
                     </Select>
                   </TableCell>
+                  <TableCell
+  sx={{
+    textAlign: "center",
+    width: 60,
+  }}
+>
+  {reserva.canal === "self" && (
+    <PersonOutlineIcon fontSize="small" sx={{ opacity: 0.8 }} />
+  )}
+
+  {reserva.canal === "selfregister" && (
+    <HowToRegIcon fontSize="small" sx={{ opacity: 0.8 }} />
+  )}
+</TableCell>
                 </TableRow>
               ))}
             </TableBody>
