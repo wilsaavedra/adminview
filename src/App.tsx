@@ -18,6 +18,8 @@ import MenuReservasDetalle from "./pages/MenuReservasDetalle";
 import QRsAdmin from "./pages/QRsAdmin";
 import ReporteResumen from "./pages/ReporteResumen";
 import ReporteProductos from "./pages/ReporteProductos";
+import Inventarios from "./pages/Inventarios";
+
 
 type Role =
   | "ADMIN_ROLE"
@@ -194,11 +196,19 @@ function AppContent() {
                 }
               />
 
-              <Route
+             {/* <Route
                 path="/Reportes/Productos"
                 element={
                   <PrivateRoute roles={["ADMIN_ROLE"]}>
                     <ReporteProductos />
+                  </PrivateRoute>
+                }
+              />*/}
+                   <Route
+                path="/Reportes/Inventarios"
+                element={
+                  <PrivateRoute roles={["ADMIN_ROLE"]}>
+                    <Inventarios />
                   </PrivateRoute>
                 }
               />

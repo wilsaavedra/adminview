@@ -252,7 +252,7 @@ React.useEffect(() => {
           />
         </ListItemButton>
 
-       <ListItemButton
+    {/*      <ListItemButton
   selected={location.pathname === "/Reportes/Productos"}
   onClick={() => {
     navigate("/Reportes/Productos");
@@ -272,6 +272,31 @@ React.useEffect(() => {
           </ListItemIcon>
           <ListItemText
             primary="Productos"
+            primaryTypographyProps={{ fontWeight: 500, fontSize: 13 }}
+          />
+        </ListItemButton> */}
+
+        {/* ✅ NUEVO: Inventarios */}
+        <ListItemButton
+          selected={location.pathname === "/Reportes/Inventarios"}
+          onClick={() => {
+            navigate("/Reportes/Inventarios");
+            setMobileOpen(false);
+          }}
+          sx={{
+            borderRadius: 1,
+            ml: 2,
+            mr: 1,
+            py: 0.7,
+            "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+            "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 32, color: "#000" }}>
+            <Inventory2OutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Inventarios"
             primaryTypographyProps={{ fontWeight: 500, fontSize: 13 }}
           />
         </ListItemButton>
