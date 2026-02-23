@@ -204,21 +204,26 @@ const Inventarios: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
-      {/* Título */}
-      <Box sx={{ mb: 1.2 }}>
-        <Typography
-          sx={{
-            fontWeight: 800,
-            fontSize: 20,
-            color: TITLE_BLUE,
-            letterSpacing: 0.2,
-            lineHeight: 1.1,
-          }}
-        >
-          Inventarios
-        </Typography>
-      </Box>
+   <Box sx={{ width: "100%" }}>
+  {/* Título */}
+  <Box
+    sx={{
+      mb: 1.2,
+      pl: { xs: 6, sm: 0 }, // ✅ padding-left en móvil (evita choque con hamburguesa)
+    }}
+  >
+    <Typography
+      sx={{
+        fontWeight: 800,
+        fontSize: 20,
+        color: TITLE_BLUE,
+        letterSpacing: 0.2,
+        lineHeight: 1.1,
+      }}
+    >
+      Inventarios
+    </Typography>
+  </Box>
 
       {/* Top controls */}
       <Box
@@ -232,11 +237,26 @@ const Inventarios: React.FC = () => {
       >
         <FormControl size="small" sx={{ minWidth: isSmDown ? 220 : 280 }}>
           <InputLabel>Categoría</InputLabel>
-          <Select
-            label="Categoría"
-            value={categoriaId}
-            onChange={(e) => setCategoriaId(String(e.target.value))}
-          >
+       <Select
+  label="Categoría"
+  value={categoriaId}
+  onChange={(e) => setCategoriaId(String(e.target.value))}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        maxHeight: "60vh",
+      },
+    },
+    anchorOrigin: {
+      vertical: "bottom",
+      horizontal: "left",
+    },
+    transformOrigin: {
+      vertical: "top",
+      horizontal: "left",
+    },
+  }}
+>
             {categorias.map((c) => (
               <MenuItem key={c._id} value={c._id}>
                 {c.nombre}
@@ -352,16 +372,9 @@ const Inventarios: React.FC = () => {
                         {p.nombre}
                       </TableCell>
 
-                      <TableCell sx={{ textAlign: "right" }}>
-                        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.8 }}>
-                          <Typography sx={{ fontSize: 13 }}>{cant}</Typography>
-                          {umbral > 1 ? (
-                            <Typography sx={{ fontSize: 12, color: "#6b7280" }}>
-                              / {umbral}
-                            </Typography>
-                          ) : null}
-                        </Box>
-                      </TableCell>
+                     <TableCell sx={{ textAlign: "right" }}>
+  <Typography sx={{ fontSize: 13 }}>{cant}</Typography>
+</TableCell>
 
                       <TableCell sx={{ textAlign: "right" }}>
                         <TextField
