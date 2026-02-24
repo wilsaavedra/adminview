@@ -293,25 +293,13 @@ setReservas(filtradasConEnviado);
     sx={{
       width: "100%",
       bgcolor: "#fff",
-      p: { xs: 2, sm: 3 },
+      p: { xs: 0, sm: 3 },
+      pt: { xs: 0.5, sm: 3 },
+      px: { xs: 0, sm: 3 },
     }}
   >
-    {/* TÍTULO RESPONSIVO (como Inventarios/Reservas) */}
-    <Box
-      sx={{
-        mb: 1.2,
-        pl: { xs: 6, sm: 0 },
-      }}
-    >
-      <Typography
-        sx={{
-          fontWeight: 800,
-          fontSize: 20,
-          color: "#1e3a8a",
-          letterSpacing: 0.2,
-          lineHeight: 1.1,
-        }}
-      >
+    <Box sx={{ mb: 1.2, pl: { xs: 6, sm: 0 } }}>
+      <Typography sx={{ fontWeight: 800, fontSize: 20, color: "#1e3a8a" }}>
         Cuentas
       </Typography>
     </Box>

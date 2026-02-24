@@ -137,12 +137,14 @@ export default function ReservasPage() {
     }
   };
 
-  return (
+ return (
   <Box
     sx={{
       width: "100%",
       bgcolor: "#fff",
-      p: { xs: 2, sm: 3 },
+      p: { xs: 0, sm: 3 },        // ✅ sin padding en móvil
+      pt: { xs: 0.5, sm: 3 },     // ✅ un toque arriba en móvil (ajusta si quieres)
+      px: { xs: 0, sm: 3 },       // ✅ sin padding lateral en móvil
     }}
   >
     {/* TÍTULO (RESPONSIVO como Inventarios) */}
