@@ -276,252 +276,269 @@ if (existing) {
   };
 
   return (
-    <Box sx={{ width: "100%" }}>
+  <Box
+    sx={{
+      width: "100%",
+      bgcolor: "#fff",
+      p: { xs: 2, sm: 3 },
+    }}
+  >
+    {/* TÍTULO RESPONSIVO (como Inventarios/Reservas/Cuentas) */}
+    <Box
+      sx={{
+        mb: 1.2,
+        pl: { xs: 6, sm: 0 },
+      }}
+    >
       <Typography
-        variant="h5"
-        sx={{ fontWeight: 700, mb: 2, px: { xs: 1.5, sm: 0 } }}
+        sx={{
+          fontWeight: 800,
+          fontSize: 20,
+          color: "#1e3a8a",
+          letterSpacing: 0.2,
+          lineHeight: 1.1,
+        }}
       >
         Pedidos en curso
       </Typography>
-{loaded && pedidos.length === 0 && (
-  <Typography
-    sx={{
-      textAlign: "center",
-      mt: 5,
-      color: "#777",
-      fontSize: "1.1rem",
-      px: 2
-    }}
-  >
-    No hay pedidos pendientes.
-  </Typography>
-)}
- <Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: {
-      xs: "1fr",
-      sm: "repeat(2, 1fr)",
-      md: "repeat(3, 1fr)",
-    },
-    gap: { xs: 2, md: 3 },
-    alignItems: "start",
-    width: "100%",
+    </Box>
 
-    // 🔥 PUNTO CRÍTICO: permitir crecimiento infinito
-    height: "auto",
-    minHeight: "auto",
+    {/* Subtítulo 
+    <Box sx={{ mb: 2, pl: { xs: 6, sm: 0 } }}>
+      <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#6b7280" }}>
+        Pedidos en curso
+      </Typography>
+    </Box>*/}
 
-    // 🔥 ELIMINA SCROLL INTERNO
-    overflow: "visible !important",
-
-    // 🔥 Evita que grid recorte contenido
-    gridAutoRows: "max-content",
-    gridAutoFlow: "row",
-
-    px: { xs: 0.5, sm: 0, md: 0 },
-  }}
->
-        {pedidos.map((group) => {
-          const colors = getHeaderColors(group);
-
-          return (
- <Card
-  key={group.id}
-  elevation={3}
-  sx={{
-    position: "relative",
-    zIndex: 2,
-    borderRadius: 3,
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-    bgcolor: "#ffffff",
-
-    width: "100%",        // ⭐ SE AJUSTA A SU COLUMNA
-    maxWidth: "100%",     // ⭐ NO CRECE MÁS NUNCA
-    flexShrink: 1,        // ⭐ EVITA DESBORDE
-    height: "auto",       // ⭐ NATURAL
-
-    boxSizing: "border-box",
-    transition: "all 0.3s ease",
-    opacity: removing === group.id ? 0 : 1,
-    transform: removing === group.id ? "scale(0.85)" : "scale(1)",
-    filter:
-      removing === group.id
-        ? "blur(4px) saturate(200%)"
-        : "none",
-  }}
->
-              {/* HEADER */}
-              <Box
-                sx={{
-                  bgcolor: colors.bg,
-                  borderBottom: "1px solid rgba(0,0,0,0.06)",
-                  px: 2,
-                  py: 1.5,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 0.6,
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    {getCategoriaIcon(group.categoria)}
-                    <Typography
-                      variant="subtitle1"
-                      sx={{
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        color: colors.text,
-                      }}
-                    >
-                      Mesa {group.mesa}
-                    </Typography>
-                  </Box>
-
-                  <Tooltip title="Marcar como entregado">
-                    <span>
-                      <IconButton
-                        size="small"
-                        disabled={loadingGroupId === group.id}
-                        onClick={() => handleCompletarGrupo(group)}
-                        sx={{
-                          color: colors.text,
-                          "&:hover": {
-                            backgroundColor: "rgba(0,0,0,0.04)",
-                          },
-                        }}
-                      >
-                        {loadingGroupId === group.id ? (
-                          <CircularProgress size={18} />
-                        ) : (
-                          <CheckCircleIcon />
-                        )}
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography variant="caption" sx={{ color: "#555" }}>
-                    {formatDateTime(group.fechaEnvio)}
-                  </Typography>
-
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      maxWidth: "50%",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      color: "#555",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {group.clienteNombre}
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* BODY */}
-  <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1 }}>
-  {group.productos.map((prod) => (
-    <Box
-      key={prod.id}
-      sx={{
-        display: "flex",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",     // 🔥 alineación perfecta
-        gap: 0.4,                 // 🔥 MUCHO MENOS ESPACIO ENTRE CANTIDAD Y NOMBRE
-        px: 1,
-        py: 0.4,
-        borderRadius: 2,
-        bgcolor: "#ffffff",
-        mb: 0.5,
-        width: "100%",
-      }}
-    >
-      {/* CANTIDAD */}
+    {loaded && pedidos.length === 0 && (
       <Typography
-        variant="body2"
         sx={{
-          fontWeight: 700,
-          minWidth: 18,           // 🔥 más pequeño, justo lo necesario
-          textAlign: "left",
+          textAlign: "center",
+          mt: 5,
+          color: "#777",
+          fontSize: "1.1rem",
+          px: 2,
         }}
       >
-        {prod.cantidad}
+        No hay pedidos pendientes.
       </Typography>
+    )}
 
-      {/* NOMBRE DEL PRODUCTO */}
- <Box sx={{ flexGrow: 1 }}>
-  <Typography
-    variant="body2"
-    sx={{
-      fontWeight: 500,
-      whiteSpace: "normal",
-      wordBreak: "break-word",
-      lineHeight: 1.3,
-    }}
-  >
-    {/* ✅ NOMBRE COMO ESTABA ANTES (sin cambiar mayúsculas/minúsculas) */}
-    {prod.nombre}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          sm: "repeat(2, 1fr)",
+          md: "repeat(3, 1fr)",
+        },
+        gap: { xs: 2, md: 3 },
+        alignItems: "start",
+        width: "100%",
+        height: "auto",
+        minHeight: "auto",
+        overflow: "visible !important",
+        gridAutoRows: "max-content",
+        gridAutoFlow: "row",
+        px: { xs: 0, sm: 0, md: 0 },
+      }}
+    >
+      {pedidos.map((group) => {
+        const colors = getHeaderColors(group);
 
-   {/* Parrilla = términos */}
-{group.categoria === "Parrilla" &&
-  prod.terminos &&
-  prod.terminos.length > 0
-  ? ` (${prod.terminos.map(t => String(t).toLowerCase()).join(", ")})`
-  : ""}
-
-{/* Cocina = salsas */}
-{group.categoria === "Cocina" &&
-  String(prod.categoriaNombre || "").toUpperCase().trim() === "PASTAS" &&
-  prod.salsas &&
-  prod.salsas.length > 0
-  ? ` (${prod.salsas.map(s => String(s).toLowerCase()).join(", ")})`
-  : ""}
-  </Typography>
-
-  {/* ✅ SOLO PARRILLA: guarniciones debajo con > */}
-  {group.categoria === "Parrilla" &&
-    prod.guarniciones &&
-    prod.guarniciones.length > 0 && (
-      <Box sx={{ mt: 0.2, ml: 1.1 }}>
-        {prod.guarniciones.map((g, idx) => (
-          <Typography
-            key={`${prod.id}-g-${idx}`}
-            variant="caption"
-            sx={{ display: "block", color: "#555", lineHeight: 1.15 }}
+        return (
+          <Card
+            key={group.id}
+            elevation={3}
+            sx={{
+              position: "relative",
+              zIndex: 2,
+              borderRadius: 3,
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              bgcolor: "#ffffff",
+              width: "100%",
+              maxWidth: "100%",
+              flexShrink: 1,
+              height: "auto",
+              boxSizing: "border-box",
+              transition: "all 0.3s ease",
+              opacity: removing === group.id ? 0 : 1,
+              transform: removing === group.id ? "scale(0.85)" : "scale(1)",
+              filter: removing === group.id ? "blur(4px) saturate(200%)" : "none",
+              border: "1px solid rgba(0,0,0,0.08)", // ✅ como tablas/cajas de otras pantallas
+            }}
           >
-            {`>${String(g).toUpperCase()}`}
-          </Typography>
-        ))}
-      </Box>
-  )}
-</Box>
+            {/* HEADER */}
+            <Box
+              sx={{
+                bgcolor: colors.bg,
+                borderBottom: "1px solid rgba(0,0,0,0.06)",
+                px: 2,
+                py: 1.5,
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.6,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {getCategoriaIcon(group.categoria)}
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      color: colors.text,
+                      letterSpacing: 0.2,
+                    }}
+                  >
+                    Mesa {group.mesa}
+                  </Typography>
+                </Box>
+
+                <Tooltip title="Marcar como entregado">
+                  <span>
+                    <IconButton
+                      size="small"
+                      disabled={loadingGroupId === group.id}
+                      onClick={() => handleCompletarGrupo(group)}
+                      sx={{
+                        color: colors.text,
+                        "&:hover": { backgroundColor: "rgba(0,0,0,0.04)" },
+                      }}
+                    >
+                      {loadingGroupId === group.id ? (
+                        <CircularProgress size={18} />
+                      ) : (
+                        <CheckCircleIcon />
+                      )}
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography variant="caption" sx={{ color: "#555" }}>
+                  {formatDateTime(group.fechaEnvio)}
+                </Typography>
+
+                <Typography
+                  variant="caption"
+                  sx={{
+                    maxWidth: "50%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    color: "#555",
+                    fontWeight: 700,
+                  }}
+                >
+                  {group.clienteNombre}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* BODY */}
+            <CardContent sx={{ flexGrow: 1, bgcolor: "#fff", py: 1 }}>
+              {group.productos.map((prod) => (
+                <Box
+                  key={prod.id}
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    alignItems: "flex-start",
+                    gap: 0.4,
+                    px: 1,
+                    py: 0.4,
+                    borderRadius: 2,
+                    bgcolor: "#ffffff",
+                    mb: 0.5,
+                    width: "100%",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 800,
+                      minWidth: 18,
+                      textAlign: "left",
+                      color: "#111827",
+                    }}
+                  >
+                    {prod.cantidad}
+                  </Typography>
+
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 500,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        lineHeight: 1.3,
+                        color: "#111827",
+                      }}
+                    >
+                      {prod.nombre}
+
+                      {group.categoria === "Parrilla" &&
+                      prod.terminos &&
+                      prod.terminos.length > 0
+                        ? ` (${prod.terminos.map((t) => String(t).toLowerCase()).join(", ")})`
+                        : ""}
+
+                      {group.categoria === "Cocina" &&
+                      String(prod.categoriaNombre || "").toUpperCase().trim() === "PASTAS" &&
+                      prod.salsas &&
+                      prod.salsas.length > 0
+                        ? ` (${prod.salsas.map((s) => String(s).toLowerCase()).join(", ")})`
+                        : ""}
+                    </Typography>
+
+                    {group.categoria === "Parrilla" &&
+                      prod.guarniciones &&
+                      prod.guarniciones.length > 0 && (
+                        <Box sx={{ mt: 0.2, ml: 1.1 }}>
+                          {prod.guarniciones.map((g, idx) => (
+                            <Typography
+                              key={`${prod.id}-g-${idx}`}
+                              variant="caption"
+                              sx={{
+                                display: "block",
+                                color: "#555",
+                                lineHeight: 1.15,
+                                fontWeight: 700,
+                              }}
+                            >
+                              {`>${String(g).toUpperCase()}`}
+                            </Typography>
+                          ))}
+                        </Box>
+                      )}
+                  </Box>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </Box>
-  ))}
-</CardContent>
-            </Card>
-          );
-        })}
-      </Box>
-    </Box>
-  );
+  </Box>
+);
 };
 
 export default Pedidos;
