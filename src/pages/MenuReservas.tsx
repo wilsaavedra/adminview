@@ -299,14 +299,14 @@ setReservas(filtradasConEnviado);
     mt: { xs: 0, sm: 0 },
   }}
 >
-  <Box
-    sx={{
-      mb: 1.0,
-      pl: { xs: 6, sm: 0 },
-      pt: 0,
-      mt: 0,
-    }}
-  >
+ <Box
+  sx={{
+    mb: { xs: 0.4, sm: 1.0 },  // ✅ menos espacio en móvil
+    pl: { xs: 6, sm: 0 },
+    pt: 0,
+    mt: 0,
+  }}
+>
       <Typography sx={{ fontWeight: 800, fontSize: 20, color: "#1e3a8a" }}>
         Cuentas
       </Typography>
@@ -315,15 +315,15 @@ setReservas(filtradasConEnviado);
     {/* ===================================== */}
     {/*     FECHA + TÍTULO                   */}
     {/* ===================================== */}
-    <Grid
-      container
-      alignItems="center"
-      justifyContent="flex-start"
-      mb={3}
-      sx={{
-        gap: 3,
-      }}
-    >
+   <Grid
+  container
+  alignItems={{ xs: "flex-start", sm: "center" }}
+  justifyContent="flex-start"
+  mb={{ xs: 1, sm: 3 }}
+  sx={{
+    gap: { xs: 1, sm: 3 },
+  }}
+>
       <Box>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
           <DatePicker
