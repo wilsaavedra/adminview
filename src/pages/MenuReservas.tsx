@@ -299,18 +299,27 @@ setReservas(filtradasConEnviado);
     mt: { xs: 0, sm: 0 },
   }}
 >
- <Box
-  sx={{
-    mb: { xs: 0.4, sm: 1.0 },  // ✅ menos espacio en móvil
-    pl: { xs: 6, sm: 0 },
-    pt: 0,
-    mt: 0,
-  }}
->
-      <Typography sx={{ fontWeight: 800, fontSize: 20, color: "#1e3a8a" }}>
-        Cuentas
-      </Typography>
-    </Box>
+   <Box
+    sx={{
+      pl: { xs: 6, sm: 0 },              // espacio hamburguesa
+      mt: { xs: -1.2, sm: 0 },           // ✅ SUBE EN MÓVIL
+      pt: 0,
+      mb: { xs: 0.6, sm: 1.0 },
+    }}
+  >
+    <Typography
+      sx={{
+        m: 0,
+        fontWeight: 800,
+        fontSize: 20,
+        color: "#1e3a8a",
+        letterSpacing: 0.2,
+        lineHeight: 1.1,
+      }}
+    >
+      Cuentas
+    </Typography>
+  </Box>
 
     {/* ===================================== */}
     {/*     FECHA + TÍTULO                   */}

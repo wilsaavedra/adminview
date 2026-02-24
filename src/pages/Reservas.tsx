@@ -148,26 +148,27 @@ export default function ReservasPage() {
     mt: { xs: 0, sm: 0 },    // ✅ por si algún layout mete margen
   }}
 >
-  <Box
+   <Box
     sx={{
-      mb: 1.0,
-      pl: { xs: 6, sm: 0 },  // ✅ espacio solo a la izquierda por el botón hamburguesa
-      pt: 0,                 // ✅ sin padding arriba
-      mt: 0,                 // ✅ sin margen arriba
+      pl: { xs: 6, sm: 0 },              // deja espacio por el hamburguesa
+      mt: { xs: -1.2, sm: 0 },           // ✅ SUBE EN MÓVIL (ajusta -1.0 a -1.6 si quieres)
+      pt: 0,
+      mb: { xs: 0.6, sm: 1.0 },
     }}
   >
-      <Typography
-        sx={{
-          fontWeight: 800,
-          fontSize: 20,
-          color: "#1e3a8a",
-          letterSpacing: 0.2,
-          lineHeight: 1.1,
-        }}
-      >
-        Reservas
-      </Typography>
-    </Box>
+    <Typography
+      sx={{
+        m: 0,
+        fontWeight: 800,
+        fontSize: 20,
+        color: "#1e3a8a",
+        letterSpacing: 0.2,
+        lineHeight: 1.1,
+      }}
+    >
+      Reservas
+    </Typography>
+  </Box>
 
     {/* ====== CABECERA: IGUAL QUE MenuReservas ====== */}
     <Grid
