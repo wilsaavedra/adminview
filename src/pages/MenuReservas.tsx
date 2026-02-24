@@ -302,7 +302,7 @@ setReservas(filtradasConEnviado);
    <Box
     sx={{
       pl: { xs: 6, sm: 0 },              // espacio hamburguesa
-      mt: { xs: 0.2, sm: 0 },           // ✅ SUBE EN MÓVIL
+      mt: { xs: -0.2, sm: 0 },           // ✅ SUBE EN MÓVIL
       pt: 0,
       mb: { xs: 0.6, sm: 1.0 },
     }}
