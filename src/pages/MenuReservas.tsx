@@ -491,14 +491,25 @@ const saldo = Math.max(0, monto - pago);
       setReservas((prev) =>
         prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
       );
-    } catch (error) {
-      console.error("❌ No se pudo enviar pedido:", error);
-      setSnackMsg("No se pudo enviar");
-      setSnackSeverity("error");
-      setSnackOpen(true);
-    } finally {
-      setSendingId(null);
-    }
+    } catch (error: any) {
+  console.error("❌ No se pudo enviar pedido:", error);
+
+  // Soporta Axios (error.response.data.msg) y errores normales (error.message)
+  const backendMsg =
+    error?.response?.data?.msg ??
+    error?.response?.data?.message ??
+    error?.message ??
+    "No se pudo enviar";
+
+  console.log("DETAIL response:", error?.response?.data);
+  console.log("STATUS:", error?.response?.status);
+
+  setSnackMsg(String(backendMsg));
+  setSnackSeverity("error");
+  setSnackOpen(true);
+} finally {
+  setSendingId(null);
+}
   }}
   sx={{
     textTransform: "none",
