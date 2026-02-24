@@ -139,21 +139,23 @@ export default function ReservasPage() {
 
  return (
   <Box
+  sx={{
+    width: "100%",
+    bgcolor: "#fff",
+    p: { xs: 0, sm: 3 },     // ✅ 0 en móvil
+    pt: { xs: 0, sm: 3 },    // ✅ 0 arriba en móvil
+    px: { xs: 0, sm: 3 },    // ✅ 0 laterales en móvil
+    mt: { xs: 0, sm: 0 },    // ✅ por si algún layout mete margen
+  }}
+>
+  <Box
     sx={{
-      width: "100%",
-      bgcolor: "#fff",
-      p: { xs: 0, sm: 3 },        // ✅ sin padding en móvil
-      pt: { xs: 0.5, sm: 3 },     // ✅ un toque arriba en móvil (ajusta si quieres)
-      px: { xs: 0, sm: 3 },       // ✅ sin padding lateral en móvil
+      mb: 1.0,
+      pl: { xs: 6, sm: 0 },  // ✅ espacio solo a la izquierda por el botón hamburguesa
+      pt: 0,                 // ✅ sin padding arriba
+      mt: 0,                 // ✅ sin margen arriba
     }}
   >
-    {/* TÍTULO (RESPONSIVO como Inventarios) */}
-    <Box
-      sx={{
-        mb: 1.2,
-        pl: { xs: 6, sm: 0 },
-      }}
-    >
       <Typography
         sx={{
           fontWeight: 800,

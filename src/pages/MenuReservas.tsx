@@ -289,16 +289,24 @@ setReservas(filtradasConEnviado);
   }, [fecha]);
 
   return (
+ <Box
+  sx={{
+    width: "100%",
+    bgcolor: "#fff",
+    p: { xs: 0, sm: 3 },
+    pt: { xs: 0, sm: 3 },
+    px: { xs: 0, sm: 3 },
+    mt: { xs: 0, sm: 0 },
+  }}
+>
   <Box
     sx={{
-      width: "100%",
-      bgcolor: "#fff",
-      p: { xs: 0, sm: 3 },
-      pt: { xs: 0.5, sm: 3 },
-      px: { xs: 0, sm: 3 },
+      mb: 1.0,
+      pl: { xs: 6, sm: 0 },
+      pt: 0,
+      mt: 0,
     }}
   >
-    <Box sx={{ mb: 1.2, pl: { xs: 6, sm: 0 } }}>
       <Typography sx={{ fontWeight: 800, fontSize: 20, color: "#1e3a8a" }}>
         Cuentas
       </Typography>
