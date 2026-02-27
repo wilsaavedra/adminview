@@ -24,7 +24,7 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
-
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import SummarizeOutlinedIcon from "@mui/icons-material/SummarizeOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
@@ -42,39 +42,17 @@ interface MenuItem {
 
 // 🔐 CONFIG MENÚ — ADMIN VE TODO AUTOMÁTICAMENTE
 const menuItems: MenuItem[] = [
-  {
-    text: 'Inicio',
-    icon: <HomeOutlinedIcon fontSize="small" />,
-    path: '/Menu',
-  },
-  {
-    text: 'Reservar',
-    icon: <EventAvailableIcon fontSize="small" />,
-    path: '/Reservar',
-  },
-  {
-    text: 'Mis Reservas',
-    icon: <ListAltIcon fontSize="small" />,
-    path: '/Reservas',
-  },
-  {
-  text: "QR",
-  icon: <QrCode2Icon fontSize="small" />,
-  path: "/QRsAdmin",
-  roles: ["USER_ROLE"], // admin ve todo igual, pero lo dejamos claro
-},
-  {
-    text: 'Cuentas',
-    icon: <PlaylistAddCheckIcon fontSize="small" />, // ÍCONO NUEVO
-    path: '/MenuReservas',
-    roles: ['ADMIN_ROLE'], // solo admin pero admin entra a todo igualmente
-  },
-  {
-  text: 'Pedidos',
-  icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />,
-  path: '/Pedidos',
-  roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'],
-},
+  { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
+  { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
+  { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
+  { text: "QR", icon: <QrCode2Icon fontSize="small" />, path: "/QRsAdmin", roles: ["USER_ROLE"] },
+
+  { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE'] },
+
+  // ✅ NUEVO
+  { text: 'Facturas', icon: <ReceiptIcon fontSize="small" />, path: '/Facturas', roles: ['ADMIN_ROLE'] },
+
+  { text: 'Pedidos', icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />, path: '/Pedidos', roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'] },
 ];
 
 export default function Sidebar() {

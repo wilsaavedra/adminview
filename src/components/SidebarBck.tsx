@@ -9,6 +9,7 @@ import {
   ListItemText,
   Drawer,
   Tooltip,
+  Collapse,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
@@ -23,6 +24,12 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
+
+import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
+import SummarizeOutlinedIcon from "@mui/icons-material/SummarizeOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
 
@@ -54,10 +61,10 @@ const menuItems: MenuItem[] = [
   text: "QR",
   icon: <QrCode2Icon fontSize="small" />,
   path: "/QRsAdmin",
-  roles: ["ADMIN_ROLE"], // admin ve todo igual, pero lo dejamos claro
+  roles: ["USER_ROLE"], // admin ve todo igual, pero lo dejamos claro
 },
   {
-    text: 'Menú Reservas',
+    text: 'Cuentas',
     icon: <PlaylistAddCheckIcon fontSize="small" />, // ÍCONO NUEVO
     path: '/MenuReservas',
     roles: ['ADMIN_ROLE'], // solo admin pero admin entra a todo igualmente
@@ -70,11 +77,7 @@ const menuItems: MenuItem[] = [
 },
 ];
 
-interface SidebarProps {
-  children?: ReactNode;
-}
-
-export default function Sidebar({ children }: SidebarProps) {
+export default function Sidebar() {
   const { logOut, user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,6 +94,16 @@ export default function Sidebar({ children }: SidebarProps) {
     (item) =>
       !item.roles || item.roles.includes(userRole) || userRole === 'ADMIN_ROLE'
   );
+
+const isReportRoute = location.pathname.startsWith("/Reportes");
+
+const [openReportes, setOpenReportes] = useState<boolean>(isReportRoute);
+
+React.useEffect(() => {
+  // si navegas a una ruta de reportes, se abre solo
+  if (isReportRoute) setOpenReportes(true);
+}, [isReportRoute]);
+
 
   const drawerContent = (
     <Box
@@ -168,6 +181,130 @@ export default function Sidebar({ children }: SidebarProps) {
             </Tooltip>
           ))}
         </List>
+
+{/* ===================== */}
+{/*       REPORTES        */}
+{/* ===================== */}
+{(userRole === "ADMIN_ROLE") && (
+  <List sx={{ p: 0, mt: 0.5 }}>
+    <Tooltip
+      title={collapsed ? "Reportes" : ""}
+      placement="right"
+      arrow
+    >
+      <ListItemButton
+        onClick={() => setOpenReportes((v) => !v)}
+      selected={isReportRoute}
+        sx={{
+          borderRadius: 1,
+          px: collapsed ? 1 : 2,
+          py: 0.8,
+          justifyContent: collapsed ? "center" : "flex-start",
+          "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+          "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+        }}
+      >
+        <ListItemIcon
+          sx={{
+            color: "#000",
+            minWidth: collapsed ? "auto" : 32,
+            justifyContent: "center",
+          }}
+        >
+          <AssessmentOutlinedIcon fontSize="small" />
+        </ListItemIcon>
+
+        {!collapsed && (
+          <>
+            <ListItemText
+              primary="Reportes"
+              primaryTypographyProps={{ fontWeight: 500, fontSize: 14 }}
+            />
+            {openReportes ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </>
+        )}
+      </ListItemButton>
+    </Tooltip>
+
+    <Collapse in={openReportes && !collapsed} timeout="auto" unmountOnExit>
+      <List component="div" disablePadding sx={{ mt: 0.3 }}>
+    <ListItemButton
+  selected={location.pathname === "/Reportes/Resumen"}
+  onClick={() => {
+    navigate("/Reportes/Resumen");
+    setMobileOpen(false);
+  }}
+  sx={{
+    borderRadius: 1,
+    ml: 2,
+    mr: 1,
+    py: 0.7,
+    "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+    "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+  }}
+>
+          <ListItemIcon sx={{ minWidth: 32, color: "#000" }}>
+            <SummarizeOutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Resumen"
+            primaryTypographyProps={{ fontWeight: 500, fontSize: 13 }}
+          />
+        </ListItemButton>
+
+    {/*      <ListItemButton
+  selected={location.pathname === "/Reportes/Productos"}
+  onClick={() => {
+    navigate("/Reportes/Productos");
+    setMobileOpen(false);
+  }}
+  sx={{
+    borderRadius: 1,
+    ml: 2,
+    mr: 1,
+    py: 0.7,
+    "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+    "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+  }}
+>
+          <ListItemIcon sx={{ minWidth: 32, color: "#000" }}>
+            <Inventory2OutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Productos"
+            primaryTypographyProps={{ fontWeight: 500, fontSize: 13 }}
+          />
+        </ListItemButton> */}
+
+        {/* ✅ NUEVO: Inventarios */}
+        <ListItemButton
+          selected={location.pathname === "/Reportes/Inventarios"}
+          onClick={() => {
+            navigate("/Reportes/Inventarios");
+            setMobileOpen(false);
+          }}
+          sx={{
+            borderRadius: 1,
+            ml: 2,
+            mr: 1,
+            py: 0.7,
+            "&.Mui-selected": { bgcolor: "rgba(0,0,0,0.04)" },
+            "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 32, color: "#000" }}>
+            <Inventory2OutlinedIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText
+            primary="Inventarios"
+            primaryTypographyProps={{ fontWeight: 500, fontSize: 13 }}
+          />
+        </ListItemButton>
+      </List>
+    </Collapse>
+  </List>
+)}
+
       </Box>
 
       <Box>
@@ -246,13 +383,13 @@ export default function Sidebar({ children }: SidebarProps) {
         {drawerContent}
       </Drawer>
 
-      <Drawer
+           <Drawer
         variant="permanent"
         sx={{
           display: { xs: 'none', md: 'block' },
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
-            width: 260,
+            width: drawerWidth, // ✅ usa drawerWidth (respeta collapsed)
             bgcolor: '#f7f7f8',
             transition: 'width 0.3s ease',
             overflowX: 'hidden',
@@ -262,18 +399,6 @@ export default function Sidebar({ children }: SidebarProps) {
       >
         {drawerContent}
       </Drawer>
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 2,
-          transition: 'width 0.3s ease',
-          width: { md: `calc(100% - 260px)` },
-        }}
-      >
-        {children}
-      </Box>
     </Box>
   );
 }

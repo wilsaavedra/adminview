@@ -17,7 +17,7 @@ import MenuReservas from "./pages/MenuReservas";
 import MenuReservasDetalle from "./pages/MenuReservasDetalle";
 import QRsAdmin from "./pages/QRsAdmin";
 import ReporteResumen from "./pages/ReporteResumen";
-import ReporteProductos from "./pages/ReporteProductos";
+import Facturas from "./pages/Facturas";
 import Inventarios from "./pages/Inventarios";
 
 
@@ -176,7 +176,7 @@ function AppContent() {
                 </PrivateRoute>
               }
             />
-
+<Route path="/Facturas" element={<Facturas />} />
             <Route
               path="/Pedidos"
               element={

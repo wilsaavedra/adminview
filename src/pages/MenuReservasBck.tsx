@@ -22,6 +22,8 @@ import {
   FormControlLabel,
   Radio,
   Snackbar,
+  Alert,
+  Checkbox,
 } from "@mui/material";
 
 import CloseIcon from "@mui/icons-material/Close";
@@ -48,36 +50,40 @@ import { useNavigate, useLocation } from "react-router-dom";
 interface MenuReserva {
   _id: string;
   fecha_creacion?: string;
- productos: {
-  producto: { _id: string; precio: number; nombre: string };
-  cantidad: number;
-}[];
+  productos: {
+    producto: { _id: string; precio: number; nombre: string };
+    cantidad: number;
+  }[];
   reserva: {
-  _id: string;
-  nombre: string;
-  telefono: string;
-  tipo: string;
-  comentarios: string;
-  fecha: string;
-  pago: number;
+    _id: string;
+    nombre: string;
+    telefono: string;
+    tipo: string;
+    comentarios: string;
+    fecha: string;
+    pago: number;
 
-  // ✅ NUEVO: descuento guardado en la reserva
-  descuentoCupon?: number;
+    // ✅ NUEVO: descuento guardado en la reserva
+    descuentoCupon?: number;
 
-  // ✅ NUEVO: opcional, por si quieres mostrarlo en admin
-  cupon?: {
-    _id?: string;
-    codigo?: string;
-    porcentaje?: number;
-    usado?: boolean;
-    fechaUso?: string;
+    // ✅ NUEVO: opcional, por si quieres mostrarlo en admin
+    cupon?: {
+      _id?: string;
+      codigo?: string;
+      porcentaje?: number;
+      usado?: boolean;
+      fechaUso?: string;
+    };
+
+    // ✅ opcional
+    resest?: string;
   };
-
-  // ✅ opcional
-  resest?: string;
-};
   enviado?: boolean;
   facturado?: boolean;
+
+  // ✅ NUEVO (no rompe nada): para reflejar rápido en UI si quieres
+  numeroFactura?: number;
+  cuf?: string;
 }
 
 type MetodoPagoCierre = "EFECTIVO" | "TARJETA" | "QR";
@@ -93,36 +99,50 @@ export default function MenuReservas() {
       : new Date()
   );
   const [error, setError] = useState<string | null>(null);
-
+  const [sendingId, setSendingId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const { user } = useContext(AuthContext);
   const [snackOpen, setSnackOpen] = useState(false);
-const [snackMsg, setSnackMsg] = useState("Enviado");
+  const [snackMsg, setSnackMsg] = useState("Enviado");
+  const [snackSeverity, setSnackSeverity] = useState<
+    "success" | "error" | "info"
+  >("success");
 
-const primerNombre = (full?: string) => {
-  const s = String(full ?? "").trim();
-  return s ? s.split(/\s+/)[0].toUpperCase() : "";
-};
+  const primerNombre = (full?: string) => {
+    const s = String(full ?? "").trim();
+    return s ? s.split(/\s+/)[0].toUpperCase() : "";
+  };
 
   // ✅ Modal Facturar / Cerrar
   const [openFacturar, setOpenFacturar] = useState(false);
   const [mrSeleccionada, setMrSeleccionada] = useState<MenuReserva | null>(null);
 
-  const [metodoPago, setMetodoPago] = useState<MetodoPagoCierre>("EFECTIVO");
-  const [nit, setNit] = useState<string>("");                 // numérico
-  const [nombreFactura, setNombreFactura] = useState<string>("");
+ const [metodoPago, setMetodoPago] = useState<MetodoPagoCierre>("EFECTIVO");
+const [facturaEnabled, setFacturaEnabled] = useState<boolean>(true);
+const [nit, setNit] = useState<string>("");
+const [nombreFactura, setNombreFactura] = useState<string>("");
 
-  const [buscandoNit, setBuscandoNit] = useState(false);
-  const [saving, setSaving] = useState(false);
+const [buscandoNit, setBuscandoNit] = useState(false);
+const [saving, setSaving] = useState(false);
 
-  const abrirModalFacturar = (mr: MenuReserva) => {
-    setMrSeleccionada(mr);
-    setMetodoPago("EFECTIVO");
+const toggleFactura = (checked: boolean) => {
+  setFacturaEnabled(checked);
+  if (!checked) {
     setNit("");
     setNombreFactura("");
-    setOpenFacturar(true);
-  };
+    setBuscandoNit(false);
+  }
+};
+
+  const abrirModalFacturar = (mr: MenuReserva) => {
+  setMrSeleccionada(mr);
+  setMetodoPago("EFECTIVO");
+  setFacturaEnabled(true);
+  setNit("");
+  setNombreFactura("");
+  setOpenFacturar(true);
+};
 
   const cerrarModalFacturar = () => {
     if (saving) return;
@@ -162,47 +182,127 @@ const primerNombre = (full?: string) => {
   };
 
   // ✅ Cerrar o Generar (ambos pagan total, uno además crea FacturaPendiente)
- const cerrarYSiHayNitGenerar = async () => {
-  if (!mrSeleccionada?.reserva?._id) return;
+  const cerrarYSiHayNitGenerar = async () => {
+    if (!mrSeleccionada?.reserva?._id) return;
 
-  const nitClean = nit.trim();
-  const nombreClean = nombreFactura.trim();
+   const nitClean = facturaEnabled ? nit.trim() : "";
+const nombreClean = facturaEnabled ? nombreFactura.trim() : "";
 
-  // ✅ regla:
-  // - sin NIT => solo cerrar
-  // - con NIT => requiere nombre (si no existe, no dejar cerrar)
-  if (nitClean && !nombreClean) return;
+    // - sin NIT => solo cerrar
+    // - con NIT => requiere nombre
+    if (nitClean && !nombreClean) return;
 
-  try {
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    await cafeApi.post(`/facturas/accion`, {
-      reservaId: mrSeleccionada.reserva._id,
-      metodoPago,
+     // 1) cerrar cuenta y crear FacturaPendiente si hay NIT
+let facturaPendiente: any = null;
 
-      // opcionales: si vienen, el backend generará factura
-      nit: nitClean || null,
-      nombreFactura: nombreClean || null,
-    });
+try {
+  const resp = await cafeApi.post(`/facturas/accion`, {
+  reservaId: mrSeleccionada.reserva._id,
+  metodoPago,
+  nit: facturaEnabled ? (nitClean || null) : null,
+  nombreFactura: facturaEnabled ? (nombreClean || null) : null,
+});
 
-    // ✅ reflejar en UI
-  const seFacturo = !!nit.trim();
+  facturaPendiente = resp.data?.facturaPendiente || null;
+} catch (err: any) {
+  const status = err?.response?.status;
+  const msg =
+    err?.response?.data?.msg ||
+    (status === 409 ? "Esta reserva ya tiene una factura activa." : "No se pudo cerrar/facturar.");
 
-setReservas((prev) =>
-  prev.map((r) =>
-    r._id === mrSeleccionada._id
-      ? { ...r, facturado: seFacturo, enviado: true }
-      : r
-  )
-);
+  console.error("❌ /facturas/accion:", err);
 
-    cerrarModalFacturar();
-  } catch (e) {
-    console.error("❌ Error cerrar/generar factura:", e);
-  } finally {
-    setSaving(false);
-  }
-};
+  setSnackMsg(msg);
+  setSnackSeverity(status === 409 ? "info" : "error");
+  setSnackOpen(true);
+
+  // no seguimos al paso de emitir
+  return;
+}
+
+      // 2) si NO hay NIT => solo cerrar (como antes)
+      if (!nitClean) {
+        setSnackMsg("Cuenta cerrada");
+        setSnackSeverity("success");
+        setSnackOpen(true);
+
+        setReservas((prev) =>
+          prev.map((r) =>
+            r._id === mrSeleccionada._id
+              ? { ...r, facturado: false, enviado: true }
+              : r
+          )
+        );
+
+        cerrarModalFacturar();
+        return;
+      }
+
+      // 3) si hay NIT pero no devolvió facturaPendiente => error
+      if (!facturaPendiente?._id) {
+        setSnackMsg("No se creó FacturaPendiente");
+        setSnackSeverity("error");
+        setSnackOpen(true);
+        return;
+      }
+
+      // 4) emitir en Integrate (ISIPASS)
+            try {
+        const em = await cafeApi.post(`/facturas/emitir/${facturaPendiente._id}`);
+        const emitida = em.data?.factura;
+
+        if (!emitida?.cuf) {
+          setSnackMsg("No se pudo emitir (sin CUF)");
+          setSnackSeverity("error");
+          setSnackOpen(true);
+          return;
+        }
+
+        // ✅ NUEVO: imprimir factura (PUNTO 2) — por ahora BARRA
+        try {
+          await cafeApi.post(`/facturas/${emitida._id}/print`, { printerName: "BARRA" });
+        } catch (e) {
+          console.error("❌ No se pudo imprimir factura:", e);
+          // no bloqueamos el flujo
+        }
+
+        // ✅ éxito: marcar facturado (y guardar nro/cuf en UI por si quieres mostrar luego)
+        setSnackMsg(
+          emitida?.numeroFactura
+            ? `Factura emitida N° ${emitida.numeroFactura}`
+            : "Factura emitida"
+        );
+        setSnackSeverity("success");
+        setSnackOpen(true);
+
+        setReservas((prev) =>
+          prev.map((r) =>
+            r._id === mrSeleccionada._id
+              ? {
+                  ...r,
+                  facturado: true,
+                  enviado: true,
+                  numeroFactura: emitida.numeroFactura,
+                  cuf: emitida.cuf,
+                }
+              : r
+          )
+        );
+
+        cerrarModalFacturar();
+      } catch (err: any) {
+        console.error("❌ Error emitir Integrate:", err);
+        setSnackMsg("Error al emitir factura");
+        setSnackSeverity("error");
+        setSnackOpen(true);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const ymdLaPaz = (d: Date) =>
     new Intl.DateTimeFormat("en-CA", {
@@ -225,55 +325,55 @@ setReservas((prev) =>
       const data = resp.data.menureservas || [];
 
       // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
- const dataLimpia = data.filter((mr: any) => mr.fecha_creacion);
+      const dataLimpia = data.filter((mr: any) => mr.fecha_creacion);
 
-// 🔑 fecha seleccionada en formato YYYY-MM-DD (La Paz)
-const keySelected = ymdLaPaz(fecha!);
+      // 🔑 fecha seleccionada en formato YYYY-MM-DD (La Paz)
+      const keySelected = ymdLaPaz(fecha!);
 
-// 2️⃣ FILTRAR POR FECHA
-const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
-  const keyRes = ymdLaPaz(new Date(mr.fecha_creacion!));
-  return keyRes === keySelected;
-});
-
-      // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
-     const filtradasConEnviado: MenuReserva[] = await Promise.all(
-  filtradas.map(async (mr) => {
-    try {
-      const respResumen = await cafeApi.get(`/pedidos/resumen/${mr.reserva._id}`);
-      const enviados: Record<string, number> = respResumen.data?.enviados || {};
-
-      // ✅ Calcular si falta algo por enviar (comparando menureservas vs enviados)
-      const faltaAlgo = mr.productos.some((it) => {
-        const pid = it.producto?._id;
-        const cantMenu = it.cantidad ?? 0;
-        const cantEnviada = pid ? (enviados[pid] ?? 0) : 0;
-        return cantMenu > cantEnviada;
+      // 2️⃣ FILTRAR POR FECHA
+      const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
+        const keyRes = ymdLaPaz(new Date(mr.fecha_creacion!));
+        return keyRes === keySelected;
       });
 
-      // ✅ Bloqueo duro si ya está cerrado/facturado (si tu backend lo manda)
-      const cerrado = !!respResumen.data?.cerrado;
-      const facturado = !!respResumen.data?.facturado;
+      // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
+      const filtradasConEnviado: MenuReserva[] = await Promise.all(
+        filtradas.map(async (mr) => {
+          try {
+            const respResumen = await cafeApi.get(`/pedidos/resumen/${mr.reserva._id}`);
+            const enviados: Record<string, number> = respResumen.data?.enviados || {};
 
-      return {
-        ...mr,
-        // “enviado” ahora significa “bloqueado para enviar”
-        enviado: cerrado || facturado || !faltaAlgo,
-        facturado: facturado || mr.facturado,
-      };
-    } catch (error) {
-      console.error("Error consultando resumen pedidos:", error);
+            // ✅ Calcular si falta algo por enviar (comparando menureservas vs enviados)
+            const faltaAlgo = mr.productos.some((it) => {
+              const pid = it.producto?._id;
+              const cantMenu = it.cantidad ?? 0;
+              const cantEnviada = pid ? (enviados[pid] ?? 0) : 0;
+              return cantMenu > cantEnviada;
+            });
 
-      // Si falla la consulta, NO bloquees por seguridad (para no frenar operación)
-      return {
-        ...mr,
-        enviado: false,
-      };
-    }
-  })
-);
+            // ✅ Bloqueo duro si ya está cerrado/facturado (si tu backend lo manda)
+            const cerrado = !!respResumen.data?.cerrado;
+            const facturado = !!respResumen.data?.facturado;
 
-setReservas(filtradasConEnviado);
+            return {
+              ...mr,
+              // “enviado” ahora significa “bloqueado para enviar”
+              enviado: cerrado || facturado || !faltaAlgo,
+              facturado: facturado || mr.facturado,
+            };
+          } catch (error) {
+            console.error("Error consultando resumen pedidos:", error);
+
+            // Si falla la consulta, NO bloquees por seguridad (para no frenar operación)
+            return {
+              ...mr,
+              enviado: false,
+            };
+          }
+        })
+      );
+
+      setReservas(filtradasConEnviado);
     } catch (err) {
       console.error(err);
       setError("No se pudo cargar el menú de reservas.");
@@ -287,19 +387,50 @@ setReservas(filtradasConEnviado);
   }, [fecha]);
 
   return (
-    <Box sx={{ p: 3, width: "100%", bgcolor: "#fff" }}>
+    <Box
+      sx={{
+        width: "100%",
+        bgcolor: "#fff",
+        p: { xs: 0, sm: 3 },
+        pt: { xs: 0, sm: 3 },
+        px: { xs: 0, sm: 3 },
+        mt: { xs: 0, sm: 0 },
+      }}
+    >
+      <Box
+        sx={{
+          pl: { xs: 6, sm: 0 }, // espacio hamburguesa
+          mt: { xs: -0.2, sm: 0 }, // ✅ SUBE EN MÓVIL
+          pt: 0,
+          mb: { xs: 0.6, sm: 1.0 },
+        }}
+      >
+        <Typography
+          sx={{
+            m: 0,
+            fontWeight: 800,
+            fontSize: 20,
+            color: "#1e3a8a",
+            letterSpacing: 0.2,
+            lineHeight: 1.1,
+          }}
+        >
+          Cuentas
+        </Typography>
+      </Box>
+
       {/* ===================================== */}
       {/*     FECHA + TÍTULO                   */}
       {/* ===================================== */}
-     <Grid
-  container
-  alignItems="center"
-  justifyContent="flex-start"
-  mb={3}
-  sx={{
-    gap: 3,              // separa elementos sin empujarlos
-  }}
->
+      <Grid
+        container
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        justifyContent="flex-start"
+        mb={{ xs: 1, sm: 3 }}
+        sx={{
+          gap: { xs: 1, sm: 3 },
+        }}
+      >
         <Box>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
@@ -348,7 +479,6 @@ setReservas(filtradasConEnviado);
         <TableContainer
           sx={{
             width: "100%",
-            // ✅ Sin scroll interno, solo el externo del AppContent
             overflowX: "visible",
             overflowY: "visible",
             WebkitOverflowScrolling: "touch",
@@ -357,32 +487,32 @@ setReservas(filtradasConEnviado);
             display: "block",
           }}
         >
-        <Table
-  sx={{
-    width: "max-content",
-    minWidth: 950,        // 🔥 ESTA ES LA CLAVE REAL
-    tableLayout: "auto",
-    borderCollapse: "collapse",
+          <Table
+            sx={{
+              width: "max-content",
+              minWidth: 950,
+              tableLayout: "auto",
+              borderCollapse: "collapse",
 
-    "& th, & td": {
-      padding: "10px 8px",
-      borderBottom: "1px solid #e0e0e0",
-    },
+              "& th, & td": {
+                padding: "10px 8px",
+                borderBottom: "1px solid #e0e0e0",
+              },
 
-    "& th": {
-      fontWeight: 600,
-      whiteSpace: "normal",
-      wordBreak: "break-word",
-      fontSize: { xs: 12, md: 14 },
-    },
+              "& th": {
+                fontWeight: 600,
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+                fontSize: { xs: 12, md: 14 },
+              },
 
-    "& td": {
-      fontSize: { xs: 12, md: 14 },
-      whiteSpace: "normal",
-      wordBreak: "break-word",
-    },
-  }}
->
+              "& td": {
+                fontSize: { xs: 12, md: 14 },
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+              },
+            }}
+          >
             <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
               <TableRow>
                 <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
@@ -399,34 +529,32 @@ setReservas(filtradasConEnviado);
 
             <TableBody>
               {reservas.map((mr) => {
-                // =====================================
-                //  CALCULAR MONTO REAL DEL MENÚ
-                // =====================================
-              const COSTO_ENVASE_UNITARIO = 2;
+                const COSTO_ENVASE_UNITARIO = 2;
 
-const subtotal = mr.productos.reduce(
-  (acc, item) => acc + item.producto.precio * (item.cantidad ?? 1),
-  0
-);
+                const subtotal = mr.productos.reduce(
+                  (acc, item) =>
+                    acc + item.producto.precio * (item.cantidad ?? 1),
+                  0
+                );
 
-const esLlevar = String(mr.reserva.tipo || "").toLowerCase() === "llevar";
+                const esLlevar =
+                  String(mr.reserva.tipo || "").toLowerCase() === "llevar";
 
-const costoEnvases = esLlevar
-  ? mr.productos.reduce(
-      (acc, item) => acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
-      0
-    )
-  : 0;
+                const costoEnvases = esLlevar
+                  ? mr.productos.reduce(
+                      (acc, item) =>
+                        acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
+                      0
+                    )
+                  : 0;
 
-const descuento = Number(mr.reserva.descuentoCupon ?? 0);
+                const descuento = Number(mr.reserva.descuentoCupon ?? 0);
 
-// ✅ monto real = subtotal + envases - descuento
-const monto = Math.max(0, subtotal + costoEnvases - descuento);
+                const monto = Math.max(0, subtotal + costoEnvases - descuento);
 
-const pago = Number(mr.reserva.pago ?? 0);
+                const pago = Number(mr.reserva.pago ?? 0);
 
-// ✅ saldo nunca negativo
-const saldo = Math.max(0, monto - pago);
+                const saldo = Math.max(0, monto - pago);
 
                 return (
                   <TableRow key={mr._id} hover>
@@ -442,7 +570,6 @@ const saldo = Math.max(0, monto - pago);
                     <TableCell>{pago} Bs</TableCell>
                     <TableCell>{saldo} Bs</TableCell>
 
-                    {/* VER DETALLE */}
                     <TableCell>
                       <IconButton
                         onClick={() =>
@@ -456,35 +583,79 @@ const saldo = Math.max(0, monto - pago);
                       </IconButton>
                     </TableCell>
 
-                    {/* ENVIAR PEDIDO */}
                     <TableCell>
                       <Button
                         variant="contained"
                         color="success"
                         size="small"
-                        startIcon={<SendIcon />}
-                       disabled={mr.enviado || mr.facturado}
-    onClick={async () => {
-  try {
-    const mesero = primerNombre(user?.nombre);
+                        startIcon={
+                          sendingId === mr._id ? (
+                            <CircularProgress
+                              size={16}
+                              sx={{ color: "#fff" }}
+                            />
+                          ) : (
+                            <SendIcon />
+                          )
+                        }
+                        disabled={mr.enviado || mr.facturado || sendingId === mr._id}
+                        onClick={async () => {
+                          try {
+                            setSendingId(mr._id);
 
-    if (mesero && mr?.reserva?._id) {
-      await cafeApi.put(`/reservas/${mr.reserva._id}`, { mesero });
-    }
+                            const mesero = primerNombre(user?.nombre);
 
-    await cafeApi.post(`/pedidos/crear/${mr._id}`);
+                            if (mesero && mr?.reserva?._id) {
+                              await cafeApi.put(`/reservas/${mr.reserva._id}`, {
+                                mesero,
+                              });
+                            }
 
-    // ✅ SOLO SNACK “Enviado”
-    setSnackOpen(true);
+                            await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
-    setReservas((prev) =>
-      prev.map((r) => (r._id === mr._id ? { ...r, enviado: true } : r))
-    );
-  } catch (error) {
-    // (sin alert) solo log
-    console.error("❌ No se pudo enviar pedido:", error);
-  }
-}}
+                            setSnackMsg("Enviado");
+                            setSnackSeverity("success");
+                            setSnackOpen(true);
+
+                            setReservas((prev) =>
+                              prev.map((r) =>
+                                r._id === mr._id ? { ...r, enviado: true } : r
+                              )
+                            );
+                          } catch (error) {
+                            console.error("❌ No se pudo enviar pedido:", error);
+                            setSnackMsg("No se pudo enviar");
+                            setSnackSeverity("error");
+                            setSnackOpen(true);
+                          } finally {
+                            setSendingId(null);
+                          }
+                        }}
+                        sx={{
+                          textTransform: "none",
+                          px: 1.5,
+                          fontSize: { xs: 11, md: 12 },
+                          minWidth: { xs: 92, md: 100 },
+                        }}
+                      >
+                        {sendingId === mr._id
+                          ? "Enviando..."
+                          : mr.facturado
+                          ? "Facturado"
+                          : mr.enviado
+                          ? "Completo"
+                          : "Enviar"}
+                      </Button>
+                    </TableCell>
+
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="warning"
+                        size="small"
+                        startIcon={<ReceiptIcon />}
+                        disabled={mr.facturado}
+                        onClick={() => abrirModalFacturar(mr)}
                         sx={{
                           textTransform: "none",
                           px: 1.5,
@@ -492,23 +663,8 @@ const saldo = Math.max(0, monto - pago);
                           minWidth: { xs: 80, md: 90 },
                         }}
                       >
-                       {mr.facturado ? "Facturado" : mr.enviado ? "Completo" : "Enviar"}
-                      </Button>
-                    </TableCell>
-
-                    {/* FACTURAR */}
-                    <TableCell>
-                    <Button
-                        variant="contained"
-                        color="warning"
-                        size="small"
-                        startIcon={<ReceiptIcon />}
-                        disabled={mr.facturado}
-                        onClick={() => abrirModalFacturar(mr)}
-                        sx={{ textTransform: "none", px: 1.5, fontSize: { xs: 11, md: 12 }, minWidth: { xs: 80, md: 90 } }}
-                        >
                         {mr.facturado ? "Listo" : "Facturar"}
-                        </Button>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 );
@@ -518,255 +674,298 @@ const saldo = Math.max(0, monto - pago);
         </TableContainer>
       )}
 
-<Dialog open={openFacturar} onClose={cerrarModalFacturar} maxWidth="xs" fullWidth>
- <DialogTitle
-  sx={{
-    fontWeight: 800,
-    pr: 6, // espacio para el botón X
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  }}
->
-  Facturar / Cerrar cuenta
-
-  <IconButton
-    onClick={cerrarModalFacturar}
-    size="small"
-    sx={{ position: "absolute", right: 8, top: 8 }}
-    disabled={saving}
-  >
-    <CloseIcon />
-  </IconButton>
-</DialogTitle>
-
-  <DialogContent sx={{ pt: 1 }}>
-    <Typography sx={{ mb: 1, color: "#555" }}>
-      {mrSeleccionada?.reserva?.nombre || "—"}
-    </Typography>
-
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
- <RadioGroup
-  value={metodoPago}
-  onChange={(e) => setMetodoPago(e.target.value as MetodoPagoCierre)}
-  sx={{ gap: 1.2 }}
->
-
-  {/* ===== EFECTIVO ===== */}
-  <Box
-    onClick={() => setMetodoPago("EFECTIVO")}
-    sx={{
-      border: "1.5px solid",
-      borderColor: metodoPago === "EFECTIVO"
-        ? "rgb(225,63,68)"
-        : "rgba(0,0,0,0.15)",
-      borderRadius: "14px",
-      px: 2,
-      py: 1.4,
-      cursor: "pointer",
-      transition: "all .15s ease",
-      bgcolor: metodoPago === "EFECTIVO"
-        ? "rgba(225,63,68,0.04)"
-        : "#fff",
-      "&:hover": {
-        borderColor: "rgb(225,63,68)",
-        bgcolor: "rgba(225,63,68,0.04)",
-      },
-    }}
-  >
-    <FormControlLabel
-      value="EFECTIVO"
-      control={<Radio sx={{ display: "none" }} />}
-      sx={{ m: 0, width: "100%" }}
-      label={
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box
-            sx={{
-              width: 44,
-              height: 44,
-              borderRadius: "12px",
-              bgcolor: "rgba(46,125,50,0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <PaymentsIcon sx={{ color: "#2e7d32", fontSize: 26 }} />
-          </Box>
-
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
-              Efectivo
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Pago en caja / contado
-            </Typography>
-          </Box>
-        </Box>
-      }
-    />
-  </Box>
-
-  {/* ===== QR ===== */}
-  <Box
-    onClick={() => setMetodoPago("QR")}
-    sx={{
-      border: "1.5px solid",
-      borderColor: metodoPago === "QR"
-        ? "rgb(225,63,68)"
-        : "rgba(0,0,0,0.15)",
-      borderRadius: "14px",
-      px: 2,
-      py: 1.4,
-      cursor: "pointer",
-      transition: "all .15s ease",
-      bgcolor: metodoPago === "QR"
-        ? "rgba(225,63,68,0.04)"
-        : "#fff",
-      "&:hover": {
-        borderColor: "rgb(225,63,68)",
-        bgcolor: "rgba(225,63,68,0.04)",
-      },
-    }}
-  >
-    <FormControlLabel
-      value="QR"
-      control={<Radio sx={{ display: "none" }} />}
-      sx={{ m: 0, width: "100%" }}
-      label={
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box
-            sx={{
-              width: 44,
-              height: 44,
-              borderRadius: "12px",
-              bgcolor: "rgba(2,136,209,0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <QrCode2Icon sx={{ color: "#0288d1", fontSize: 26 }} />
-          </Box>
-
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
-              QR
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Pago con QR bancario
-            </Typography>
-          </Box>
-        </Box>
-      }
-    />
-  </Box>
-
-  {/* ===== TARJETA ===== */}
-  <Box
-    onClick={() => setMetodoPago("TARJETA")}
-    sx={{
-      border: "1.5px solid",
-      borderColor: metodoPago === "TARJETA"
-        ? "rgb(225,63,68)"
-        : "rgba(0,0,0,0.15)",
-      borderRadius: "14px",
-      px: 2,
-      py: 1.4,
-      cursor: "pointer",
-      transition: "all .15s ease",
-      bgcolor: metodoPago === "TARJETA"
-        ? "rgba(225,63,68,0.04)"
-        : "#fff",
-      "&:hover": {
-        borderColor: "rgb(225,63,68)",
-        bgcolor: "rgba(225,63,68,0.04)",
-      },
-    }}
-  >
-    <FormControlLabel
-      value="TARJETA"
-      control={<Radio sx={{ display: "none" }} />}
-      sx={{ m: 0, width: "100%" }}
-      label={
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Box
-            sx={{
-              width: 44,
-              height: 44,
-              borderRadius: "12px",
-              bgcolor: "rgba(94,53,177,0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <CreditCardIcon sx={{ color: "#5e35b1", fontSize: 26 }} />
-          </Box>
-
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
-              Tarjeta
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Débito / crédito
-            </Typography>
-          </Box>
-        </Box>
-      }
-    />
-  </Box>
-
-</RadioGroup>
-
-                <TextField
-            label="NIT"
-            size="small"
-            value={nit}
-            onChange={(e) => onChangeNit(e.target.value)}
-            fullWidth
-            inputProps={{ inputMode: "numeric" }}
-            helperText={buscandoNit ? "Buscando datos por NIT..." : " "}
-            />
-
-      <TextField
-        label="Nombre a facturar"
-        size="small"
-        value={nombreFactura}
-        onChange={(e) => setNombreFactura(e.target.value)}
+      <Dialog
+        open={openFacturar}
+        onClose={cerrarModalFacturar}
+        maxWidth="xs"
         fullWidth
-      />
-    </Box>
-  </DialogContent>
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 800,
+            pr: 6,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          Facturar / Cerrar cuenta
 
- <DialogActions sx={{ px: 3, pb: 3 }}>
-  <Button
-    fullWidth
-    variant="contained"
-    onClick={cerrarYSiHayNitGenerar}
-    disabled={saving || (nit.trim().length > 0 && !nombreFactura.trim())}
-    sx={{
-      height: 44,
-      borderRadius: "12px",
-      backgroundColor: "rgb(225,63,68)",
-      "&:hover": { backgroundColor: "rgb(200,50,55)" },
-      textTransform: "none",
-      fontWeight: 900,
-    }}
-  >
-    {saving ? "Cerrando..." : "Cerrar Cuenta"}
-  </Button>
-</DialogActions>
-</Dialog>
+          <IconButton
+            onClick={cerrarModalFacturar}
+            size="small"
+            sx={{ position: "absolute", right: 8, top: 8 }}
+            disabled={saving}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
 
-        <Snackbar
+        <DialogContent sx={{ pt: 1 }}>
+          <Typography sx={{ mb: 1, color: "#555" }}>
+            {mrSeleccionada?.reserva?.nombre || "—"}
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+            <RadioGroup
+              value={metodoPago}
+              onChange={(e) =>
+                setMetodoPago(e.target.value as MetodoPagoCierre)
+              }
+              sx={{ gap: 1.2 }}
+            >
+              <Box
+                onClick={() => setMetodoPago("EFECTIVO")}
+                sx={{
+                  border: "1.5px solid",
+                  borderColor:
+                    metodoPago === "EFECTIVO"
+                      ? "rgb(225,63,68)"
+                      : "rgba(0,0,0,0.15)",
+                  borderRadius: "14px",
+                  px: 2,
+                  py: 1.4,
+                  cursor: "pointer",
+                  transition: "all .15s ease",
+                  bgcolor:
+                    metodoPago === "EFECTIVO"
+                      ? "rgba(225,63,68,0.04)"
+                      : "#fff",
+                  "&:hover": {
+                    borderColor: "rgb(225,63,68)",
+                    bgcolor: "rgba(225,63,68,0.04)",
+                  },
+                }}
+              >
+                <FormControlLabel
+                  value="EFECTIVO"
+                  control={<Radio sx={{ display: "none" }} />}
+                  sx={{ m: 0, width: "100%" }}
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: "12px",
+                          bgcolor: "rgba(46,125,50,0.15)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <PaymentsIcon sx={{ color: "#2e7d32", fontSize: 26 }} />
+                      </Box>
+
+                      <Box>
+                        <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+                          Efectivo
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Pago en caja / contado
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                />
+              </Box>
+
+              <Box
+                onClick={() => setMetodoPago("QR")}
+                sx={{
+                  border: "1.5px solid",
+                  borderColor:
+                    metodoPago === "QR"
+                      ? "rgb(225,63,68)"
+                      : "rgba(0,0,0,0.15)",
+                  borderRadius: "14px",
+                  px: 2,
+                  py: 1.4,
+                  cursor: "pointer",
+                  transition: "all .15s ease",
+                  bgcolor:
+                    metodoPago === "QR" ? "rgba(225,63,68,0.04)" : "#fff",
+                  "&:hover": {
+                    borderColor: "rgb(225,63,68)",
+                    bgcolor: "rgba(225,63,68,0.04)",
+                  },
+                }}
+              >
+                <FormControlLabel
+                  value="QR"
+                  control={<Radio sx={{ display: "none" }} />}
+                  sx={{ m: 0, width: "100%" }}
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: "12px",
+                          bgcolor: "rgba(2,136,209,0.15)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <QrCode2Icon sx={{ color: "#0288d1", fontSize: 26 }} />
+                      </Box>
+
+                      <Box>
+                        <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+                          QR
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Pago con QR bancario
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                />
+              </Box>
+
+              <Box
+                onClick={() => setMetodoPago("TARJETA")}
+                sx={{
+                  border: "1.5px solid",
+                  borderColor:
+                    metodoPago === "TARJETA"
+                      ? "rgb(225,63,68)"
+                      : "rgba(0,0,0,0.15)",
+                  borderRadius: "14px",
+                  px: 2,
+                  py: 1.4,
+                  cursor: "pointer",
+                  transition: "all .15s ease",
+                  bgcolor:
+                    metodoPago === "TARJETA"
+                      ? "rgba(225,63,68,0.04)"
+                      : "#fff",
+                  "&:hover": {
+                    borderColor: "rgb(225,63,68)",
+                    bgcolor: "rgba(225,63,68,0.04)",
+                  },
+                }}
+              >
+                <FormControlLabel
+                  value="TARJETA"
+                  control={<Radio sx={{ display: "none" }} />}
+                  sx={{ m: 0, width: "100%" }}
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: "12px",
+                          bgcolor: "rgba(94,53,177,0.15)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <CreditCardIcon
+                          sx={{ color: "#5e35b1", fontSize: 26 }}
+                        />
+                      </Box>
+
+                      <Box>
+                        <Typography sx={{ fontWeight: 800, fontSize: 15 }}>
+                          Tarjeta
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Débito / crédito
+                        </Typography>
+                      </Box>
+                    </Box>
+                  }
+                />
+              </Box>
+            </RadioGroup>
+
+  <FormControlLabel
+  sx={{ m: 0 }}
+  control={
+    <Checkbox
+      size="small"
+      checked={facturaEnabled}
+      onChange={(e) => toggleFactura(e.target.checked)}
+      disabled={saving}
+      sx={{ p: 0.5 }}
+    />
+  }
+  label={<Typography sx={{ fontSize: 13, fontWeight: 800 }}>Factura</Typography>}
+/>
+
+{facturaEnabled && (
+  <>
+    <TextField
+      label="NIT"
+      size="small"
+      value={nit}
+      onChange={(e) => onChangeNit(e.target.value)}
+      fullWidth
+      inputProps={{ inputMode: "numeric" }}
+      helperText={buscandoNit ? "Buscando..." : " "}
+    />
+
+    <TextField
+      label="Nombre a facturar"
+      size="small"
+      value={nombreFactura}
+      onChange={(e) => setNombreFactura(e.target.value)}
+      fullWidth
+    />
+  </>
+)}
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={cerrarYSiHayNitGenerar}
+            disabled={saving || (nit.trim().length > 0 && !nombreFactura.trim())}
+            sx={{
+              height: 44,
+              borderRadius: "12px",
+              backgroundColor: "rgb(225,63,68)",
+              "&:hover": { backgroundColor: "rgb(200,50,55)" },
+              textTransform: "none",
+              fontWeight: 900,
+            }}
+          >
+            {saving
+? facturaEnabled
+  ? "Facturando..."
+  : "Cerrando..."
+: facturaEnabled
+  ? "Facturar"
+  : "Cerrar Cuenta"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
         open={snackOpen}
         onClose={() => setSnackOpen(false)}
-        autoHideDuration={2000}
-        message="Enviado"
+        autoHideDuration={2200}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      />
-
+      >
+        <Alert
+          onClose={() => setSnackOpen(false)}
+          severity={snackSeverity}
+          variant="filled"
+          sx={{
+            borderRadius: 2,
+            fontWeight: 800,
+            boxShadow: 3,
+          }}
+        >
+          {snackMsg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
