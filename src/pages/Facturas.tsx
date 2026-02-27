@@ -338,13 +338,24 @@ export default function Facturas() {
           setSnackSeverity("success");
           setSnackOpen(true);
           setConfirmOpen(false);
-        } catch (e: any) {
-          console.error(e);
-          const msg = e?.response?.data?.msg || "No se pudo reimprimir.";
-          setSnackMsg(msg);
-          setSnackSeverity("error");
-          setSnackOpen(true);
-        } finally {
+       } catch (e: any) {
+  console.error(e);
+
+  const data = e?.response?.data;
+  const msgBase = data?.msg || "No se pudo reimprimir.";
+
+  // ✅ detail puede ser objeto o string
+  const detail =
+    typeof data?.detail === "string"
+      ? data.detail
+      : data?.detail
+      ? JSON.stringify(data.detail)
+      : "";
+
+  setSnackMsg(detail ? `${msgBase} | ${detail}` : msgBase);
+  setSnackSeverity("error");
+  setSnackOpen(true);
+} finally {
           setPrinting(false);
         }
       }}
