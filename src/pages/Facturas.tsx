@@ -302,7 +302,7 @@ export default function Facturas() {
 
   <DialogContent>
     <Typography sx={{ mt: 0.5 }}>
-      ¿Seguro que deseas reimprimir esta factura en <b>BARRA</b> en formato <b>ROLLO</b>?
+      ¿Seguro que deseas reimprimir esta factura?
     </Typography>
 
     <Typography sx={{ mt: 1, color: "#666" }}>
