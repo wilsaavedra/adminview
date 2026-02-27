@@ -16,6 +16,10 @@ import {
   Alert,
   Divider,
   useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import PrintIcon from "@mui/icons-material/Print";
@@ -67,9 +71,13 @@ export default function Facturas() {
     return d;
   });
 
-  const [snackOpen, setSnackOpen] = useState(false);
+    const [snackOpen, setSnackOpen] = useState(false);
   const [snackMsg, setSnackMsg] = useState("");
   const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "info">("success");
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [facturaToPrint, setFacturaToPrint] = useState<Factura | null>(null);
+  const [printing, setPrinting] = useState(false);
 
   const queryParams = useMemo(() => {
     const fromKey = from ? ymdLaPaz(from) : "";
@@ -226,31 +234,12 @@ export default function Facturas() {
                   <TableCell>{f.estado || "—"}</TableCell>
 
                   <TableCell>
-                    <Tooltip title="Reimprimir">
+  <Tooltip title="Reimprimir">
   <span>
     <IconButton
-      onClick={async () => {
-        try {
-          const pd = await cafeApi.get(`/facturas/${f._id}/print-data`);
-          const pdf = pd.data?.data?.pdf;
-          if (pdf) window.open(pdf, "_blank");
-         await cafeApi.post(`/facturas/${f._id}/print`, {
-
- printerName: "BARRA",
-
- modo: "DETALLE"
-
-});
-          setSnackMsg("Enviado a impresión (BARRA).");
-          setSnackSeverity("success");
-          setSnackOpen(true);
-        } catch (e: any) {
-          console.error(e);
-          const msg = e?.response?.data?.msg || "No se pudo reimprimir.";
-          setSnackMsg(msg);
-          setSnackSeverity("error");
-          setSnackOpen(true);
-        }
+      onClick={() => {
+        setFacturaToPrint(f);
+        setConfirmOpen(true);
       }}
       disabled={String(f.estado || "").toLowerCase() !== "emitida"}
     >
@@ -303,7 +292,74 @@ export default function Facturas() {
           </Table>
         </TableContainer>
       )}
+<Dialog
+  open={confirmOpen}
+  onClose={() => (printing ? null : setConfirmOpen(false))}
+  maxWidth="xs"
+  fullWidth
+>
+  <DialogTitle sx={{ fontWeight: 900 }}>Confirmar impresión</DialogTitle>
 
+  <DialogContent>
+    <Typography sx={{ mt: 0.5 }}>
+      ¿Seguro que deseas reimprimir esta factura en <b>BARRA</b> en formato <b>ROLLO</b>?
+    </Typography>
+
+    <Typography sx={{ mt: 1, color: "#666" }}>
+      Nro: {facturaToPrint?.numeroFactura ?? "—"} | NIT/CI: {facturaToPrint?.nit ?? "—"}
+    </Typography>
+  </DialogContent>
+
+  <DialogActions sx={{ px: 2, pb: 2 }}>
+    <Button
+      onClick={() => setConfirmOpen(false)}
+      disabled={printing}
+      sx={{ textTransform: "none", fontWeight: 800 }}
+    >
+      Cancelar
+    </Button>
+
+    <Button
+      variant="contained"
+      disabled={printing || !facturaToPrint?._id}
+      onClick={async () => {
+        if (!facturaToPrint?._id) return;
+        try {
+          setPrinting(true);
+
+          // ✅ Imprime directo (backend ya prioriza rollo)
+          await cafeApi.post(`/facturas/${facturaToPrint._id}/print`, {
+            printerName: "BARRA",
+            // el backend ya usa rollo; dejamos DETALLE por reimpresión
+            modo: "DETALLE",
+          });
+
+          setSnackMsg("Enviado a impresión (BARRA).");
+          setSnackSeverity("success");
+          setSnackOpen(true);
+          setConfirmOpen(false);
+        } catch (e: any) {
+          console.error(e);
+          const msg = e?.response?.data?.msg || "No se pudo reimprimir.";
+          setSnackMsg(msg);
+          setSnackSeverity("error");
+          setSnackOpen(true);
+        } finally {
+          setPrinting(false);
+        }
+      }}
+      sx={{
+        textTransform: "none",
+        fontWeight: 900,
+        borderRadius: 2,
+        backgroundColor: "rgb(225,63,68)",
+        "&:hover": { backgroundColor: "rgb(200,50,55)" },
+      }}
+    >
+      {printing ? "Imprimiendo..." : "Imprimir"}
+    </Button>
+  </DialogActions>
+</Dialog>
       <Snackbar
         open={snackOpen}
         onClose={() => setSnackOpen(false)}
