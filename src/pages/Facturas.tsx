@@ -328,13 +328,13 @@ export default function Facturas() {
           setPrinting(true);
 
           // ✅ Imprime directo (backend ya prioriza rollo)
-          await cafeApi.post(`/facturas/${facturaToPrint._id}/print`, {
-            printerName: "BARRA",
-            // el backend ya usa rollo; dejamos DETALLE por reimpresión
-            modo: "DETALLE",
-          });
+         await cafeApi.post(`/facturas/${facturaToPrint._id}/print`, {
+  printerName: "Star BSC10",
+  // el backend ya usa rollo; dejamos DETALLE por reimpresión
+  modo: "DETALLE",
+});
 
-          setSnackMsg("Enviado a impresión (BARRA).");
+setSnackMsg("Enviado a impresión (Star BSC10).");
           setSnackSeverity("success");
           setSnackOpen(true);
           setConfirmOpen(false);
