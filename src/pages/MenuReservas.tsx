@@ -118,10 +118,14 @@ export default function MenuReservas() {
   const [openFacturar, setOpenFacturar] = useState(false);
   const [mrSeleccionada, setMrSeleccionada] = useState<MenuReserva | null>(null);
 
- const [metodoPago, setMetodoPago] = useState<MetodoPagoCierre>("EFECTIVO");
+type OpcionImpresionFactura = "CORTA" | "LARGA" | "SIN_IMPRIMIR";
+
+const [metodoPago, setMetodoPago] = useState<MetodoPagoCierre>("EFECTIVO");
 const [facturaEnabled, setFacturaEnabled] = useState<boolean>(true);
 const [nit, setNit] = useState<string>("");
 const [nombreFactura, setNombreFactura] = useState<string>("");
+
+const [opImpresion, setOpImpresion] = useState<OpcionImpresionFactura>("CORTA"); // ✅ default
 
 const [buscandoNit, setBuscandoNit] = useState(false);
 const [saving, setSaving] = useState(false);
@@ -135,12 +139,13 @@ const toggleFactura = (checked: boolean) => {
   }
 };
 
-  const abrirModalFacturar = (mr: MenuReserva) => {
+const abrirModalFacturar = (mr: MenuReserva) => {
   setMrSeleccionada(mr);
   setMetodoPago("EFECTIVO");
   setFacturaEnabled(true);
   setNit("");
   setNombreFactura("");
+  setOpImpresion("CORTA"); // ✅ default
   setOpenFacturar(true);
 };
 
@@ -261,13 +266,18 @@ try {
           return;
         }
 
-        // ✅ NUEVO: imprimir factura (PUNTO 2) — por ahora BARRA
-        try {
-          await cafeApi.post(`/facturas/${emitida._id}/print`, { printerName: "BARRA" });
-        } catch (e) {
-          console.error("❌ No se pudo imprimir factura:", e);
-          // no bloqueamos el flujo
-        }
+       // ✅ NUEVO: imprimir factura según opción (CORTA/LARGA/SIN_IMPRIMIR)
+if (opImpresion !== "SIN_IMPRIMIR") {
+  try {
+    await cafeApi.post(`/facturas/${emitida._id}/print`, {
+      printerName: "Star BSC10",     // (o el que uses para facturas)
+      tipoImpresion: opImpresion,    // ✅ clave
+    });
+  } catch (e) {
+    console.error("❌ No se pudo imprimir factura:", e);
+    // no bloqueamos el flujo
+  }
+}
 
         // ✅ éxito: marcar facturado (y guardar nro/cuf en UI por si quieres mostrar luego)
         setSnackMsg(
@@ -916,6 +926,43 @@ try {
       onChange={(e) => setNombreFactura(e.target.value)}
       fullWidth
     />
+
+    {/* ✅ NUEVO: opción de impresión */}
+    <Box
+      sx={{
+        mt: 0.5,
+        p: 1.2,
+        borderRadius: "12px",
+        border: "1px solid rgba(0,0,0,0.12)",
+        bgcolor: "rgba(0,0,0,0.015)",
+      }}
+    >
+      <Typography sx={{ fontSize: 13, fontWeight: 900, mb: 0.5 }}>
+        Impresión
+      </Typography>
+
+      <RadioGroup
+        value={opImpresion}
+        onChange={(e) => setOpImpresion(e.target.value as OpcionImpresionFactura)}
+        sx={{ gap: 0.2 }}
+      >
+        <FormControlLabel
+          value="CORTA"
+          control={<Radio size="small" />}
+          label={<Typography sx={{ fontSize: 13, fontWeight: 700 }}>Impresión corta</Typography>}
+        />
+        <FormControlLabel
+          value="LARGA"
+          control={<Radio size="small" />}
+          label={<Typography sx={{ fontSize: 13, fontWeight: 700 }}>Impresión larga</Typography>}
+        />
+        <FormControlLabel
+          value="SIN_IMPRIMIR"
+          control={<Radio size="small" />}
+          label={<Typography sx={{ fontSize: 13, fontWeight: 700 }}>Sin imprimir</Typography>}
+        />
+      </RadioGroup>
+    </Box>
   </>
 )}
           </Box>
