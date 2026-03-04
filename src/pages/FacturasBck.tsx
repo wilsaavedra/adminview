@@ -24,8 +24,8 @@ import {
 import { useTheme } from "@mui/material/styles";
 import PrintIcon from "@mui/icons-material/Print";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EmailIcon from "@mui/icons-material/Email";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import TodayIcon from "@mui/icons-material/Today";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import cafeApi from "../api/cafeApi";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -78,11 +78,6 @@ export default function Facturas() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [facturaToPrint, setFacturaToPrint] = useState<Factura | null>(null);
   const [printing, setPrinting] = useState(false);
-// ✅ NUEVO: modal para email
-const [emailOpen, setEmailOpen] = useState(false);
-const [emailTo, setEmailTo] = useState("");
-const [emailSending, setEmailSending] = useState(false);
-const [facturaToEmail, setFacturaToEmail] = useState<Factura | null>(null);
 
   const queryParams = useMemo(() => {
     const fromKey = from ? ymdLaPaz(from) : "";
@@ -239,38 +234,6 @@ const [facturaToEmail, setFacturaToEmail] = useState<Factura | null>(null);
                   <TableCell>{f.estado || "—"}</TableCell>
 
                   <TableCell>
-
-  <Tooltip title="Ver PDF">
-  <span>
-    <IconButton
-      onClick={async () => {
-        try {
-          const r = await cafeApi.get(`/facturas/${f._id}/print-data`);
-          const pdfUrl = r.data?.data?.pdf || r.data?.data?.rollo;
-
-          if (!pdfUrl) {
-            setSnackMsg("Esta factura no tiene PDF/ROLLO.");
-            setSnackSeverity("info");
-            setSnackOpen(true);
-            return;
-          }
-
-          // abre el link directo
-          window.open(pdfUrl, "_blank", "noopener,noreferrer");
-        } catch (e: any) {
-          console.error(e);
-          setSnackMsg("No se pudo obtener el PDF.");
-          setSnackSeverity("error");
-          setSnackOpen(true);
-        }
-      }}
-      disabled={String(f.estado || "").toLowerCase() !== "emitida"}
-    >
-      <VisibilityIcon />
-    </IconButton>
-  </span>
-</Tooltip>
-
   <Tooltip title="Reimprimir">
   <span>
     <IconButton
@@ -281,21 +244,6 @@ const [facturaToEmail, setFacturaToEmail] = useState<Factura | null>(null);
       disabled={String(f.estado || "").toLowerCase() !== "emitida"}
     >
       <PrintIcon />
-    </IconButton>
-  </span>
-</Tooltip>
-
-<Tooltip title="Enviar por email">
-  <span>
-    <IconButton
-      onClick={() => {
-        setFacturaToEmail(f);
-        setEmailTo("");
-        setEmailOpen(true);
-      }}
-      disabled={String(f.estado || "").toLowerCase() !== "emitida"}
-    >
-      <EmailIcon />
     </IconButton>
   </span>
 </Tooltip>
@@ -423,92 +371,6 @@ setSnackMsg("Enviado a impresión (Star BSC10).");
     </Button>
   </DialogActions>
 </Dialog>
-
-<Dialog
-  open={emailOpen}
-  onClose={() => (emailSending ? null : setEmailOpen(false))}
-  maxWidth="xs"
-  fullWidth
->
-  <DialogTitle sx={{ fontWeight: 900 }}>Enviar factura por email</DialogTitle>
-
-  <DialogContent>
-    <Typography sx={{ mt: 0.5, color: "#666" }}>
-      Nro: {facturaToEmail?.numeroFactura ?? "—"} | NIT/CI: {facturaToEmail?.nit ?? "—"}
-    </Typography>
-
-    <Box sx={{ mt: 2 }}>
-      <Typography sx={{ fontWeight: 800, mb: 0.5 }}>Email del cliente</Typography>
-
-      {/* ✅ Usamos TextField de MUI sin import extra */}
-      {/* (si prefieres, puedo cambiártelo a <TextField> normal) */}
-      <Box
-  component="input"
-  value={emailTo}
-  onChange={(e: any) => setEmailTo(e.target.value)}
-  placeholder="cliente@email.com"
-  style={{
-    width: "100%",
-    height: 42,
-    borderRadius: 12,
-    border: "1px solid #ddd",
-    padding: "0 12px",
-    outline: "none",
-    fontSize: 14,
-    boxSizing: "border-box",   // ⭐ ESTA ES LA SOLUCIÓN
-  }}
-/>
-    </Box>
-  </DialogContent>
-
-  <DialogActions sx={{ px: 2, pb: 2 }}>
-    <Button
-      onClick={() => setEmailOpen(false)}
-      disabled={emailSending}
-      sx={{ textTransform: "none", fontWeight: 800 }}
-    >
-      Cancelar
-    </Button>
-
-    <Button
-      variant="contained"
-      disabled={emailSending || !facturaToEmail?._id || !/^\S+@\S+\.\S+$/.test(emailTo)}
-      onClick={async () => {
-        if (!facturaToEmail?._id) return;
-
-        try {
-          setEmailSending(true);
-
-          await cafeApi.post(`/facturas/${facturaToEmail._id}/email`, { to: emailTo.trim() });
-
-          setSnackMsg(`Factura enviada a ${emailTo.trim()}`);
-          setSnackSeverity("success");
-          setSnackOpen(true);
-          setEmailOpen(false);
-        } catch (e: any) {
-          console.error(e);
-          const msg = e?.response?.data?.msg || "No se pudo enviar el email.";
-          setSnackMsg(msg);
-          setSnackSeverity("error");
-          setSnackOpen(true);
-        } finally {
-          setEmailSending(false);
-        }
-      }}
-      sx={{
-        textTransform: "none",
-        fontWeight: 900,
-        borderRadius: 2,
-        backgroundColor: "rgb(225,63,68)",
-        "&:hover": { backgroundColor: "rgb(200,50,55)" },
-      }}
-    >
-      {emailSending ? "Enviando..." : "Enviar"}
-    </Button>
-  </DialogActions>
-</Dialog>
-
-
       <Snackbar
         open={snackOpen}
         onClose={() => setSnackOpen(false)}
