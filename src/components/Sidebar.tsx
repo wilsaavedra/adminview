@@ -31,7 +31,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
+type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE'| 'MESERO_ROLE';
 
 interface MenuItem {
   text: string;
@@ -45,9 +45,9 @@ const menuItems: MenuItem[] = [
   { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
   { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
   { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
-  { text: "QR", icon: <QrCode2Icon fontSize="small" />, path: "/QRsAdmin", roles: ["USER_ROLE"] },
+  { text: "QR", icon: <QrCode2Icon fontSize="small" />, path: "/QRsAdmin", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
 
-  { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE'] },
+  { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
 
   // ✅ NUEVO
   { text: 'Facturas', icon: <ReceiptIcon fontSize="small" />, path: '/Facturas', roles: ['ADMIN_ROLE'] },

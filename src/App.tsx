@@ -26,6 +26,7 @@ type Role =
   | "USER_ROLE"
   | "COCINA_ROLE"
   | "PARRILLA_ROLE"
+  | "MESERO_ROLE"
   | "BAR_ROLE";
 
 function PrivateRoute({
@@ -154,7 +155,7 @@ function AppContent() {
            <Route
               path="/QRsAdmin"
               element={
-                <PrivateRoute>
+                <PrivateRoute roles={["ADMIN_ROLE", "MESERO_ROLE"]}>
                   <QRsAdmin />
                 </PrivateRoute>
               }
@@ -162,7 +163,7 @@ function AppContent() {
             <Route
               path="/MenuReservas"
               element={
-                <PrivateRoute roles={["ADMIN_ROLE"]}>
+                <PrivateRoute roles={["ADMIN_ROLE", "MESERO_ROLE"]}>
                   <MenuReservas />
                 </PrivateRoute>
               }
@@ -171,7 +172,7 @@ function AppContent() {
             <Route
               path="/MenuReservasDetalle/:id"
               element={
-                <PrivateRoute roles={["ADMIN_ROLE"]}>
+                <PrivateRoute roles={["ADMIN_ROLE", "MESERO_ROLE"]}>
                   <MenuReservasDetalle />
                 </PrivateRoute>
               }
