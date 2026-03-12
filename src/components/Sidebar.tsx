@@ -47,7 +47,7 @@ const menuItems: MenuItem[] = [
   { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
   { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
   { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
-  { text: "Tomar Pedido", icon: <RestaurantMenuIcon fontSize="small" />, externalUrl: "https://reservas.viewrestaurante.com", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
+  //{ text: "Tomar Pedido", icon: <RestaurantMenuIcon fontSize="small" />, externalUrl: "https://reservas.viewrestaurante.com", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
   { text: "QR", icon: <QrCode2Icon fontSize="small" />, path: "/QRsAdmin", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
 
   { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
