@@ -24,6 +24,7 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import SummarizeOutlinedIcon from "@mui/icons-material/SummarizeOutlined";
@@ -36,7 +37,8 @@ type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_R
 interface MenuItem {
   text: string;
   icon: React.ReactNode;
-  path: string;
+  path?: string;
+  externalUrl?: string;
   roles?: Role[];
 }
 
@@ -45,11 +47,11 @@ const menuItems: MenuItem[] = [
   { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
   { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
   { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
+  { text: "Tomar Pedido", icon: <RestaurantMenuIcon fontSize="small" />, externalUrl: "https://reservas.viewrestaurante.com", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
   { text: "QR", icon: <QrCode2Icon fontSize="small" />, path: "/QRsAdmin", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
 
   { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
 
-  // ✅ NUEVO
   { text: 'Facturas', icon: <ReceiptIcon fontSize="small" />, path: '/Facturas', roles: ['ADMIN_ROLE'] },
 
   { text: 'Pedidos', icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />, path: '/Pedidos', roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'] },
@@ -119,23 +121,30 @@ React.useEffect(() => {
               placement="right"
               arrow
             >
-              <ListItemButton
-                selected={location.pathname === item.path}
-                onClick={() => {
-                  navigate(item.path);
-                  setMobileOpen(false);
-                }}
-                sx={{
-                  borderRadius: 1,
-                  px: collapsed ? 1 : 2,
-                  py: 0.8,
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  '&.Mui-selected': {
-                    bgcolor: 'rgba(0,0,0,0.04)',
-                  },
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
-                }}
-              >
+          <ListItemButton
+  selected={!!item.path && location.pathname === item.path}
+  onClick={() => {
+    if (item.externalUrl) {
+      window.location.href = item.externalUrl;
+      return;
+    }
+
+    if (item.path) {
+      navigate(item.path);
+      setMobileOpen(false);
+    }
+  }}
+  sx={{
+    borderRadius: 1,
+    px: collapsed ? 1 : 2,
+    py: 0.8,
+    justifyContent: collapsed ? 'center' : 'flex-start',
+    '&.Mui-selected': {
+      bgcolor: 'rgba(0,0,0,0.04)',
+    },
+    '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
+  }}
+>
                 <ListItemIcon
                   sx={{
                     color: '#000',

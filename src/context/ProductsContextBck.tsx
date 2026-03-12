@@ -99,9 +99,6 @@ type ProductsContextProps = {
   // Reglas de modal
   ensureModalRule: () => void;
   closeModalSafely: () => void;
-
-  enviadosMap: Record<string, number>;
-loadEnviadosReserva: (reservaId: string) => Promise<Record<string, number>>;
 };
 
 export const ProductsContext = createContext({} as ProductsContextProps);
@@ -136,10 +133,6 @@ export const ProductsProvider = ({ children }: any) => {
 
   const { user, status } = useContext(AuthContext);
 
-// ✅ helper de roles (mínimo y tolerante a "role" o "rol")
-const getRole = () => (user as any)?.role || (user as any)?.rol || "";
-const isStaff = () => ["ADMIN_ROLE", "MESERO_ROLE"].includes(getRole());
-
   const [vSnack, setVSnack] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [favoritos, setFavoritos] = useState<Producto[]>([]);
@@ -168,32 +161,6 @@ const [allowAutoModal, setAllowAutoModal] = useState(true);
     setModalVisible2(false);
     setVisibleR(false);
   };
-
-const [enviadosMap, setEnviadosMap] = useState<Record<string, number>>({});
-
-const loadEnviadosReserva = async (reservaId: string): Promise<Record<string, number>> => {
-  try {
-    if (!reservaId) {
-      setEnviadosMap({});
-      return {};
-    }
-
-    const resp = await cafeApi.get(`/pedidos/resumen/${reservaId}`);
-    const enviados = resp.data?.enviados || {};
-
-    setEnviadosMap(enviados);
-    return enviados;
-  } catch (e) {
-    console.log("❌ loadEnviadosReserva:", e);
-    setEnviadosMap({});
-    return {};
-  }
-};
-
-useEffect(() => {
-  if (!idReserva) return;
-  loadEnviadosReserva(idReserva);
-}, [idReserva]);
 
   // ---- Cargas iniciales ----
   useEffect(() => {
@@ -295,96 +262,48 @@ useEffect(() => {
     setCantCompras(id);
   };
 
- const handleMostrarSeleccion = (state: CheckboxStates, cant: CantidadState, tipo: selectedProducts[]) => {
-  const resultadoBase = Object.entries(state)
-    .map(([id, checked]) => {
-      if (checked) {
-        const cantidad = cant[id] || 1;
-        const producto = products.find((p) => p._id === id);
-        if (producto) {
-          const existingProduct = tipo.find((p) => p.codigo === id);
-          let radioValues: { [key: number]: string } = {};
-          let guarnicion: { [key: number]: string } = {};
-          let salsa: { [key: number]: string } = {};
+  const handleMostrarSeleccion = (state: CheckboxStates, cant: CantidadState, tipo: selectedProducts[]) => {
+    const resultado = Object.entries(state)
+      .map(([id, checked]) => {
+        if (checked) {
+          const cantidad = cant[id] || 1;
+          const producto = products.find((p) => p._id === id);
+          if (producto) {
+            const existingProduct = tipo.find((p) => p.codigo === id);
+            let radioValues: { [key: number]: string } = {};
+            let guarnicion: { [key: number]: string } = {};
+            let salsa: { [key: number]: string } = {};
 
-          if (existingProduct) {
-            radioValues = {};
-            guarnicion = {};
-            salsa = {};
-            for (let i = 0; i < cantidad; i++) {
-              radioValues[i] =
-                existingProduct.radioValues && existingProduct.radioValues[i]
-                  ? existingProduct.radioValues[i]
-                  : "3/4";
-              guarnicion[i] =
-                existingProduct.guarnicion && existingProduct.guarnicion[i]
-                  ? existingProduct.guarnicion[i]
-                  : "Ensalada";
-              salsa[i] =
-                existingProduct.salsa && existingProduct.salsa[i]
-                  ? existingProduct.salsa[i]
-                  : "Fileto";
+            if (existingProduct) {
+              radioValues = {};
+              guarnicion = {};
+              salsa = {};
+              for (let i = 0; i < cantidad; i++) {
+                radioValues[i] =
+                  existingProduct.radioValues && existingProduct.radioValues[i]
+                    ? existingProduct.radioValues[i]
+                    : "3/4";
+                guarnicion[i] =
+                  existingProduct.guarnicion && existingProduct.guarnicion[i]
+                    ? existingProduct.guarnicion[i]
+                    : "Ensalada";
+                salsa[i] =
+                  existingProduct.salsa && existingProduct.salsa[i]
+                    ? existingProduct.salsa[i]
+                    : "Fileto";
+              }
             }
+
+            const subtotal = cantidad * producto.precio;
+            return { ...producto, cantidad, radioValues, guarnicion, salsa, subtotal };
           }
-
-          const subtotal = cantidad * producto.precio;
-          return { ...producto, cantidad, radioValues, guarnicion, salsa, subtotal };
         }
-      }
-      return null;
-    })
-    .filter(Boolean) as Producto[];
-
-  // ✅ contar salsas cobrables elegidas dentro de las pastas
-  const conteoExtras: Record<string, number> = {
-    Bolognesa: 0,
-    Champignones: 0,
-    Camarones: 0,
+        return null;
+      })
+      .filter(Boolean) as Producto[];
+    setResult([...resultado]);
+    return result;
   };
-
-  tipo.forEach((sel) => {
-    const productoBase = products.find((p) => p._id === sel.codigo);
-    if (!productoBase || productoBase.categoria?.nombre !== "PASTAS") return;
-
-    const cantidad = cant[sel.codigo] || sel.cantidad || 1;
-
-    for (let i = 0; i < cantidad; i++) {
-      const salsaElegida = sel.salsa?.[i] || "Fileto";
-      if (salsaElegida === "Bolognesa") conteoExtras.Bolognesa += 1;
-      if (salsaElegida === "Champignones") conteoExtras.Champignones += 1;
-      if (salsaElegida === "Camarones") conteoExtras.Camarones += 1;
-    }
-  });
-
-  // ✅ crear productos cobrables reales de SALSAS EXTRAS
-  const extrasAuto: Producto[] = Object.entries(conteoExtras)
-    .map(([nombreSalsa, cantidadExtra]) => {
-      if (cantidadExtra <= 0) return null;
-
-      const productoExtra = products.find((p) => {
-        const cat = String(p.categoria?.nombre || "").toUpperCase();
-        const nom = String(p.nombre || "").toUpperCase();
-        return cat === "SALSAS EXTRAS" && nom.includes(nombreSalsa.toUpperCase());
-      });
-
-      if (!productoExtra) return null;
-
-      return {
-        ...productoExtra,
-        cantidad: cantidadExtra,
-        subtotal: cantidadExtra * productoExtra.precio,
-      };
-    })
-    .filter(Boolean) as Producto[];
-
-  const resultado = [
-    ...resultadoBase.filter((p) => p.categoria?.nombre !== "SALSAS EXTRAS"),
-    ...extrasAuto,
-  ];
-
-  setResult([...resultado]);
-  return result;
-};
 
   // ---- Modales / Reservas ----
    const mostrarModal = (id: string) => {
@@ -419,41 +338,29 @@ useEffect(() => {
   const mostrarVBuscar = (id: boolean) => setVBuscar(!id);
 
   // 🔒 Regla centralizada para abrir/cerrar según estado actual
- const ensureModalRule = () => {
-  const hayPendiente = reservas.some((r) => r.resest === "Pendiente");
+  const ensureModalRule = () => {
+    const hayPendiente = reservas.some((r) => r.resest === "Pendiente");
 
-  // Si está suprimido, no auto-abrir/cerrar nada
-  if (suppressAutoOpenRef.current) return;
+    // Si está suprimido, no auto-abrir/cerrar nada
+    if (suppressAutoOpenRef.current) return;
 
-  // ✅ STAFF: no aplicar la regla "hay pendiente => cerrar selector"
-  // porque el selector es justamente para elegir la reserva pendiente
-  if (isStaff()) {
-    // si no hay reserva seleccionada y hay pendientes, abre el selector
-    if (!idReserva && reservas.length > 0 && !modalVisible2) {
+    if (reservas.length === 0) {
+      // Sin reservas -> abrir selector (si no está ya)
+      if (!modalVisible2) mostrarModal("mostrar2");
+      return;
+    }
+
+    if (hayPendiente) {
+      // Hay pendiente -> no mostrar selector
+      if (modalVisible2) mostrarModal("ocultar_modal");
+      return;
+    }
+
+    // Todas completadas -> abrir selector si está cerrado
+    if (!modalVisible2 && !modalVisible) {
       mostrarModal("mostrar2");
     }
-    // si no hay pendientes, también puede abrir para mostrar vacío/crear flujo
-    if (reservas.length === 0 && !modalVisible2) {
-      mostrarModal("mostrar2");
-    }
-    return;
-  }
-
-  // ✅ USER_ROLE (tu lógica intacta)
-  if (reservas.length === 0) {
-    if (!modalVisible2) mostrarModal("mostrar2");
-    return;
-  }
-
-  if (hayPendiente) {
-    if (modalVisible2) mostrarModal("ocultar_modal");
-    return;
-  }
-
-  if (!modalVisible2 && !modalVisible) {
-    mostrarModal("mostrar2");
-  }
-};
+  };
 
   const addReserva = async (cantidad: number, fecha: Date, tipo: string): Promise<Reservas> => {
     const resp = await cafeApi.post<Reservas>("/reservas", {
@@ -469,67 +376,21 @@ useEffect(() => {
   try {
     console.log("🔄 Cargando reservas...");
 
-   const resp = await cafeApi.get<ReservasResponse>("/reservas?limite=5000");
+    const resp = await cafeApi.get<ReservasResponse>("/reservas?limite=500");
+    const reservasFiltradas = resp.data.reservas.filter(
+      (r) => r.usuario._id === user?.uid
+    );
 
-// ======================================================
-// ✅ STAFF (ADMIN_ROLE / MESERO_ROLE)
-// - ver SOLO pendientes de TODOS
-// - NO auto-seleccionar (hay varias)
-// - abrir modal para elegir
-// ======================================================
-if (isStaff()) {
-  // ✅ STAFF: ver SOLO reservas no cerradas de TODOS
-  const abiertas = resp.data.reservas.filter((r) => r.cerrado !== true);
+    setCantReservas(reservasFiltradas.length);
+    setReservas(reservasFiltradas);
 
-  setCantReservas(abiertas.length);
-  setReservas(abiertas);
-  setHasPendiente(abiertas.length > 0);
+    const reservaPendiente = reservasFiltradas.find((r) => r.resest === "Pendiente");
+    const ultimaReserva = reservasFiltradas[reservasFiltradas.length - 1];
+    const hayPendiente = !!reservaPendiente;
+    setHasPendiente(hayPendiente);
 
-  setReservasListas(true);
-
-  // Mantener seleccionada si aún existe en abiertas
-  if (idReserva) {
-    const r = abiertas.find((res) => res._id === idReserva);
-    if (r) {
-      const fechaFormateada = new Date(r.fecha).toLocaleString("es-BO", {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      menuReserva(r._id, r.cantidad, fechaFormateada, r.tipo || "Resto");
-      console.log("🔒 STAFF mantiene reserva seleccionada:", idReserva);
-      return;
-    }
-  }
-
-  // Si no hay seleccionada -> forzar elegir
-  menuReserva("", 0, "Escoger Reserva", "Resto");
-
-  if (!suppressAutoOpenRef.current) {
-    mostrarModal("mostrar2");
-  }
-
-  return;
-}
-
-// ======================================================
-// ✅ USER_ROLE (tu lógica actual intacta)
-// ======================================================
-const reservasFiltradas = resp.data.reservas.filter(
-  (r) => r.usuario._id === user?.uid
-);
-
-setCantReservas(reservasFiltradas.length);
-setReservas(reservasFiltradas);
-
-const reservaPendiente = reservasFiltradas.find((r) => r.resest === "Pendiente");
-const ultimaReserva = reservasFiltradas[reservasFiltradas.length - 1];
-const hayPendiente = !!reservaPendiente;
-setHasPendiente(hayPendiente);
-
-// 🔐 Marca como cargado
-setReservasListas(true);
+    // 🔐 Marca como cargado
+    setReservasListas(true);
 
     // ======================================================
     // 0️⃣ SI YA EXISTE UNA RESERVA SELECCIONADA → MANTENER
@@ -644,21 +505,12 @@ setReservasListas(true);
   };
 
   const menuReserva = (id: string, cantidad: number, fecha: string, tipo: string) => {
-  // ✅ Si cambias de reserva, limpia selección anterior (carrito / checks / cantidades)
-  if (id && id !== idReserva) {
-    setResult([]);
-    setCheckboxStates({});
-    setCantidadStates({});
-    setEnviadosMap({});
-    // opcional: limpiar búsqueda si afecta UI
-    // setSearchText("");
-  }
-
-  setIdReserva(id);
-  setCantidadReserva(cantidad);
-  setFechaReserva(fecha);
-  setTipoReserva(tipo);
-};
+    setIdReserva(id);
+    setCantidadReserva(cantidad);
+    setFechaReserva(fecha);
+    setTipoReserva(tipo);
+ 
+  };
 
   const addMenuReserva = async (reserva: string, productos: Producto1[]): Promise<MenuReservas> => {
     setVSnack(false);
@@ -680,17 +532,19 @@ setReservasListas(true);
     setVSnack(true);
   };
 
- const loadMReservas = async () => {
-  const resp = await cafeApi.get<MenuResponse>("/menureservas");
+  const loadMReservas = async () => {
+    const resp = await cafeApi.get<MenuResponse>("/menureservas");
+    const mreservasFiltradas = resp.data.menureservas.filter((reserva) => {
+  const userIdBackend =
+    typeof reserva.usuario === "string"
+      ? reserva.usuario
+      : reserva.usuario?._id;
 
-  // ✅ STAFF ve menureservas de todos (para poder cargar pedidos de cualquier reserva)
-  const mreservasFiltradas = isStaff()
-    ? resp.data.menureservas
-    : resp.data.menureservas.filter((mr) => mr.usuario._id === user?.uid);
-
-  setCantMReservas(mreservasFiltradas.length);
-  setMReservas([...mreservasFiltradas]);
-};
+  return userIdBackend === user?.uid;
+});
+    setCantMReservas(mreservasFiltradas.length);
+    setMReservas([...mreservasFiltradas]);
+  };
 
   const actualizarResult = (arreglomr: Producto[]) => {
     setResult([...arreglomr]);
@@ -698,57 +552,36 @@ setReservasListas(true);
   };
 
   const grabarMenuReserva = async () => {
-  try {
-    // 🔥 SIEMPRE traer resumen fresco antes de guardar
-    const freshMap = idReserva ? await loadEnviadosReserva(idReserva) : {};
+    const arregloMenuReserva: Producto1[] = result.map((producto) => ({
+      producto,
+      cantidad: producto.cantidad ?? 1,
+      termino: Object.entries(producto.radioValues || {}).map(([index, value]) => ({
+        index: parseInt(index),
+        value,
+      })),
+      guarnicion: Object.entries(producto.guarnicion || {}).map(([index, value]) => ({
+        index: parseInt(index),
+        value,
+      })),
+      salsa: Object.entries(producto.salsa || {}).map(([index, value]) => ({
+        index: parseInt(index),
+        value,
+      })),
+    }));
 
-    const arregloMenuReserva: Producto1[] = result.map((producto) => {
-      const id = String((producto as any)?._id || (producto as any)?.id);
-
-      const yaEnviado = freshMap?.[id] ?? 0;
-
-      // ✅ mínimo permitido: 1 si no se envió, o yaEnviado si sí se envió
-      const minPermitido = Math.max(1, yaEnviado);
-
-      // ✅ cantidad final nunca puede ser menor a lo enviado (ni menor a 1)
-      const cantidadFinal = Math.max(producto.cantidad ?? 1, minPermitido);
-
-      return {
-        producto,
-        cantidad: cantidadFinal,
-        termino: Object.entries(producto.radioValues || {}).map(([index, value]) => ({
-          index: parseInt(index),
-          value,
-        })),
-        guarnicion: Object.entries(producto.guarnicion || {}).map(([index, value]) => ({
-          index: parseInt(index),
-          value,
-        })),
-        salsa: Object.entries(producto.salsa || {}).map(([index, value]) => ({
-          index: parseInt(index),
-          value,
-        })),
-      };
-    });
-
-    const reservaExiste = mreservas.find(
-      (r) =>
-        r.reserva &&
-        String(typeof r.reserva === "string" ? r.reserva : (r.reserva as any)?._id) === String(idReserva)
-    );
-
-    if (idReserva !== "") {
-      if (reservaExiste) {
-        await updateMenuReserva(reservaExiste._id, arregloMenuReserva);
-      } else {
-        await addMenuReserva(idReserva, arregloMenuReserva);
+    const reservaExiste = mreservas.find((reserva) => reserva.reserva === idReserva);
+    try {
+      if (idReserva !== "") {
+        if (reservaExiste) {
+          await updateMenuReserva(reservaExiste._id, arregloMenuReserva);
+        } else {
+          await addMenuReserva(idReserva, arregloMenuReserva);
+        }
       }
-      await loadMReservas();
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
+  };
 
   const generarQRPago = async (monto: number): Promise<{ qrId: number; qrImg: string }> => {
     try {
@@ -832,9 +665,6 @@ setReservasListas(true);
         hasPendiente,
         ensureModalRule,
         closeModalSafely,
-
-        enviadosMap,
-loadEnviadosReserva,
       }}
     >
       {children}

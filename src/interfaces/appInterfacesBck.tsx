@@ -9,7 +9,6 @@ export interface RegisterData {
     correo: string;
     password: string;
     nombre: string;
-    promos:boolean;
 }
 
 export interface LoginResponse {
@@ -25,7 +24,6 @@ export interface Usuario {
     correo: string;
     uid:    string;
     img?: string;
-    promos:boolean;
 }
 
 
@@ -46,7 +44,6 @@ export interface Producto {
     img?:      string;
     cantidad?:number;
     descripcion?:string;
-    delivery:boolean;
     radioValues?: { [key: number]: string; }; 
     guarnicion?: { [key: number]: string; };
     salsa?: { [key: number]: string; };
@@ -88,11 +85,7 @@ export interface Reservas {
     telefono: string;
     nombre:string;
     comentarios:string;
-    resest: string;
-    cerrado?: boolean;
-    mesa?: string;
-    canal?: string | null;
-    mesero?: string;
+     resest: "Pendiente" | "Pagado" | "Cancelo" | "No vino";
 }
 
 export interface ReservasResponse {

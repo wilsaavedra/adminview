@@ -20,7 +20,6 @@ import ReporteResumen from "./pages/ReporteResumen";
 import Facturas from "./pages/Facturas";
 import Inventarios from "./pages/Inventarios";
 
-
 type Role =
   | "ADMIN_ROLE"
   | "USER_ROLE"
@@ -151,7 +150,8 @@ function AppContent() {
                   <Reservas />
                 </PrivateRoute>
               }
-            />
+            />     
+          
            <Route
               path="/QRsAdmin"
               element={
