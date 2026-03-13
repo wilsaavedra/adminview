@@ -612,27 +612,27 @@ function ProductosVendidosCard({
 
         {/* Rows */}
         <Box sx={{ mt: 0.8 }}>
-          {data.length === 0 ? (
-            <Typography sx={{ fontSize: 13, color: "rgba(0,0,0,0.45)", py: 1 }}>
-              No hay productos vendidos en el periodo seleccionado.
-            </Typography>
-          ) : (
-            data.slice(0, 10).map((r, idx) => (
-            <Box
-  key={idx}
-  sx={{
-    display: "grid",
-    gridTemplateColumns: { 
-      xs: "24px minmax(0,1fr) 40px 68px", 
-      sm: "34px minmax(0,1fr) 86px 110px" 
-    },
-    gap: { xs: 0.6, sm: 1 },
-    py: 0.75,
-    borderBottom: "1px solid rgba(0,0,0,0.06)",
-    alignItems: "center",
-    px: 1, // ✅ para que alinee igual que el header (que ya tiene px:1)
-  }}
->
+         {data.length === 0 ? (
+  <Typography sx={{ fontSize: 13, color: "rgba(0,0,0,0.45)", py: 1 }}>
+    No hay productos vendidos en el periodo seleccionado.
+  </Typography>
+) : (
+  data.map((r, idx) => (
+  <Box
+    key={idx}
+    sx={{
+      display: "grid",
+      gridTemplateColumns: { 
+        xs: "24px minmax(0,1fr) 40px 68px", 
+        sm: "34px minmax(0,1fr) 86px 110px" 
+      },
+      gap: { xs: 0.6, sm: 1 },
+      py: 0.75,
+      borderBottom: "1px solid rgba(0,0,0,0.06)",
+      alignItems: "center",
+      px: 1, // ✅ para que alinee igual que el header (que ya tiene px:1)
+    }}
+  >
                 <Typography sx={{ fontWeight: 800, fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
                   {idx + 1}
                 </Typography>
