@@ -4,39 +4,36 @@ import {
   Typography,
   Paper,
   Button,
-  Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import PointOfSaleOutlinedIcon from "@mui/icons-material/PointOfSaleOutlined";
 import cafeApi from "../api/cafeApi";
+import { toast } from "react-toastify";
 
 const AbrirCajon: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [printerName, setPrinterName] = useState("BARRA");
-  const [okMsg, setOkMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   const handleAbrirCajon = async () => {
     try {
       setLoading(true);
-      setOkMsg("");
-      setErrorMsg("");
+      setOpenConfirm(false);
 
       const resp = await cafeApi.post("/facturas/abrir-cajon", {
-        printerName,
+        printerName: "Star BSC10",
       });
 
       if (resp.data?.ok) {
-        setOkMsg(resp.data?.msg || "Cajón abierto correctamente");
+        toast.success(resp.data?.msg || "Cajón abierto correctamente");
       } else {
-        setErrorMsg(resp.data?.msg || "No se pudo abrir el cajón");
+        toast.error(resp.data?.msg || "No se pudo abrir el cajón");
       }
     } catch (e: any) {
-      setErrorMsg(
+      toast.error(
         e?.response?.data?.msg ||
           e?.response?.data?.detail ||
           e?.message ||
@@ -67,29 +64,16 @@ const AbrirCajon: React.FC = () => {
         </Box>
 
         <Typography sx={{ color: "#555", mb: 3 }}>
-          Esta opción envía el comando de apertura a la impresora térmica donde está conectado físicamente el cajón.
+          Esta opción abrirá el cajón de dinero.
         </Typography>
-
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Impresora</InputLabel>
-          <Select
-            value={printerName}
-            label="Impresora"
-            onChange={(e) => setPrinterName(String(e.target.value))}
-            disabled={loading}
-          >
-            <MenuItem value="BARRA">BARRA</MenuItem>
-            <MenuItem value="COCINA">COCINA</MenuItem>
-            <MenuItem value="PARRILLA">PARRILLA</MenuItem>
-            <MenuItem value="Star BSC10">Star BSC10</MenuItem>
-          </Select>
-        </FormControl>
 
         <Button
           variant="contained"
-          onClick={handleAbrirCajon}
+          onClick={() => setOpenConfirm(true)}
           disabled={loading}
-          startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <PointOfSaleOutlinedIcon />}
+          startIcon={
+            loading ? <CircularProgress size={18} color="inherit" /> : <PointOfSaleOutlinedIcon />
+          }
           sx={{
             textTransform: "none",
             fontWeight: 700,
@@ -103,8 +87,51 @@ const AbrirCajon: React.FC = () => {
           {loading ? "Abriendo..." : "Abrir cajón"}
         </Button>
 
-        {!!okMsg && <Alert severity="success" sx={{ mt: 3 }}>{okMsg}</Alert>}
-        {!!errorMsg && <Alert severity="error" sx={{ mt: 3 }}>{errorMsg}</Alert>}
+        <Dialog
+          open={openConfirm}
+          onClose={() => !loading && setOpenConfirm(false)}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle sx={{ fontWeight: 700 }}>
+            Confirmar acción
+          </DialogTitle>
+
+          <DialogContent>
+            <Typography>
+              ¿Está seguro de abrir el cajón de dinero?
+            </Typography>
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => setOpenConfirm(false)}
+              disabled={loading}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                color: "#444",
+              }}
+            >
+              Cancelar
+            </Button>
+
+            <Button
+              variant="contained"
+              onClick={handleAbrirCajon}
+              disabled={loading}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                borderRadius: 2,
+                bgcolor: "#111",
+                "&:hover": { bgcolor: "#000" },
+              }}
+            >
+              Sí, abrir
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Paper>
     </Box>
   );
