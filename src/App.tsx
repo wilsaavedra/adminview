@@ -19,6 +19,7 @@ import QRsAdmin from "./pages/QRsAdmin";
 import ReporteResumen from "./pages/ReporteResumen";
 import Facturas from "./pages/Facturas";
 import Inventarios from "./pages/Inventarios";
+import AbrirCajon from "./pages/AbrirCajon";
 
 type Role =
   | "ADMIN_ROLE"
@@ -178,6 +179,15 @@ function AppContent() {
               }
             />
 <Route path="/Facturas" element={<Facturas />} />
+   <Route
+              path="/AbrirCajon"
+              element={
+                <PrivateRoute roles={["ADMIN_ROLE", "MESERO_ROLE"]}>
+                  <AbrirCajon />
+                </PrivateRoute>
+              }
+            />
+
             <Route
               path="/Pedidos"
               element={
