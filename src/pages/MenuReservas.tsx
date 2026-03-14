@@ -59,6 +59,7 @@ interface MenuReserva {
     nombre: string;
     telefono: string;
     tipo: string;
+    mesa?: string;
     comentarios: string;
     fecha: string;
     pago: number;
@@ -523,58 +524,58 @@ if (opImpresion !== "SIN_IMPRIMIR") {
               },
             }}
           >
-            <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
-              <TableRow>
-                <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Tipo</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Teléfono</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Monto</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Pago</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Saldo</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Ver</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Enviar Pedido</TableCell>
-                <TableCell sx={{ color: "#fff" }}>Facturar</TableCell>
-              </TableRow>
-            </TableHead>
+      <TableHead sx={{ bgcolor: "rgb(225,63,68)" }}>
+  <TableRow>
+    <TableCell sx={{ color: "#fff" }}>Nombre</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Mesa</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Teléfono</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Monto</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Pago</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Saldo</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Ver</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Enviar Pedido</TableCell>
+    <TableCell sx={{ color: "#fff" }}>Facturar</TableCell>
+  </TableRow>
+</TableHead>
 
-            <TableBody>
-              {reservas.map((mr) => {
-                const COSTO_ENVASE_UNITARIO = 2;
+<TableBody>
+  {reservas.map((mr) => {
+    const COSTO_ENVASE_UNITARIO = 2;
 
-                const subtotal = mr.productos.reduce(
-                  (acc, item) =>
-                    acc + item.producto.precio * (item.cantidad ?? 1),
-                  0
-                );
+    const subtotal = mr.productos.reduce(
+      (acc, item) =>
+        acc + item.producto.precio * (item.cantidad ?? 1),
+      0
+    );
 
-                const esLlevar =
-                  String(mr.reserva.tipo || "").toLowerCase() === "llevar";
+    const esLlevar =
+      String(mr.reserva.tipo || "").toLowerCase() === "llevar";
 
-                const costoEnvases = esLlevar
-                  ? mr.productos.reduce(
-                      (acc, item) =>
-                        acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
-                      0
-                    )
-                  : 0;
+    const costoEnvases = esLlevar
+      ? mr.productos.reduce(
+          (acc, item) =>
+            acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
+          0
+        )
+      : 0;
 
-                const descuento = Number(mr.reserva.descuentoCupon ?? 0);
+    const descuento = Number(mr.reserva.descuentoCupon ?? 0);
 
-                const monto = Math.max(0, subtotal + costoEnvases - descuento);
+    const monto = Math.max(0, subtotal + costoEnvases - descuento);
 
-                const pago = Number(mr.reserva.pago ?? 0);
+    const pago = Number(mr.reserva.pago ?? 0);
 
-                const saldo = Math.max(0, monto - pago);
+    const saldo = Math.max(0, monto - pago);
 
-                return (
-                  <TableRow key={mr._id} hover>
-                    <TableCell>{mr.reserva.nombre}</TableCell>
-                    <TableCell>{mr.reserva.tipo}</TableCell>
-                    <TableCell>
-                      {mr.reserva.telefono.startsWith("+591")
-                        ? mr.reserva.telefono.replace("+591", "")
-                        : mr.reserva.telefono}
-                    </TableCell>
+    return (
+      <TableRow key={mr._id} hover>
+        <TableCell>{mr.reserva.nombre}</TableCell>
+        <TableCell>{mr.reserva.mesa || "—"}</TableCell>
+        <TableCell>
+          {mr.reserva.telefono.startsWith("+591")
+            ? mr.reserva.telefono.replace("+591", "")
+            : mr.reserva.telefono}
+        </TableCell>
 
                     <TableCell>{monto} Bs</TableCell>
                     <TableCell>{pago} Bs</TableCell>
