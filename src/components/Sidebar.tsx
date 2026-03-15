@@ -32,6 +32,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PointOfSaleOutlinedIcon from "@mui/icons-material/PointOfSaleOutlined";
+import BackspaceOutlinedIcon from "@mui/icons-material/BackspaceOutlined";
 
 type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE'| 'MESERO_ROLE';
 
@@ -54,7 +55,8 @@ const menuItems: MenuItem[] = [
   { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
 
   { text: 'Facturas', icon: <ReceiptIcon fontSize="small" />, path: '/Facturas', roles: ['ADMIN_ROLE'] },
-{ text: 'Abrir cajón', icon: <PointOfSaleOutlinedIcon fontSize="small" />, path: '/AbrirCajon', roles: ['ADMIN_ROLE', 'MESERO_ROLE'] },
+{ text: 'Anulaciones', icon: <BackspaceOutlinedIcon fontSize="small" />, path: '/AnulacionesPedidos', roles: ['ADMIN_ROLE'] },
+  { text: 'Abrir cajón', icon: <PointOfSaleOutlinedIcon fontSize="small" />, path: '/AbrirCajon', roles: ['ADMIN_ROLE', 'MESERO_ROLE'] },
   { text: 'Pedidos', icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />, path: '/Pedidos', roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'] },
 ];
 

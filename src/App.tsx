@@ -20,6 +20,7 @@ import ReporteResumen from "./pages/ReporteResumen";
 import Facturas from "./pages/Facturas";
 import Inventarios from "./pages/Inventarios";
 import AbrirCajon from "./pages/AbrirCajon";
+import AnulacionesPedidos from "./pages/AnulacionesPedidos";
 
 type Role =
   | "ADMIN_ROLE"
@@ -179,6 +180,14 @@ function AppContent() {
               }
             />
 <Route path="/Facturas" element={<Facturas />} />
+<Route
+  path="/AnulacionesPedidos"
+  element={
+    <PrivateRoute roles={["ADMIN_ROLE"]}>
+      <AnulacionesPedidos />
+    </PrivateRoute>
+  }
+/>
    <Route
               path="/AbrirCajon"
               element={
