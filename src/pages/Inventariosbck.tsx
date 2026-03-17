@@ -286,199 +286,207 @@ const Inventarios: React.FC = () => {
         </Tooltip>
       </Box>
 
-           {/* Tabla */}
-      {loading ? (
-        <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <TableContainer
-          component={Box}
-          sx={{
-            width: "100%",
-            overflowX: "visible",
-            overflowY: "visible",
-            WebkitOverflowScrolling: "touch",
-            boxShadow: "none",
-            border: "1px solid rgba(0,0,0,0.08)",
-            borderRadius: 2,
-            display: "block",
-            bgcolor: "#fff",
-          }}
-        >
-          <Table size="small" sx={{ width: "max-content", minWidth: 920 }}>
-            <TableHead>
-              <TableRow
-                sx={{
-                  bgcolor: BRAND_RED,
-                  "& th": {
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    py: 1.1,
-                    borderBottom: "none",
-                    whiteSpace: "nowrap",
-                  },
-                }}
-              >
-                <TableCell sx={{ width: 52 }}>#</TableCell>
-                <TableCell sx={{ width: 360 }}>Nombre</TableCell>
-                <TableCell sx={{ width: 90, textAlign: "right" }}>Stock</TableCell>
-                <TableCell sx={{ width: 90, textAlign: "right" }}>Nuevo</TableCell>
-                <TableCell sx={{ width: 360 }}>Motivo</TableCell>
-                <TableCell sx={{ width: 64 }} align="center">
-                  Alta
-                </TableCell>
-                <TableCell sx={{ width: 64 }} align="center">
-                  Baja
-                </TableCell>
-                <TableCell sx={{ width: 64 }} align="center">
-                  Hist.
-                </TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {productos.map((p, idx) => {
-                const umbral = Number(p.umbral ?? 1);
-                const cant = Number(p.cantidad ?? 0);
-                const enRiesgo = umbral > 1 && cant < umbral;
-                const zebra = idx % 2 === 0 ? "#ffffff" : "#fafafa";
-
-                return (
-                  <TableRow
-                    key={p._id}
-                    sx={{
-                      bgcolor: enRiesgo ? "#fff3e0" : zebra,
-                      "& td": {
-                        fontWeight: 400,
-                        fontSize: 13,
-                        color: "#111827",
-                        py: 0.95,
-                        borderBottom: "1px solid rgba(0,0,0,0.06)",
-                      },
-                      "&:hover": {
-                        bgcolor: enRiesgo ? "#ffe7c2" : "rgba(0,0,0,0.03)",
-                      },
-                    }}
-                  >
-                    <TableCell sx={{ color: "#6b7280" }}>{idx + 1}</TableCell>
-
-                    <TableCell
-                      sx={{
-                        textTransform: "uppercase",
-                        letterSpacing: 0.15,
-                        whiteSpace: "normal",
-                        lineHeight: 1.25,
-                        pr: 2,
-                      }}
-                    >
-                      {p.nombre}
-                    </TableCell>
-
-                    <TableCell sx={{ textAlign: "right" }}>
-                      <Typography sx={{ fontSize: 13 }}>{cant}</Typography>
-                    </TableCell>
-
-                    <TableCell sx={{ textAlign: "right" }}>
-                      <TextField
-                        size="small"
-                        value={nuevoValor[p._id] ?? ""}
-                        onChange={(e) =>
-                          setNuevoValor((prev) => ({ ...prev, [p._id]: e.target.value }))
-                        }
-                        placeholder="0"
-                        inputProps={{
-                          inputMode: "numeric",
-                          style: { textAlign: "right" },
-                        }}
-                        sx={{
-                          width: 72,
-                          "& .MuiOutlinedInput-root": { height: 34, bgcolor: "#fff" },
-                        }}
-                      />
-                    </TableCell>
-
-                    <TableCell>
-                      <TextField
-                        size="small"
-                        fullWidth
-                        value={motivo[p._id] ?? ""}
-                        onChange={(e) =>
-                          setMotivo((prev) => ({ ...prev, [p._id]: e.target.value }))
-                        }
-                        placeholder="Ej: compra, ajuste, merma..."
-                        sx={{
-                          "& .MuiOutlinedInput-root": { height: 34, bgcolor: "#fff" },
-                        }}
-                      />
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Tooltip title="Registrar Alta">
-                        <span>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleMovimiento(p._id, "ALTA")}
-                            sx={{
-                              color: "#16a34a",
-                              "&:hover": { bgcolor: "rgba(22,163,74,0.10)" },
-                            }}
-                          >
-                            <AddCircleOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Tooltip title="Dar de Baja">
-                        <span>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleMovimiento(p._id, "BAJA")}
-                            sx={{
-                              color: "#dc2626",
-                              "&:hover": { bgcolor: "rgba(220,38,38,0.10)" },
-                            }}
-                          >
-                            <RemoveCircleOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Tooltip title="Ver historial">
-                        <span>
-                          <IconButton
-                            size="small"
-                            onClick={() => abrirHistorial(p)}
-                            sx={{
-                              color: "#2563eb",
-                              "&:hover": { bgcolor: "rgba(37,99,235,0.10)" },
-                            }}
-                          >
-                            <VisibilityOutlinedIcon fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-
-              {productos.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={8} sx={{ textAlign: "center", py: 4, color: "#6b7280" }}>
-                    No hay productos en esta categoría.
+      {/* Tabla */}
+           <Box
+        sx={{
+          width: "100%",
+          borderRadius: 2,
+          overflowX: "visible",
+          overflowY: "hidden",
+          border: "1px solid rgba(0,0,0,0.08)",
+          bgcolor: "#fff",
+        }}
+      >
+        {loading ? (
+          <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+                <TableContainer
+            sx={{
+              width: "100%",
+              overflowX: "auto",
+              overflowY: "visible",
+              WebkitOverflowScrolling: "touch",
+              boxShadow: "none",
+              border: "none",
+              display: "block",
+            }}
+          >
+            <Table size="small" sx={{ width: "max-content", minWidth: 920 }}>
+              <TableHead>
+                <TableRow
+                  sx={{
+                    bgcolor: BRAND_RED,
+                    "& th": {
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      py: 1.1,
+                      borderBottom: "none",
+                      whiteSpace: "nowrap",
+                    },
+                  }}
+                >
+                  <TableCell sx={{ width: 52 }}>#</TableCell>
+                  <TableCell sx={{ width: 360 }}>Nombre</TableCell>
+                  <TableCell sx={{ width: 90, textAlign: "right" }}>Stock</TableCell>
+                  <TableCell sx={{ width: 90, textAlign: "right" }}>Nuevo</TableCell>
+                  <TableCell sx={{ width: 360 }}>Motivo</TableCell>
+                  <TableCell sx={{ width: 64 }} align="center">
+                    Alta
+                  </TableCell>
+                  <TableCell sx={{ width: 64 }} align="center">
+                    Baja
+                  </TableCell>
+                  <TableCell sx={{ width: 64 }} align="center">
+                    Hist.
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+              </TableHead>
+
+              <TableBody>
+                {productos.map((p, idx) => {
+                  const umbral = Number(p.umbral ?? 1);
+                  const cant = Number(p.cantidad ?? 0);
+                  const enRiesgo = umbral > 1 && cant < umbral;
+                  const zebra = idx % 2 === 0 ? "#ffffff" : "#fafafa";
+
+                  return (
+                    <TableRow
+                      key={p._id}
+                      sx={{
+                        bgcolor: enRiesgo ? "#fff3e0" : zebra,
+                        "& td": {
+                          fontWeight: 400,
+                          fontSize: 13,
+                          color: "#111827",
+                          py: 0.95,
+                          borderBottom: "1px solid rgba(0,0,0,0.06)",
+                        },
+                        "&:hover": {
+                          bgcolor: enRiesgo ? "#ffe7c2" : "rgba(0,0,0,0.03)",
+                        },
+                      }}
+                    >
+                      <TableCell sx={{ color: "#6b7280" }}>{idx + 1}</TableCell>
+
+                      <TableCell
+                        sx={{
+                          textTransform: "uppercase",
+                          letterSpacing: 0.15,
+                          whiteSpace: "normal",
+                          lineHeight: 1.25,
+                          pr: 2,
+                        }}
+                      >
+                        {p.nombre}
+                      </TableCell>
+
+                     <TableCell sx={{ textAlign: "right" }}>
+  <Typography sx={{ fontSize: 13 }}>{cant}</Typography>
+</TableCell>
+
+                      <TableCell sx={{ textAlign: "right" }}>
+                        <TextField
+                          size="small"
+                          value={nuevoValor[p._id] ?? ""}
+                          onChange={(e) =>
+                            setNuevoValor((prev) => ({ ...prev, [p._id]: e.target.value }))
+                          }
+                          placeholder="0"
+                          inputProps={{
+                            inputMode: "numeric",
+                            style: { textAlign: "right" },
+                          }}
+                          sx={{
+                            width: 72,
+                            "& .MuiOutlinedInput-root": { height: 34, bgcolor: "#fff" },
+                          }}
+                        />
+                      </TableCell>
+
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={motivo[p._id] ?? ""}
+                          onChange={(e) =>
+                            setMotivo((prev) => ({ ...prev, [p._id]: e.target.value }))
+                          }
+                          placeholder="Ej: compra, ajuste, merma..."
+                          sx={{
+                            "& .MuiOutlinedInput-root": { height: 34, bgcolor: "#fff" },
+                          }}
+                        />
+                      </TableCell>
+
+                      <TableCell align="center">
+                        <Tooltip title="Registrar Alta">
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleMovimiento(p._id, "ALTA")}
+                              sx={{
+                                color: "#16a34a",
+                                "&:hover": { bgcolor: "rgba(22,163,74,0.10)" },
+                              }}
+                            >
+                              <AddCircleOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+
+                      <TableCell align="center">
+                        <Tooltip title="Dar de Baja">
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleMovimiento(p._id, "BAJA")}
+                              sx={{
+                                color: "#dc2626",
+                                "&:hover": { bgcolor: "rgba(220,38,38,0.10)" },
+                              }}
+                            >
+                              <RemoveCircleOutlineIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+
+                      <TableCell align="center">
+                        <Tooltip title="Ver historial">
+                          <span>
+                            <IconButton
+                              size="small"
+                              onClick={() => abrirHistorial(p)}
+                              sx={{
+                                color: "#2563eb",
+                                "&:hover": { bgcolor: "rgba(37,99,235,0.10)" },
+                              }}
+                            >
+                              <VisibilityOutlinedIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+
+                {productos.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} sx={{ textAlign: "center", py: 4, color: "#6b7280" }}>
+                      No hay productos en esta categoría.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Box>
 
       {/* MODAL HISTORIAL */}
       <Dialog
