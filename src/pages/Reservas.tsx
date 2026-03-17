@@ -124,10 +124,12 @@ export default function ReservasPage() {
     if (fecha) fetchReservas(fecha, setReservas, setLoading, setError);
   }, [fecha]);
 
-  const getRowColor = (estado: string) => {
+    const getRowColor = (estado: string) => {
     switch (estado) {
       case "Llego":
         return "rgba(0,200,0,0.1)";
+      case "Pagado":
+        return "rgba(103,58,183,0.10)";
       case "Cancelo":
         return "rgba(255,165,0,0.1)";
       case "No vino":
@@ -403,7 +405,7 @@ export default function ReservasPage() {
                       minWidth: { xs: 100, sm: 120, md: 140 },
                     }}
                   >
-                    {["Pendiente", "Llego", "Cancelo", "No vino"].map(
+                    {["Pendiente", "Llego", "Pagado", "Cancelo", "No vino"].map(
                       (estado) => (
                         <MenuItem key={estado} value={estado}>
                           {estado}

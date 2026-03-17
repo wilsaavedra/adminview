@@ -10,6 +10,7 @@ import {
   Drawer,
   Tooltip,
   Collapse,
+  Typography,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
@@ -297,7 +298,39 @@ React.useEffect(() => {
 
       </Box>
 
-      <Box>
+          <Box>
+        {!collapsed && (
+          <Box
+            sx={{
+              px: 2,
+              pt: 1,
+              pb: 0.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 12,
+                color: 'text.secondary',
+                lineHeight: 1.2,
+              }}
+            >
+              Usuario
+            </Typography>
+
+                       <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: 'rgba(0,0,0,0.72)',
+                lineHeight: 1.3,
+                wordBreak: 'break-word',
+              }}
+            >
+              {user?.nombre || 'Sin usuario'}
+            </Typography>
+          </Box>
+        )}
+
         <List sx={{ p: 0 }}>
           <Tooltip title={collapsed ? 'Cerrar Sesión' : ''} placement="right" arrow>
             <ListItemButton
