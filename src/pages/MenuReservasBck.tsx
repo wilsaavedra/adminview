@@ -35,7 +35,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import SendIcon from "@mui/icons-material/Send";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -393,6 +393,10 @@ if (opImpresion !== "SIN_IMPRIMIR") {
     }
   };
 
+   const handleRefresh = async () => {
+    await fetchMenuReservas();
+  };
+
   useEffect(() => {
     if (fecha) fetchMenuReservas();
   }, [fecha]);
@@ -433,16 +437,14 @@ if (opImpresion !== "SIN_IMPRIMIR") {
       {/* ===================================== */}
       {/*     FECHA + TÍTULO                   */}
       {/* ===================================== */}
-      <Grid
+            <Grid
         container
-        alignItems={{ xs: "flex-start", sm: "center" }}
+        alignItems="center"
         justifyContent="flex-start"
         mb={{ xs: 1, sm: 3 }}
-        sx={{
-          gap: { xs: 1, sm: 3 },
-        }}
+        sx={{ gap: { xs: 1, sm: 3 } }}
       >
-        <Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <DatePicker
               value={fecha}
@@ -451,11 +453,33 @@ if (opImpresion !== "SIN_IMPRIMIR") {
               slotProps={{
                 textField: {
                   size: "small",
-                  sx: { bgcolor: "white", borderRadius: "12px", boxShadow: 1 },
+                  sx: {
+                    bgcolor: "white",
+                    borderRadius: "12px",
+                    boxShadow: 1,
+                    minWidth: 170,
+                  },
                 },
               }}
             />
           </LocalizationProvider>
+
+          <IconButton
+            onClick={handleRefresh}
+            disabled={loading}
+            sx={{
+              height: 40,
+              width: 40,
+              borderRadius: "10px",
+              border: "1px solid #ddd",
+              bgcolor: "#fff",
+              "&:hover": {
+                bgcolor: "#f5f5f5",
+              },
+            }}
+          >
+            <RefreshIcon />
+          </IconButton>
         </Box>
 
         <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>

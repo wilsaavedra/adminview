@@ -301,8 +301,18 @@ const Inventarios: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <TableContainer sx={{ overflowX: "auto" }}>
-            <Table size="small" sx={{ minWidth: 920 }}>
+                  <TableContainer
+            sx={{
+              width: "100%",
+              overflowX: "visible",
+              overflowY: "visible",
+              WebkitOverflowScrolling: "touch",
+              boxShadow: "none",
+              border: "none",
+              display: "block",
+            }}
+          >
+            <Table size="small" sx={{ width: "max-content", minWidth: 920 }}>
               <TableHead>
                 <TableRow
                   sx={{
