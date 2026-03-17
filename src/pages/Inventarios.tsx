@@ -287,11 +287,12 @@ const Inventarios: React.FC = () => {
       </Box>
 
       {/* Tabla */}
-      <Box
+           <Box
         sx={{
           width: "100%",
           borderRadius: 2,
-          overflow: "hidden",
+          overflowX: "visible",
+          overflowY: "hidden",
           border: "1px solid rgba(0,0,0,0.08)",
           bgcolor: "#fff",
         }}
@@ -301,10 +302,10 @@ const Inventarios: React.FC = () => {
             <CircularProgress />
           </Box>
         ) : (
-                  <TableContainer
+                <TableContainer
             sx={{
               width: "100%",
-              overflowX: "visible",
+              overflowX: "auto",
               overflowY: "visible",
               WebkitOverflowScrolling: "touch",
               boxShadow: "none",
