@@ -205,12 +205,15 @@ const [facturaToEmail, setFacturaToEmail] = useState<Factura | null>(null);
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer
+               <TableContainer
           sx={{
             boxShadow: "none",
             width: "100%",
-            overflowX: "auto",
+            overflowX: "visible",
+            overflowY: "visible",
             WebkitOverflowScrolling: "touch",
+            border: "none",
+            display: "block",
           }}
         >
           <Table sx={{ minWidth: 900 }} size={isMobile ? "small" : "medium"}>
