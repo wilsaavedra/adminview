@@ -24,6 +24,7 @@ import {
   useMediaQuery,
   Snackbar,
   Alert,
+  Paper,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
@@ -293,17 +294,15 @@ const Inventarios: React.FC = () => {
         </Box>
       ) : (
         <TableContainer
-          component={Box}
+          component={Paper}
           sx={{
             width: "100%",
             overflowX: "visible",
             overflowY: "visible",
             WebkitOverflowScrolling: "touch",
             boxShadow: "none",
-            border: "1px solid rgba(0,0,0,0.08)",
-            borderRadius: 2,
+            border: "none",
             display: "block",
-            bgcolor: "#fff",
           }}
         >
           <Table size="small" sx={{ width: "max-content", minWidth: 920 }}>
