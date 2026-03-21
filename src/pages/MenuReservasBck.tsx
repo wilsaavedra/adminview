@@ -187,6 +187,19 @@ const abrirModalFacturar = (mr: MenuReserva) => {
     }
   };
 
+  const abrirCajonSiEfectivo = async () => {
+    if (metodoPago !== "EFECTIVO") return;
+
+    try {
+      await cafeApi.post("/facturas/abrir-cajon", {
+        printerName: "Star BSC10",
+      });
+    } catch (e) {
+      console.error("❌ No se pudo abrir el cajón:", e);
+      // no bloqueamos el flujo si falla
+    }
+  };
+
   // ✅ Cerrar o Generar (ambos pagan total, uno además crea FacturaPendiente)
   const cerrarYSiHayNitGenerar = async () => {
     if (!mrSeleccionada?.reserva?._id) return;
@@ -230,7 +243,9 @@ try {
 }
 
       // 2) si NO hay NIT => solo cerrar (como antes)
-      if (!nitClean) {
+           if (!nitClean) {
+        await abrirCajonSiEfectivo();
+
         setSnackMsg("Cuenta cerrada");
         setSnackSeverity("success");
         setSnackOpen(true);
@@ -279,6 +294,8 @@ if (opImpresion !== "SIN_IMPRIMIR") {
     // no bloqueamos el flujo
   }
 }
+
+               await abrirCajonSiEfectivo();
 
         // ✅ éxito: marcar facturado (y guardar nro/cuf en UI por si quieres mostrar luego)
         setSnackMsg(
