@@ -29,6 +29,7 @@ import { es } from "date-fns/locale";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import HowToRegIcon from "@mui/icons-material/HowToReg";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 
 interface CreadoPor {
   _id: string;
@@ -72,12 +73,13 @@ export default function ReservasPage() {
   const [loading, setLoading] = useState(false);
   const [fecha, setFecha] = useState<Date | null>(new Date());
   const [error, setError] = useState<string | null>(null);
+  const [reservasConMenu, setReservasConMenu] = useState<Set<string>>(new Set());
   const totalPax = reservas.reduce((sum, r) => sum + (r.cantidad || 0), 0);
 
   const [open, setOpen] = useState(false);
   const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
 
-  const fetchReservas = async (
+   const fetchReservas = async (
     fechaSeleccionada: Date,
     setReservasFn: (r: Reservas[]) => void,
     setLoadingFn: (b: boolean) => void,
@@ -87,9 +89,17 @@ export default function ReservasPage() {
       setLoadingFn(true);
       setErrorFn(null);
 
-      const response = await API.get("/reservas");
-      const data: Reservas[] = Array.isArray(response.data.reservas)
-        ? response.data.reservas
+      const [reservasResp, menuResp] = await Promise.all([
+        API.get("/reservas"),
+        API.get("/menureservas"),
+      ]);
+
+      const data: Reservas[] = Array.isArray(reservasResp.data.reservas)
+        ? reservasResp.data.reservas
+        : [];
+
+      const menureservas = Array.isArray(menuResp.data.menureservas)
+        ? menuResp.data.menureservas
         : [];
 
       const selectedKey = ymdLaPaz(fechaSeleccionada);
@@ -110,11 +120,22 @@ export default function ReservasPage() {
         })
         .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
 
+      const idsConMenu = new Set<string>(
+        menureservas
+          .filter((mr: any) => Array.isArray(mr.productos) && mr.productos.length > 0)
+          .map((mr: any) =>
+            typeof mr.reserva === "string" ? mr.reserva : mr.reserva?._id
+          )
+          .filter(Boolean)
+      );
+
+      setReservasConMenu(idsConMenu);
       setReservasFn(reservasFiltradas);
     } catch (err) {
       console.error("Error al cargar reservas", err);
       setErrorFn("No se pudo cargar las reservas.");
       setReservasFn([]);
+      setReservasConMenu(new Set());
     } finally {
       setLoadingFn(false);
     }
@@ -415,22 +436,39 @@ export default function ReservasPage() {
                   </Select>
                 </TableCell>
 
-                <TableCell
+                               <TableCell
                   sx={{
                     textAlign: "center",
-                    width: 60,
+                    width: 90,
                   }}
                 >
-                  {reserva.canal === "self" && (
-                    <PersonOutlineIcon
-                      fontSize="small"
-                      sx={{ opacity: 0.8 }}
-                    />
-                  )}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 0.6,
+                    }}
+                  >
+                    {reserva.canal === "self" && (
+                      <PersonOutlineIcon
+                        fontSize="small"
+                        sx={{ opacity: 0.8 }}
+                      />
+                    )}
 
-                  {reserva.canal === "selfregister" && (
-                    <HowToRegIcon fontSize="small" sx={{ opacity: 0.8 }} />
-                  )}
+                    {reserva.canal === "selfregister" && (
+                      <HowToRegIcon fontSize="small" sx={{ opacity: 0.8 }} />
+                    )}
+
+                    {(reserva.canal === "self" || reserva.canal === "selfregister") &&
+                      reservasConMenu.has(reserva._id) && (
+                        <MenuBookIcon
+                          fontSize="small"
+                          sx={{ opacity: 0.9, color: "#1e3a8a" }}
+                        />
+                      )}
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}
