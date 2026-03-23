@@ -145,7 +145,19 @@ export default function ReservasPage() {
     if (fecha) fetchReservas(fecha, setReservas, setLoading, setError);
   }, [fecha]);
 
-    const getRowColor = (estado: string) => {
+     const getRowColor = (
+    estado: string,
+    canal?: "self" | "selfregister" | null,
+    tieneMenu?: boolean
+  ) => {
+    if (
+      estado === "Pendiente" &&
+      (canal === "self" || canal === "selfregister") &&
+      tieneMenu
+    ) {
+      return "rgba(255,235,140,0.35)";
+    }
+
     switch (estado) {
       case "Llego":
         return "rgba(0,200,0,0.1)";
@@ -304,10 +316,16 @@ export default function ReservasPage() {
 
           <TableBody>
             {reservas.map((reserva) => (
-              <TableRow
+                           <TableRow
                 key={reserva._id}
                 hover
-                sx={{ bgcolor: getRowColor(reserva.resest) }}
+                sx={{
+                  bgcolor: getRowColor(
+                    reserva.resest,
+                    reserva.canal,
+                    reservasConMenu.has(reserva._id)
+                  ),
+                }}
               >
                 <TableCell>{reserva.nombre}</TableCell>
 
