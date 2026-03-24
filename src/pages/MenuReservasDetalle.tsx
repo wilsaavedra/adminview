@@ -40,6 +40,12 @@ interface DetalleMenuReserva {
     comentarios: string;
     fecha: string;
     pago?: number;
+    descuentoCupon?: number;
+    cupon?: {
+      _id?: string;
+      codigo?: string;
+      porcentaje?: number;
+    };
   };
 }
 
@@ -135,13 +141,28 @@ const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "info">
       </Typography>
     );
 
-  const subtotal = data.productos.reduce(
-    (acc, item) => acc + item.producto.precio * item.cantidad,
-    0
-  );
+  const COSTO_ENVASE_UNITARIO = 2;
 
-  const pago = data.reserva.pago ?? 0;
-  const saldo = subtotal - pago;
+const subtotal = data.productos.reduce(
+  (acc, item) => acc + item.producto.precio * item.cantidad,
+  0
+);
+
+const esLlevar =
+  String(data.reserva.tipo || "").toLowerCase() === "llevar";
+
+const costoEnvases = esLlevar
+  ? data.productos.reduce(
+      (acc, item) => acc + item.cantidad * COSTO_ENVASE_UNITARIO,
+      0
+    )
+  : 0;
+
+const descuento = Number(data.reserva.descuentoCupon ?? 0);
+
+const total = Math.max(0, subtotal + costoEnvases - descuento);
+const pago = Number(data.reserva.pago ?? 0);
+const saldo = Math.max(0, total - pago);
 
   // ---------- FORMATO FECHA PREMIUM ----------
   const fechaElegante =
@@ -364,17 +385,43 @@ const [snackSeverity, setSnackSeverity] = useState<"success" | "error" | "info">
       Total
     </Typography>
 
+   <Typography
+  sx={{
+    fontSize: 22,
+    fontWeight: 700,
+    color: "#c62828",
+    pr: 3,
+  }}
+>
+  Bs. {total}
+</Typography>
+  </Box>
+
+{descuento > 0 && (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
+      px: 1,
+      mt: 1,
+    }}
+  >
+    <Typography sx={{ fontSize: 16, fontWeight: 700 }}>
+      Descuento:
+    </Typography>
+
     <Typography
       sx={{
-        fontSize: 22,
-        fontWeight: 700,
-        color: "#c62828",
-        pr: 3,
+        fontSize: 16,
+        fontWeight: 400,
+        color: "#2e7d32",
       }}
     >
-      Bs. {subtotal}
+      - Bs. {descuento}
     </Typography>
   </Box>
+)}
 
   {/* PAGADO — texto + monto, mismo color, sin negrilla en el monto */}
   <Box
