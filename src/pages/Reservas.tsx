@@ -20,11 +20,13 @@ import {
   DialogActions,
   Button,
   TextField,
+  IconButton,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { es } from "date-fns/locale";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -141,9 +143,15 @@ export default function ReservasPage() {
     }
   };
 
-  useEffect(() => {
+   useEffect(() => {
     if (fecha) fetchReservas(fecha, setReservas, setLoading, setError);
   }, [fecha]);
+
+  const handleRefresh = async () => {
+    if (fecha) {
+      await fetchReservas(fecha, setReservas, setLoading, setError);
+    }
+  };
 
      const getRowColor = (
     estado: string,
@@ -206,14 +214,14 @@ export default function ReservasPage() {
   </Box>
 
     {/* ====== CABECERA: IGUAL QUE MenuReservas ====== */}
-    <Grid
+        <Grid
       container
-      alignItems="flex-start"
+      alignItems="center"
       justifyContent="flex-start"
-      mb={3}
-      sx={{ gap: 3 }}
+      mb={{ xs: 1, sm: 3 }}
+      sx={{ gap: { xs: 1, sm: 3 } }}
     >
-      <Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
           <DatePicker
             value={fecha}
@@ -222,16 +230,38 @@ export default function ReservasPage() {
             slotProps={{
               textField: {
                 size: "small",
-                sx: { bgcolor: "white", borderRadius: "12px", boxShadow: 1 },
+                sx: {
+                  bgcolor: "white",
+                  borderRadius: "12px",
+                  boxShadow: 1,
+                  minWidth: 170,
+                },
               },
             }}
           />
         </LocalizationProvider>
 
+        <IconButton
+          onClick={handleRefresh}
+          disabled={loading}
+          sx={{
+            height: 40,
+            width: 40,
+            borderRadius: "10px",
+            border: "1px solid #ddd",
+            bgcolor: "#fff",
+            "&:hover": {
+              bgcolor: "#f5f5f5",
+            },
+          }}
+        >
+          <RefreshIcon />
+        </IconButton>
+
         {reservas.length > 0 && (
           <Typography
             variant="subtitle1"
-            sx={{ mt: 1, fontWeight: 500, color: "#444" }}
+            sx={{ fontWeight: 500, color: "#444" }}
           >
             Cantidad Pax: {totalPax}
           </Typography>
