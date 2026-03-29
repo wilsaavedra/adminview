@@ -753,12 +753,64 @@ if (opImpresion !== "SIN_IMPRIMIR") {
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ pt: 1 }}>
-          <Typography sx={{ mb: 1, color: "#555" }}>
-            {mrSeleccionada?.reserva?.nombre || "—"}
-          </Typography>
+      <DialogContent sx={{ pt: 1 }}>
+  {(() => {
+    const COSTO_ENVASE_UNITARIO = 2;
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+    const subtotal = (mrSeleccionada?.productos || []).reduce(
+      (acc, item) => acc + item.producto.precio * (item.cantidad ?? 1),
+      0
+    );
+
+    const esLlevar =
+      String(mrSeleccionada?.reserva?.tipo || "").toLowerCase() === "llevar";
+
+    const costoEnvases = esLlevar
+      ? (mrSeleccionada?.productos || []).reduce(
+          (acc, item) => acc + (item.cantidad ?? 1) * COSTO_ENVASE_UNITARIO,
+          0
+        )
+      : 0;
+
+    const descuento = Number(mrSeleccionada?.reserva?.descuentoCupon ?? 0);
+    const montoFacturar = Math.max(0, subtotal + costoEnvases - descuento);
+
+    const fechaReserva = mrSeleccionada?.reserva?.fecha
+      ? new Intl.DateTimeFormat("es-BO", {
+          timeZone: "America/La_Paz",
+          day: "2-digit",
+          month: "short",
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(mrSeleccionada.reserva.fecha))
+      : "—";
+
+    return (
+      <Box
+        sx={{
+          mb: 1.5,
+          p: 1.5,
+          borderRadius: "12px",
+          bgcolor: "rgba(225,63,68,0.04)",
+          border: "1px solid rgba(225,63,68,0.14)",
+        }}
+      >
+        <Typography sx={{ fontSize: 13, fontWeight: 800, color: "#666", mb: 0.5 }}>
+          Mesa: {mrSeleccionada?.reserva?.mesa || "—"} · {fechaReserva}
+        </Typography>
+
+        <Typography sx={{ fontSize: 17, fontWeight: 900, color: "#222", lineHeight: 1.15 }}>
+          {mrSeleccionada?.reserva?.nombre || "—"}
+        </Typography>
+
+        <Typography sx={{ mt: 0.7, fontSize: 14, fontWeight: 800, color: "rgb(225,63,68)" }}>
+          Monto a facturar: Bs {montoFacturar}
+        </Typography>
+      </Box>
+    );
+  })()}
+
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
             <RadioGroup
               value={metodoPago}
               onChange={(e) =>

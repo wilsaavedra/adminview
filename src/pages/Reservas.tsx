@@ -81,7 +81,7 @@ export default function ReservasPage() {
   const [open, setOpen] = useState(false);
   const [reservaSeleccionada, setReservaSeleccionada] = useState<any>(null);
 
-   const fetchReservas = async (
+     const fetchReservas = async (
     fechaSeleccionada: Date,
     setReservasFn: (r: Reservas[]) => void,
     setLoadingFn: (b: boolean) => void,
@@ -91,36 +91,40 @@ export default function ReservasPage() {
       setLoadingFn(true);
       setErrorFn(null);
 
-      const [reservasResp, menuResp] = await Promise.all([
-        API.get("/reservas"),
-        API.get("/menureservas"),
-      ]);
+      const selectedKey = ymdLaPaz(fechaSeleccionada);
+      const desdeFecha = `${selectedKey}T00:00:00.000-04:00`;
+      const hastaFecha = `${selectedKey}T23:59:59.999-04:00`;
+
+      const reservasResp = await API.get("/reservas", {
+        params: { desdeFecha, hastaFecha, limite: 5000 },
+      });
 
       const data: Reservas[] = Array.isArray(reservasResp.data.reservas)
         ? reservasResp.data.reservas
         : [];
 
+      const reservasFiltradas: Reservas[] = data
+        .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+        .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
+
+      const reservaIds = reservasFiltradas.map((r) => r._id).filter(Boolean);
+
+      if (!reservaIds.length) {
+        setReservasConMenu(new Set());
+        setReservasFn([]);
+        return;
+      }
+
+      const menuResp = await API.get("/menureservas", {
+        params: {
+          reservaIds: reservaIds.join(","),
+          limite: 5000,
+        },
+      });
+
       const menureservas = Array.isArray(menuResp.data.menureservas)
         ? menuResp.data.menureservas
         : [];
-
-      const selectedKey = ymdLaPaz(fechaSeleccionada);
-
-      const reservasFiltradas: Reservas[] = data
-        .filter((reserva) => {
-          const keyReserva = ymdLaPaz(new Date(reserva.fecha));
-          return keyReserva === selectedKey;
-        })
-        .sort((a, b) => {
-          const horaA =
-            new Date(a.fecha).getHours() * 60 +
-            new Date(a.fecha).getMinutes();
-          const horaB =
-            new Date(b.fecha).getHours() * 60 +
-            new Date(b.fecha).getMinutes();
-          return horaA - horaB;
-        })
-        .map((r) => ({ ...r, resest: r.resest || "Pendiente" }));
 
       const idsConMenu = new Set<string>(
         menureservas

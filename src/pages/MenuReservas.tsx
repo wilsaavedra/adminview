@@ -343,35 +343,48 @@ if (opImpresion !== "SIN_IMPRIMIR") {
   // =====================================
   // CARGAR MENÚ RESERVAS
   // =====================================
-  const fetchMenuReservas = async () => {
+    const fetchMenuReservas = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const resp = await cafeApi.get("/menureservas");
-      console.log("🔥 RESPUESTA /menureservas:", JSON.stringify(resp.data, null, 2));
-      const data = resp.data.menureservas || [];
-
-      // 1️⃣ FILTRAR MENÚS SIN RESERVA → EVITA CRASH
-      const dataLimpia = data.filter((mr: any) => mr.fecha_creacion);
-
-      // 🔑 fecha seleccionada en formato YYYY-MM-DD (La Paz)
       const keySelected = ymdLaPaz(fecha!);
+      const desdeFecha = `${keySelected}T00:00:00.000-04:00`;
+      const hastaFecha = `${keySelected}T23:59:59.999-04:00`;
 
-      // 2️⃣ FILTRAR POR FECHA
-      const filtradas: MenuReserva[] = dataLimpia.filter((mr: MenuReserva) => {
-        const keyRes = ymdLaPaz(new Date(mr.fecha_creacion!));
-        return keyRes === keySelected;
+      // ✅ primero traer solo reservas del día
+      const reservasResp = await cafeApi.get("/reservas", {
+        params: { desdeFecha, hastaFecha, limite: 5000 },
       });
 
-      // 3️⃣ PARA CADA RESERVA → PREGUNTAR SI YA TIENE PEDIDOS
+      const reservasDia = Array.isArray(reservasResp.data?.reservas)
+        ? reservasResp.data.reservas
+        : [];
+
+      const reservaIds = reservasDia.map((r: any) => r?._id).filter(Boolean);
+
+      if (!reservaIds.length) {
+        setReservas([]);
+        return;
+      }
+
+      // ✅ luego traer solo menureservas de esas reservas
+      const resp = await cafeApi.get("/menureservas", {
+        params: {
+          reservaIds: reservaIds.join(","),
+          limite: 5000,
+        },
+      });
+
+      const data = resp.data.menureservas || [];
+      const dataLimpia = data.filter((mr: any) => mr?.reserva?._id);
+
       const filtradasConEnviado: MenuReserva[] = await Promise.all(
-        filtradas.map(async (mr) => {
+        dataLimpia.map(async (mr: MenuReserva) => {
           try {
             const respResumen = await cafeApi.get(`/pedidos/resumen/${mr.reserva._id}`);
             const enviados: Record<string, number> = respResumen.data?.enviados || {};
 
-            // ✅ Calcular si falta algo por enviar (comparando menureservas vs enviados)
             const faltaAlgo = mr.productos.some((it) => {
               const pid = it.producto?._id;
               const cantMenu = it.cantidad ?? 0;
@@ -379,20 +392,16 @@ if (opImpresion !== "SIN_IMPRIMIR") {
               return cantMenu > cantEnviada;
             });
 
-            // ✅ Bloqueo duro si ya está cerrado/facturado (si tu backend lo manda)
             const cerrado = !!respResumen.data?.cerrado;
             const facturado = !!respResumen.data?.facturado;
 
             return {
               ...mr,
-              // “enviado” ahora significa “bloqueado para enviar”
               enviado: cerrado || facturado || !faltaAlgo,
               facturado: facturado || mr.facturado,
             };
           } catch (error) {
             console.error("Error consultando resumen pedidos:", error);
-
-            // Si falla la consulta, NO bloquees por seguridad (para no frenar operación)
             return {
               ...mr,
               enviado: false,
