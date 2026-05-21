@@ -383,14 +383,46 @@ if (opImpresion !== "SIN_IMPRIMIR") {
         dataLimpia.map(async (mr: MenuReserva) => {
           try {
             const respResumen = await cafeApi.get(`/pedidos/resumen/${mr.reserva._id}`);
-            const enviados: Record<string, number> = respResumen.data?.enviados || {};
+           const enviados: Record<string, number> = respResumen.data?.enviados || {};
 
-            const faltaAlgo = mr.productos.some((it) => {
-              const pid = it.producto?._id;
-              const cantMenu = it.cantidad ?? 0;
-              const cantEnviada = pid ? (enviados[pid] ?? 0) : 0;
-              return cantMenu > cantEnviada;
-            });
+const esPaqueteMadre = (nombre?: string) =>
+  String(nombre || "").toUpperCase().includes("PAQUETE MADRE");
+
+const faltaAlgo = mr.productos.some((it: any) => {
+  const nombreProducto = it.producto?.nombre || "";
+  const pid = it.producto?._id;
+
+  // ✅ SOLO PAQUETE MADRE:
+  // aquí no usamos cantidad enviada, usamos bloques internos enviados.
+  if (esPaqueteMadre(nombreProducto)) {
+    const personas = Array.isArray(it.paqueteDetalle?.personas)
+      ? it.paqueteDetalle.personas
+      : [];
+
+    return personas.some((p: any) => {
+      const faltaCoctel = !!p.coctel && p.coctelEnviado !== true;
+      const faltaBebida = !!p.bebida && p.bebidaEnviada !== true;
+      const faltaEntrada = !!p.entrada && p.entradaEnviada !== true;
+      const faltaPlato = !!p.plato && p.platoEnviado !== true;
+      const faltaPostre = !!p.postre && p.postreEnviado !== true;
+
+      return (
+        faltaCoctel ||
+        faltaBebida ||
+        faltaEntrada ||
+        faltaPlato ||
+        faltaPostre
+      );
+    });
+  }
+
+  // ✅ PRODUCTOS NORMALES:
+  // se mantiene exactamente la lógica anterior.
+  const cantMenu = it.cantidad ?? 0;
+  const cantEnviada = pid ? (enviados[pid] ?? 0) : 0;
+
+  return cantMenu > cantEnviada;
+});
 
             const cerrado = !!respResumen.data?.cerrado;
             const facturado = !!respResumen.data?.facturado;
@@ -672,17 +704,16 @@ if (opImpresion !== "SIN_IMPRIMIR") {
                               });
                             }
 
-                            await cafeApi.post(`/pedidos/crear/${mr._id}`);
+                           await cafeApi.post(`/pedidos/crear/${mr._id}`);
 
                             setSnackMsg("Enviado");
                             setSnackSeverity("success");
                             setSnackOpen(true);
 
-                            setReservas((prev) =>
-                              prev.map((r) =>
-                                r._id === mr._id ? { ...r, enviado: true } : r
-                              )
-                            );
+                            // ✅ Recarga desde backend y recalcula:
+                            // - productos normales con cantidad vs enviados
+                            // - paquetes con bloques enviados
+                            await fetchMenuReservas();
                           } catch (error) {
                             console.error("❌ No se pudo enviar pedido:", error);
                             setSnackMsg("No se pudo enviar");
