@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import cafeApi from "../api/cafeApi";
-import ViewImage from "../assets/View7.png";
+
 
 type TvBirthday = {
   _id: string;
@@ -216,7 +216,7 @@ export default function TVScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  const slides = useMemo(() => (items.length === 0 ? ["view"] : items), [items]);
+const slides = useMemo(() => (items.length === 0 ? [] : items), [items]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -228,13 +228,11 @@ export default function TVScreen() {
 
   const current = slides[index];
 
-  if (current === "view") {
-    return (
-      <Box sx={{ width: "100vw", height: "100vh", bgcolor: "#000", overflow: "hidden" }}>
-        <img src={ViewImage} alt="View" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-      </Box>
-    );
-  }
+  if (!current) {
+  return (
+    <Box sx={{ width: "100vw", height: "100vh", bgcolor: "#000" }} />
+  );
+}
 
   const cumple = current as TvBirthday;
 
