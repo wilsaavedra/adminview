@@ -9,7 +9,7 @@ import Paquetes from "./pages/Paquetes";
 import Reservar from "./pages/Reservar";
 import Reservas from "./pages/Reservas";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+//import "react-toastify/dist/ReactToastify.css";
 import Pedidos from "./pages/Pedidos";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import MenuReservas from "./pages/MenuReservas";
@@ -18,6 +18,8 @@ import QRsAdmin from "./pages/QRsAdmin";
 import ReporteResumen from "./pages/ReporteResumen";
 import Facturas from "./pages/Facturas";
 import Inventarios from "./pages/Inventarios";
+import AbrirCajon from "./pages/AbrirCajon";
+import AnulacionesPedidos from "./pages/AnulacionesPedidos";
 
 type Role =
   | "ADMIN_ROLE"
@@ -177,6 +179,23 @@ function AppContent() {
               }
             />
 <Route path="/Facturas" element={<Facturas />} />
+<Route
+  path="/AnulacionesPedidos"
+  element={
+    <PrivateRoute roles={["ADMIN_ROLE"]}>
+      <AnulacionesPedidos />
+    </PrivateRoute>
+  }
+/>
+   <Route
+              path="/AbrirCajon"
+              element={
+                <PrivateRoute roles={["ADMIN_ROLE", "MESERO_ROLE"]}>
+                  <AbrirCajon />
+                </PrivateRoute>
+              }
+            />
+
             <Route
               path="/Pedidos"
               element={

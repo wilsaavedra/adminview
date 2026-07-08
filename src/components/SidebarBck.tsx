@@ -10,6 +10,7 @@ import {
   Drawer,
   Tooltip,
   Collapse,
+  Typography,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
@@ -24,57 +25,40 @@ import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import QrCode2Icon from "@mui/icons-material/QrCode2";
-
+import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import SummarizeOutlinedIcon from "@mui/icons-material/SummarizeOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PointOfSaleOutlinedIcon from "@mui/icons-material/PointOfSaleOutlined";
+import BackspaceOutlinedIcon from "@mui/icons-material/BackspaceOutlined";
 
-type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE';
+type Role = 'ADMIN_ROLE' | 'USER_ROLE' | 'COCINA_ROLE'| 'PARRILLA_ROLE' | 'BAR_ROLE'| 'MESERO_ROLE';
 
 interface MenuItem {
   text: string;
   icon: React.ReactNode;
-  path: string;
+  path?: string;
+  externalUrl?: string;
   roles?: Role[];
 }
 
 // 🔐 CONFIG MENÚ — ADMIN VE TODO AUTOMÁTICAMENTE
 const menuItems: MenuItem[] = [
-  {
-    text: 'Inicio',
-    icon: <HomeOutlinedIcon fontSize="small" />,
-    path: '/Menu',
-  },
-  {
-    text: 'Reservar',
-    icon: <EventAvailableIcon fontSize="small" />,
-    path: '/Reservar',
-  },
-  {
-    text: 'Mis Reservas',
-    icon: <ListAltIcon fontSize="small" />,
-    path: '/Reservas',
-  },
-  {
-  text: "QR",
-  icon: <QrCode2Icon fontSize="small" />,
-  path: "/QRsAdmin",
-  roles: ["USER_ROLE"], // admin ve todo igual, pero lo dejamos claro
-},
-  {
-    text: 'Cuentas',
-    icon: <PlaylistAddCheckIcon fontSize="small" />, // ÍCONO NUEVO
-    path: '/MenuReservas',
-    roles: ['ADMIN_ROLE'], // solo admin pero admin entra a todo igualmente
-  },
-  {
-  text: 'Pedidos',
-  icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />,
-  path: '/Pedidos',
-  roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'],
-},
+  { text: 'Inicio', icon: <HomeOutlinedIcon fontSize="small" />, path: '/Menu' },
+  { text: 'Reservar', icon: <EventAvailableIcon fontSize="small" />, path: '/Reservar' },
+  { text: 'Mis Reservas', icon: <ListAltIcon fontSize="small" />, path: '/Reservas' },
+  //{ text: "Tomar Pedido", icon: <RestaurantMenuIcon fontSize="small" />, externalUrl: "https://reservas.viewrestaurante.com", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
+  { text: "QR", icon: <QrCode2Icon fontSize="small" />, path: "/QRsAdmin", roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
+
+  { text: 'Cuentas', icon: <PlaylistAddCheckIcon fontSize="small" />, path: '/MenuReservas', roles: ['ADMIN_ROLE',"MESERO_ROLE"] },
+
+  { text: 'Facturas', icon: <ReceiptIcon fontSize="small" />, path: '/Facturas', roles: ['ADMIN_ROLE'] },
+{ text: 'Anulaciones', icon: <BackspaceOutlinedIcon fontSize="small" />, path: '/AnulacionesPedidos', roles: ['ADMIN_ROLE'] },
+  { text: 'Abrir cajón', icon: <PointOfSaleOutlinedIcon fontSize="small" />, path: '/AbrirCajon', roles: ['ADMIN_ROLE', 'MESERO_ROLE'] },
+  { text: 'Pedidos', icon: <AssignmentTurnedInOutlinedIcon fontSize="small" />, path: '/Pedidos', roles: ['ADMIN_ROLE', 'BAR_ROLE', 'COCINA_ROLE', 'PARRILLA_ROLE'] },
 ];
 
 export default function Sidebar() {
@@ -141,23 +125,30 @@ React.useEffect(() => {
               placement="right"
               arrow
             >
-              <ListItemButton
-                selected={location.pathname === item.path}
-                onClick={() => {
-                  navigate(item.path);
-                  setMobileOpen(false);
-                }}
-                sx={{
-                  borderRadius: 1,
-                  px: collapsed ? 1 : 2,
-                  py: 0.8,
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  '&.Mui-selected': {
-                    bgcolor: 'rgba(0,0,0,0.04)',
-                  },
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
-                }}
-              >
+          <ListItemButton
+  selected={!!item.path && location.pathname === item.path}
+  onClick={() => {
+    if (item.externalUrl) {
+      window.location.href = item.externalUrl;
+      return;
+    }
+
+    if (item.path) {
+      navigate(item.path);
+      setMobileOpen(false);
+    }
+  }}
+  sx={{
+    borderRadius: 1,
+    px: collapsed ? 1 : 2,
+    py: 0.8,
+    justifyContent: collapsed ? 'center' : 'flex-start',
+    '&.Mui-selected': {
+      bgcolor: 'rgba(0,0,0,0.04)',
+    },
+    '&:hover': { bgcolor: 'rgba(0,0,0,0.03)' },
+  }}
+>
                 <ListItemIcon
                   sx={{
                     color: '#000',
@@ -307,7 +298,39 @@ React.useEffect(() => {
 
       </Box>
 
-      <Box>
+          <Box>
+        {!collapsed && (
+          <Box
+            sx={{
+              px: 2,
+              pt: 1,
+              pb: 0.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontSize: 12,
+                color: 'text.secondary',
+                lineHeight: 1.2,
+              }}
+            >
+              Usuario
+            </Typography>
+
+                       <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: 'rgba(0,0,0,0.72)',
+                lineHeight: 1.3,
+                wordBreak: 'break-word',
+              }}
+            >
+              {user?.nombre || 'Sin usuario'}
+            </Typography>
+          </Box>
+        )}
+
         <List sx={{ p: 0 }}>
           <Tooltip title={collapsed ? 'Cerrar Sesión' : ''} placement="right" arrow>
             <ListItemButton

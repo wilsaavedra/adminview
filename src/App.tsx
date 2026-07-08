@@ -10,7 +10,7 @@ import Paquetes from "./pages/Paquetes";
 import Reservar from "./pages/Reservar";
 import Reservas from "./pages/Reservas";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+//import "react-toastify/dist/ReactToastify.css";
 import Pedidos from "./pages/Pedidos";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 import MenuReservas from "./pages/MenuReservas";
@@ -21,6 +21,8 @@ import Facturas from "./pages/Facturas";
 import Inventarios from "./pages/Inventarios";
 import AbrirCajon from "./pages/AbrirCajon";
 import AnulacionesPedidos from "./pages/AnulacionesPedidos";
+import PantallaTV from "./pages/PantallaTV";
+import TVScreen from "./pages/TVScreen";
 
 type Role =
   | "ADMIN_ROLE"
@@ -55,7 +57,9 @@ function AppContent() {
   const { status } = useContext(AuthContext);
 
   const showSidebar = location.pathname !== "/LoginScreen";
-
+if (location.pathname === "/tv") {
+  return <TVScreen />;
+}
   if (status === "checking") {
     return (
       <Box
@@ -232,6 +236,14 @@ function AppContent() {
                   </PrivateRoute>
                 }
               />
+              <Route
+  path="/PantallaTV"
+  element={
+    <PrivateRoute roles={["ADMIN_ROLE"]}>
+      <PantallaTV />
+    </PrivateRoute>
+  }
+/>
             <Route
               path="*"
               element={
